@@ -14,25 +14,22 @@ export default defineConfig({
     port: 3000,
     open: true,
     allowedHosts: [
-      '4840-2806-2f0-5541-fd43-44cd-b650-bcca-7175.ngrok-free.app',
-      'ef1f11e14889.ngrok-free.app',
-      '5adfa9f2ac15.ngrok-free.app',
-      '5adfa9f2ac15.ngrok-free.app',
-      'a344c9c907da.ngrok-free.app'
+      'terrazapineda.com',
+      'www.terrazapineda.com'
     ],
     proxy: {
       '/terraza/api': {
-        target: 'http://0.0.0.0:8000',
+        target: 'http://54.144.65.30:8000',
         changeOrigin: true,
         secure: false,
       },
       '/auth': {
-        target: 'http://0.0.0.0:8000',
+        target: 'http://54.144.65.30:8000',
         changeOrigin: true,
         secure: false,
       },
       '/api': {
-        target: 'http://0.0.0.0:8000',
+        target: 'http://54.144.65.30:8000',
         changeOrigin: true,
         secure: false,
       },
