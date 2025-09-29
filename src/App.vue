@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col min-h-screen bg-gray-50">
     <Navbar />
-    <main class="flex-1" :class="isDashboard ? 'pt-0 md:pl-80' : 'pt-16 md:pl-80'">
+    <main class="flex-1" :class="isDashboard ? 'pt-0' : 'pt-16'">
       <router-view />
     </main>
     <Footer v-if="!isDashboard" />

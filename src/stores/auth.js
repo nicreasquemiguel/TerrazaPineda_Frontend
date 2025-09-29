@@ -56,9 +56,38 @@ export const useAuthStore = defineStore('auth', () => {
       await fetchUser()
       return { success: true }
     } catch (error) {
-      console.error('Login error:', error.response?.data)
+      console.error('Login error:', error)
+      console.error('Error response:', error.response)
+      console.error('Error message:', error.message)
+      console.error('Error code:', error.code)
+      
       logout()
-      return { success: false, error: error.response?.data?.detail || error.response?.data?.non_field_errors?.[0] || error.message }
+      
+      // Better error handling with more specific messages
+      let errorMessage = 'Error al iniciar sesión.'
+      
+      if (error.code === 'ECONNREFUSED' || error.code === 'ENOTFOUND') {
+        errorMessage = 'No se puede conectar al servidor. Verifica tu conexión.'
+      } else if (error.code === 'NETWORK_ERROR') {
+        errorMessage = 'Error de red. Verifica tu conexión a internet.'
+      } else if (error.response) {
+        // Server responded with error status
+        const data = error.response.data
+        errorMessage = data?.detail || 
+                      data?.non_field_errors?.[0] || 
+                      data?.email?.[0] || 
+                      data?.password?.[0] || 
+                      error.response.statusText ||
+                      'Error del servidor'
+      } else if (error.request) {
+        // Request was made but no response received
+        errorMessage = 'El servidor no respondió. Verifica que esté funcionando.'
+      } else {
+        // Something else happened
+        errorMessage = error.message || 'Error desconocido'
+      }
+      
+      return { success: false, error: errorMessage }
     }
   }
 

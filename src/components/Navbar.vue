@@ -496,127 +496,6 @@
     </div>
   </div>
 
-  <!-- Desktop Sidebar (always visible on desktop) -->
-  <div class="hidden md:block fixed top-0 left-0 z-40 w-80 h-full bg-black">
-    <!-- Sidebar Header -->
-    <div class="flex justify-between items-center p-6 border-b border-gray-700">
-      <div class="flex items-center space-x-3">
-        <div class="flex justify-center items-center w-10 h-10">
-          <img src="/src/assets/tp-white.svg" alt="Terraza Pineda Logo" class="w-8 h-8" />
-        </div>
-        <div>
-          <div class="text-xl font-bold text-white">Terraza Pineda</div>
-          <div class="text-xs text-gray-400">Celebra tus eventos con nosotros</div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Sidebar Content -->
-    <div class="flex flex-col h-full">
-      <!-- User Profile (only if logged in) -->
-      <div v-if="authStore.isAuthenticated" class="p-6 border-b border-gray-700">
-        <div class="flex items-center space-x-3">
-          <div class="relative">
-            <!-- User Image or Initials Circle -->
-            <div v-if="false" class="w-12 h-12 rounded-full overflow-hidden">
-              <img 
-                :src="user.profile.image" 
-                :alt="`${userName} Profile`" 
-                class="w-full h-full object-cover"
-              />
-            </div>
-            <div v-else class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-              <span class="text-white font-bold text-lg">{{ userInitials }}</span>
-            </div>
-            <!-- Notification indicator -->
-            <div v-if="unreadCount > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
-              <span class="text-xs text-white font-bold">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
-            </div>
-          </div>
-          <div class="flex-1">
-            <router-link 
-              to="/perfil" 
-              class="text-lg font-bold text-white hover:text-blue-400 transition-colors cursor-pointer block"
-            >
-              {{ userName }}
-            </router-link>
-            <div class="text-sm text-gray-400">{{ userRole }}</div>
-            <div v-if="user && user.email" class="text-xs text-gray-500 truncate">{{ user.email }}</div>
-            <div v-if="user && user.phone" class="text-xs text-gray-500">{{ user.phone }}</div>
-            <div v-if="user && user.profile && user.profile.pid" class="text-xs text-gray-600">ID: {{ user.profile.pid }}</div>
-    </div>
-          <div class="flex flex-col space-y-2">
-            <!-- Notification icon -->
-            <button class="relative p-2 text-gray-400 hover:text-white transition-colors">
-              <i class="text-lg fa-solid fa-bell"></i>
-              <div v-if="unreadCount > 0" class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
-            </button>
-            <!-- Logout button -->
-    <button
-              @click="handleLogout"
-              class="p-2 text-gray-400 hover:text-red-400 transition-colors"
-              title="Cerrar Sesión"
-            >
-              <i class="text-lg fa-solid fa-sign-out-alt"></i>
-    </button>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Navigation Menu -->
-      <div class="overflow-y-auto flex-1">
-        <nav class="p-4 space-y-2">
-          <!-- Public Navigation Items -->
-          <div 
-            v-for="item in publicNavigationItems" 
-            :key="item.name"
-            @click="goToPage(item.path)"
-            class="flex items-center px-4 py-3 text-gray-300 rounded-lg transition-colors cursor-pointer hover:bg-gray-800 hover:text-white"
-          >
-            <i :class="getNavigationIcon(item.name) + ' mr-3 text-lg'"></i>
-            <span class="text-base">{{ item.name }}</span>
-          </div>
-          
-          <!-- Authenticated Navigation Items -->
-          <template v-if="authStore.isAuthenticated">
-            <div class="border-t border-gray-700 my-2"></div>
-            <div 
-              v-for="item in filteredAuthenticatedItems" 
-              :key="item.name"
-              @click="goToPage(item.path)"
-              class="flex items-center px-4 py-3 text-gray-300 rounded-lg transition-colors cursor-pointer hover:bg-gray-800 hover:text-white"
-            >
-              <i :class="getNavigationIcon(item.name) + ' mr-3 text-lg'"></i>
-              <span class="text-base">{{ item.name }}</span>
-            </div>
-          </template>
-        </nav>
-          </div>
-      
-      <!-- Sidebar Footer -->
-      <div class="p-6 border-t border-gray-700">
-        <!-- Not logged in user actions -->
-        <template v-if="!authStore.isAuthenticated">
-          <div class="space-y-2">
-            <button 
-              @click="goToPage('/login')"
-              class="flex justify-center items-center px-4 py-3 w-full text-white bg-blue-600 rounded-lg transition-colors hover:bg-blue-700"
-            >
-              <i class="mr-3 text-lg fa-solid fa-sign-in-alt"></i>
-              <span class="text-base font-medium">Iniciar Sesión</span>
-            </button>
-            <button 
-              @click="goToPage('/registrar')"
-              class="flex justify-center items-center px-4 py-3 w-full text-white bg-pink-600 rounded-lg transition-colors hover:bg-pink-700"
-            >
-              <i class="mr-3 text-lg fa-solid fa-user-plus"></i>
-              <span class="text-base font-medium">Registrarse</span>
-            </button>
-          </div>
-        </template>
-      </div>
-    </div>
-  </div>
 
 </template>
 
@@ -660,7 +539,6 @@ const navigationItems = [
   { name: 'Fotos', path: '/fotos' },
   { name: 'Reglamento', path: '/reglamento' },
   { name: 'Preguntas', path: '/preguntas-frecuentes' },
-  { name: 'About', path: '/about' },
 ]
 
 // Public navigation items (always visible)
@@ -670,7 +548,6 @@ const publicNavigationItems = [
   { name: 'Fotos', path: '/fotos' },
   { name: 'Reglamento', path: '/reglamento' },
   { name: 'Preguntas', path: '/preguntas-frecuentes' },
-  { name: 'About', path: '/about' },
 ]
 
 // Authenticated navigation items (only for logged in users)
@@ -836,7 +713,6 @@ const getNavigationIcon = (name) => {
     'Fotos': 'fa-solid fa-images',
     'Reglamento': 'fa-solid fa-file-contract',
     'Preguntas': 'fa-solid fa-question-circle',
-    'About': 'fa-solid fa-info-circle',
     'Mis Reservas': 'fa-solid fa-calendar-check',
     'Dashboard': 'fa-solid fa-tachometer-alt'
   }

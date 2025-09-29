@@ -286,7 +286,6 @@ const navigationItems = [
   { name: 'Fotos', path: '/fotos' },
   { name: 'Reglamento', path: '/reglamento' },
   { name: 'Preguntas', path: '/preguntas-frecuentes' },
-  { name: 'About', path: '/about' },
 ]
 
 // Get user from auth store
@@ -366,7 +365,6 @@ const getNavigationIcon = (name) => {
     'Fotos': 'fa-solid fa-images',
     'Reglamento': 'fa-solid fa-file-contract',
     'Preguntas': 'fa-solid fa-question-circle',
-    'About': 'fa-solid fa-info-circle'
   }
   return iconMap[name] || 'fa-solid fa-link'
 }

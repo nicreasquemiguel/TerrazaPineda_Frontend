@@ -1,8 +1,8 @@
 <template>
   <div class="min-h-screen bg-white">
-    <!-- Desktop Sidebar (md and larger) -->
-    <div class="hidden md:flex">
-      <div class="w-80 min-h-screen bg-black">
+    <!-- Desktop Layout (md and larger) -->
+    <div class="hidden md:flex min-h-screen">
+      <div class="w-80 min-h-screen bg-black flex-shrink-0">
         <!-- Branding -->
         <div class="p-6 border-b border-gray-700">
           <div class="flex items-center space-x-2">
@@ -71,7 +71,7 @@
       </div>
 
       <!-- Desktop Main Content -->
-      <div class="flex-1 p-8">
+      <div class="flex-1 p-8 min-h-screen bg-white">
         <div class="mx-auto max-w-6xl">
           <!-- Header -->
           <div class="flex justify-between items-center mb-8">
@@ -309,7 +309,7 @@
     </div>
 
     <!-- Mobile Layout (sm and smaller) -->
-    <div class="md:hidden">
+    <div class="md:hidden min-h-screen bg-white">
       <!-- Mobile Sidebar Overlay -->
       <div 
         v-if="showMobileSidebar" 
@@ -339,9 +339,9 @@
         </div>
         
         <!-- Sidebar Content -->
-        <div class="flex flex-col h-full">
+        <div class="flex flex-col h-full overflow-y-auto">
           <!-- User Profile -->
-          <div class="p-6 border-b border-gray-700">
+          <div class="p-6 border-b border-gray-700 flex-shrink-0">
             <div class="flex items-center space-x-3">
               <img 
                 :src="`https://ui-avatars.com/api/?name=${userInitials}&background=6366f1&color=fff`" 
@@ -356,7 +356,7 @@
           </div>
           
           <!-- Quick Actions -->
-          <div class="p-4 border-b border-gray-700">
+          <div class="p-4 border-b border-gray-700 flex-shrink-0">
             <div class="flex space-x-2">
               <!-- Notification Button -->
               <button class="relative flex-1 px-4 py-3 text-gray-300 rounded-lg transition-colors hover:bg-gray-800 hover:text-white">
@@ -368,8 +368,8 @@
           </div>
           
           <!-- Navigation Menu -->
-          <div class="overflow-y-auto flex-1">
-            <nav class="p-4 space-y-2">
+          <div class="flex-1 p-4">
+            <nav class="space-y-2">
               <div 
                 v-for="item in navigationItems" 
                 :key="item.name"
@@ -383,7 +383,7 @@
           </div>
           
           <!-- Sidebar Footer -->
-          <div class="p-6 border-t border-gray-700">
+          <div class="p-6 border-t border-gray-700 flex-shrink-0">
             <button 
               @click="handleLogout"
               class="flex justify-center items-center px-4 py-3 w-full text-white bg-red-600 rounded-lg transition-colors hover:bg-red-700"
@@ -1204,7 +1204,6 @@ const navigationItems = [
   { name: 'Fotos', path: '/fotos' },
   { name: 'Reglamento', path: '/reglamento' },
   { name: 'Preguntas', path: '/preguntas-frecuentes' },
-  { name: 'About', path: '/about' },
 ]
 
 // Fetch dashboard data
@@ -1495,7 +1494,6 @@ const getNavigationIcon = (name) => {
     'Fotos': 'fa-solid fa-images',
     'Reglamento': 'fa-solid fa-file-contract',
     'Preguntas': 'fa-solid fa-question-circle',
-    'About': 'fa-solid fa-info-circle'
   }
   return iconMap[name] || 'fa-solid fa-link'
 }

@@ -21,7 +21,6 @@
           <div class="text-left">
             <h3 class="mb-4 text-lg font-bold tracking-wide text-left">COMPAÑÍA</h3>
             <ul class="space-y-2 text-left text-white/90">
-              <li><router-link to="/about" class="transition hover:text-cyan-300">About</router-link></li>
               <li><router-link to="/reglamento" class="transition hover:text-cyan-300">Reglamento</router-link></li>
               <li><a href="#" class="transition hover:text-cyan-300">Privacidad</a></li>
             </ul>
