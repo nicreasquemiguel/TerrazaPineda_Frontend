@@ -210,7 +210,6 @@ import SliderPersonas from '@/ReservarForm/SliderPersonas.vue'
 import ExtrasSlider from '@/ReservarForm/ExtrasSlider.vue'
 import { useQuery } from '@tanstack/vue-query'
 import { useRoute } from 'vue-router'
-import axios from 'axios'
 import 'v-calendar/style.css'
 import { Icon } from '@iconify/vue';
 import { useRouter } from 'vue-router'
@@ -358,7 +357,7 @@ const rulesWithLinks = rules.map(rule => ({
 
 onMounted(async () => {
   try {
-    const res = await axios.get('/api/bookings/extras/');
+    const res = await api.get('/api/bookings/extras/');
     allExtras.value = Array.isArray(res.data) ? res.data : (res.data.results || []);
   } catch (e) {
     allExtras.value = [];

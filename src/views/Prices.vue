@@ -130,7 +130,7 @@
 <script setup>
 import { Icon } from '@iconify/vue'
 import { ref, onMounted, onBeforeUnmount } from 'vue'
-import axios from 'axios'
+import api from '@/services/api'
 
 // Use Vite's import.meta.glob to import all images in the terraza folder
 const images = import.meta.glob('@/assets/terraza/*', { eager: true, import: 'default' })
@@ -182,7 +182,7 @@ const paquetesError = ref(null)
 onMounted(async () => {
   try {
     paquetesLoading.value = true
-    const res = await axios.get('/api/bookings/packages/?limit=10')
+    const res = await api.get('/api/bookings/packages/?limit=10')
     console.log('Fetched packages:', res.data)
     // Handle both array and object (with results) responses
     let pkgs = Array.isArray(res.data) ? res.data : (Array.isArray(res.data.results) ? res.data.results : [])
@@ -198,7 +198,7 @@ onMounted(async () => {
     // Fetch extras
     try {
       extrasLoading.value = true
-      const res = await axios.get('/api/bookings/extras/?limit=10')
+      const res = await api.get('/api/bookings/extras/?limit=10')
       console.log('Fetched extras:', res.data)
       let exs = Array.isArray(res.data) ? res.data : (Array.isArray(res.data.results) ? res.data.results : [])
       extras.value = exs.map(extra => ({
