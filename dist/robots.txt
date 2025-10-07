@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /
+
+# Block all bots from accessing the ngrok URL
+# This prevents search engines and other bots from indexing your development environment 

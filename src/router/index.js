@@ -111,7 +111,7 @@ const router = createRouter({
 })
 
 router.beforeEach((to, from, next) => {
-  document.title = to.meta.title ? `${to.meta.title} - Vue App` : 'Vue App'
+  document.title = to.meta.title ? `${to.meta.title} - Terraza Pineda` : 'Terraza Pineda'
 
   const authStore = useAuthStore()
   const isAuthenticated = !!localStorage.getItem('accessToken') && authStore.user
