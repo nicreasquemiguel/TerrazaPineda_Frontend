@@ -133,10 +133,20 @@ const categories = [
   { value: 'decoracion', label: 'Decoración' }
 ]
 
+// Import images dynamically
+import albercaflores from '@/assets/terraza/albercaflores.jpg'
+import hero from '@/assets/terraza/hero.jpg'
+import mesas from '@/assets/terraza/mesas.jpg'
+import mesasadornos from '@/assets/terraza/mesasadornos.jpg'
+import noche from '@/assets/terraza/noche.jpg'
+import IMG_4025 from '@/assets/terraza/IMG_4025.jpg'
+import IMG_4026 from '@/assets/terraza/IMG_4026.jpg'
+import IMG_8695 from '@/assets/terraza/IMG_8695.jpg'
+
 const photos = [
   {
     id: 1,
-    src: '/src/assets/terraza/albercaflores.jpg',
+    src: albercaflores,
     alt: 'Alberca con flores',
     title: 'Alberca con flores',
     description: 'Nuestra alberca rodeada de hermosas flores',
@@ -144,15 +154,16 @@ const photos = [
   },
   {
     id: 2,
-    src: '/src/assets/terraza/hero.jpg',
+    src: hero,
     alt: 'Vista panorámica',
     title: 'Vista panorámica',
     description: 'Vista espectacular de la terraza',
     category: 'vistas'
+    
   },
   {
     id: 3,
-    src: '/src/assets/terraza/mesas.jpg',
+    src: mesas,
     alt: 'Área de mesas',
     title: 'Área de mesas',
     description: 'Espacios para eventos y reuniones',
@@ -160,7 +171,7 @@ const photos = [
   },
   {
     id: 4,
-    src: '/src/assets/terraza/mesasadornos.jpg',
+    src: mesasadornos,
     alt: 'Mesas decoradas',
     title: 'Mesas decoradas',
     description: 'Decoración elegante para eventos especiales',
@@ -168,7 +179,7 @@ const photos = [
   },
   {
     id: 5,
-    src: '/src/assets/terraza/noche.jpg',
+    src: noche,
     alt: 'Terraza de noche',
     title: 'Terraza de noche',
     description: 'Ambiente mágico bajo las estrellas',
@@ -176,7 +187,7 @@ const photos = [
   },
   {
     id: 6,
-    src: '/src/assets/terraza/IMG_4025.jpg',
+    src: IMG_4025,
     alt: 'Evento especial',
     title: 'Evento especial',
     description: 'Celebraciones inolvidables',
@@ -184,7 +195,7 @@ const photos = [
   },
   {
     id: 7,
-    src: '/src/assets/terraza/IMG_4026.jpg',
+    src: IMG_4026,
     alt: 'Decoración de fiesta',
     title: 'Decoración de fiesta',
     description: 'Ambiente festivo y acogedor',
@@ -192,7 +203,7 @@ const photos = [
   },
   {
     id: 8,
-    src: '/src/assets/terraza/IMG_8695.jpg',
+    src: IMG_8695,
     alt: 'Vista del jardín',
     title: 'Vista del jardín',
     description: 'Naturaleza y tranquilidad',
