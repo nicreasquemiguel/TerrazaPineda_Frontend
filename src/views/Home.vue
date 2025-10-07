@@ -102,7 +102,7 @@
       <div class="relative px-4 pt-10 pb-24 mx-auto max-w-7xl sm:px-6 lg:px-32 lg:py-32">
         <div class="grid gap-12 items-center lg:grid-cols-2">
           <div class="space-y-8 text-center lg:text-left">
-            <img src="@/assets/tp-white.svg" alt="Terraza Pineda Logo" class="block mx-auto mb-6 w-20 h-20 md:hidden" />
+            <img src="/tp-white.svg" alt="Terraza Pineda Logo" class="block mx-auto mb-6 w-20 h-20 md:hidden" />
             <h1 class="text-4xl font-bold leading-tight md:text-6xl">
               <SplitText
                 text="¡CELEBRA "
@@ -136,7 +136,7 @@
           </div>
           <div class="hidden lg:block">
               <div class="relative w-[24rem] h-[24rem] bg-white/10 rounded-2xl border border-white/30 flex items-center justify-center mx-auto backdrop-blur-xl shadow-2xl">
-                <img src="@/assets/tp-white.svg" alt="Terraza Pineda Logo" class="z-10 w-32 h-32" />
+                <img src="/tp-white.svg" alt="Terraza Pineda Logo" class="z-10 w-32 h-32" />
                 <!-- Gradient Circles -->
                 <div class="absolute -top-6 left-1/2 w-32 h-32 rounded-full opacity-80 -translate-x-1/2 animate-circle1" style="background: linear-gradient(90deg, #7c3aed, #22d3ee);"></div>
                 <div class="absolute bottom-8 -left-8 w-24 h-24 rounded-full opacity-80 animate-circle2" style="background: linear-gradient(90deg, #f472b6, #fbbf24);"></div>

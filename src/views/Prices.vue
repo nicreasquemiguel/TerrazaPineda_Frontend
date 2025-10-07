@@ -5,7 +5,7 @@
       style="background-image: url('/hero.jpg')">
       <div class="absolute inset-0 bg-black opacity-50"></div>
       <div class="relative px-4 pt-16 pb-12 mx-auto max-w-4xl text-center sm:px-6 lg:px-8">
-        <img src="@/assets/tp-white.svg" alt="Terraza Pineda Logo" class="mx-auto mb-4 w-16 h-16" />
+        <img src="/tp-white.svg" alt="Terraza Pineda Logo" class="mx-auto mb-4 w-16 h-16" />
         <h1 class="mb-4 text-4xl font-bold text-white md:text-5xl">Precios y Paquetes</h1>
         <p class="mx-auto max-w-2xl text-xl text-white/80">
           Eche un vistazo a los paquetes hechos para cualquier ocasión y no dude en contactarnos si tiene alguna duda.

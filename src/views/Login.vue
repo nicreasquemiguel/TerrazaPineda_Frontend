@@ -3,7 +3,7 @@
     <div class="flex flex-1 justify-center items-center px-2 py-8">
       <div class="flex overflow-hidden relative flex-col items-center p-8 w-full max-w-md rounded-3xl shadow-2xl bg-white/80">
         <!-- Logo -->
-        <img src="@/assets/tp.svg" alt="Terraza Pineda Logo" class="mb-4 w-16 h-16" />
+        <img src="/tp.svg" alt="Terraza Pineda Logo" class="mb-4 w-16 h-16" />
         <!-- Title -->
         <h1 class="mb-2 text-3xl font-extrabold text-center md:text-4xl">
           <span class="login-gradient-text">Iniciar sesión</span>

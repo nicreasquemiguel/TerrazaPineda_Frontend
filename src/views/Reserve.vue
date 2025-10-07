@@ -2,7 +2,7 @@
   <div class="flex flex-col min-h-screen bg-white">
     <div class="flex flex-col flex-1 items-center px-2 pt-2 pb-8 w-full md:pt-16 md:min-h-[36rem]">
       <!-- Logo -->
-      <img src="@/assets/tp.svg" alt="Terraza Pineda Logo" class="mb-4 w-12 h-12 md:w-16 md:h-16" />
+      <img src="/tp.svg" alt="Terraza Pineda Logo" class="mb-4 w-12 h-12 md:w-16 md:h-16" />
       <!-- Title -->
       <h1 class="mb-2 text-4xl font-extrabold text-center md:text-5xl reserve-gradient-text">Solicitud</h1>
       <p class="mb-6 max-w-xl text-base text-center text-gray-600 md:text-lg">Se aprobará según los detalles de tu evento, tales como fecha, paquete, descripción, seguir pasos...</p>

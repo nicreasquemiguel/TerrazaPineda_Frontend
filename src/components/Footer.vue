@@ -1,7 +1,7 @@
 <template>
   <footer class="px-4 py-12 w-full text-white border-t bg-black/90 border-white/10">
     <div class="flex justify-center mb-8">
-      <img src="@/assets/tp-white.svg" alt="Terraza Pineda Logo" class="w-10 h-10" />
+      <img src="/tp-white.svg" alt="Terraza Pineda Logo" class="w-10 h-10" />
     </div>
     <div class="grid grid-cols-1 gap-10 justify-items-center items-start px-2 mx-auto w-full max-w-7xl md:grid-cols-4 lg:gap-20 md:justify-items-start md:px-8 lg:px-20">
       <!-- Info & Compañía as two columns on mobile, stack on md+ -->

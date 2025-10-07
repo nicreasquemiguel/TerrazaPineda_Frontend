@@ -3,7 +3,7 @@
     <div class="overflow-hidden relative p-8 w-full max-w-3xl rounded-3xl shadow-2xl bg-white/80">
       <!-- Logo -->
       <div class="flex justify-center mb-4">
-        <img src="@/assets/tp.svg" alt="Terraza Pineda Logo" class="w-16 h-16" />
+        <img src="/tp.svg" alt="Terraza Pineda Logo" class="w-16 h-16" />
       </div>
       <!-- Title -->
       <h1 class="mb-2 text-4xl font-extrabold text-center md:text-5xl">

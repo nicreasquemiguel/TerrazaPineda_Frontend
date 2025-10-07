@@ -3,7 +3,7 @@
     <div class="px-4 py-10 mx-auto max-w-2xl">
       <!-- Logo -->
       <div class="flex justify-center mb-4">
-        <img src="@/assets/tp.svg" alt="Logo Terraza Pineda" class="w-auto h-16" />
+        <img src="/tp.svg" alt="Logo Terraza Pineda" class="w-auto h-16" />
       </div>
       <!-- Título principal con gradiente en "General" -->
       <h1 class="mb-2 text-4xl font-extrabold text-center">
