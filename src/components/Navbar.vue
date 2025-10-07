@@ -374,7 +374,7 @@
     <div class="flex justify-between items-center p-6 border-b border-gray-700">
       <div class="flex items-center space-x-3">
         <div class="flex justify-center items-center w-10 h-10">
-          <img src="/src/assets/tp-white.svg" alt="Terraza Pineda Logo" class="w-8 h-8" />
+          <img src="/tp-white.svg" alt="Terraza Pineda Logo" class="w-8 h-8" />
   </div>
         <div>
           <div class="text-xl font-bold text-white">Terraza Pineda</div>
