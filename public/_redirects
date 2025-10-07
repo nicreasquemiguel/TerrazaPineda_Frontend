@@ -1,1 +1,8 @@
+# SPA redirects - all routes go to index.html
 /*    /index.html   200
+
+# Handle API routes if needed
+/api/*  https://your-api-domain.com/api/:splat  200
+
+# Handle static assets
+/assets/*  /assets/:splat  200
