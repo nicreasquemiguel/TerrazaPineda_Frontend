@@ -24,19 +24,19 @@ export default defineConfig({
     ],
     proxy: {
       '/terraza/api': {
-        target: 'http://54.146.18.92:8000',
+        target: 'https://api.terrazapineda.com/',
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
       '/auth': {
-        target: 'http://54.146.18.92:8000',
+        target: 'https://api.terrazapineda.com/',
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
       '/api': {
-        target: 'http://54.146.18.92:8000',
+        target: 'https://api.terrazapineda.com/',
         changeOrigin: true,
-        secure: false,
+        secure: true,
       },
     },
   }
