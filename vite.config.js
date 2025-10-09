@@ -24,17 +24,17 @@ export default defineConfig({
     ],
     proxy: {
       '/terraza/api': {
-        target: 'http://54.144.65.30:8000',
+        target: 'http://54.146.18.92:8000',
         changeOrigin: true,
         secure: false,
       },
       '/auth': {
-        target: 'http://54.144.65.30:8000',
+        target: 'http://54.146.18.92:8000',
         changeOrigin: true,
         secure: false,
       },
       '/api': {
-        target: 'http://54.144.65.30:8000',
+        target: 'http://54.146.18.92:8000',
         changeOrigin: true,
         secure: false,
       },

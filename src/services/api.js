@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://54.144.65.30:8000', // AWS server IP
+  baseURL: 'http://54.146.18.92:8000', // AWS server IP
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
