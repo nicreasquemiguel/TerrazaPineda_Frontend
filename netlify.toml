@@ -29,6 +29,12 @@
   status = 301
   force = true
 
+# Force HTTPS for all requests
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+
 [[headers]]
   for = "/*"
   [headers.values]
