@@ -10,9 +10,30 @@
 [build.environment]
   NODE_VERSION = "18"
 
+# Force HTTPS redirects
+[[redirects]]
+  from = "http://terrazapineda.com/*"
+  to = "https://terrazapineda.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.terrazapineda.com/*"
+  to = "https://terrazapineda.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "https://www.terrazapineda.com/*"
+  to = "https://terrazapineda.com/:splat"
+  status = 301
+  force = true
+
 [[headers]]
   for = "/*"
   [headers.values]
     X-Frame-Options = "DENY"
     X-XSS-Protection = "1; mode=block"
     X-Content-Type-Options = "nosniff"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    Referrer-Policy = "strict-origin-when-cross-origin"
