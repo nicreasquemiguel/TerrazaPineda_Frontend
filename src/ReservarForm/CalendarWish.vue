@@ -33,7 +33,8 @@ const selectedDate = ref(toDate(props.modelValue))
 
 watch(() => props.modelValue, (val) => {
   const d = toDate(val);
-  if (+d !== +selectedDate.value) selectedDate.value = d;
+  // Always sync from parent, even if it's the same
+  selectedDate.value = d;
 })
 watch(selectedDate, (val) => {
   emit('update:modelValue', val)
@@ -122,13 +123,11 @@ const onDateChange = (val) => {
   if (occupiedDatesMap.value.has(dateString)) {
     // Don't update if trying to select a reserved date
     console.log('[Calendar] Cannot select reserved date:', dateString)
-    // Keep the previous value or set to null
-    if (!selectedDate.value || occupiedDatesMap.value.has(selectedDate.value.toDateString())) {
-      selectedDate.value = null
-    }
+    // Don't change the selection - calendar will revert to previous state
     return
   }
   
+  // Always update to the new valid date
   selectedDate.value = newDate
 }
 
