@@ -10,7 +10,7 @@ const API_CONFIG = {
   withCredentials: false, // Ensure no credentials are sent
 }
 
-// Create API instance
+// Create main API instance
 const api = axios.create(API_CONFIG)
 
 // Alternative base URLs for different environments
@@ -34,6 +34,23 @@ export const authApi = createApiInstance(API_ENDPOINTS.auth)
 export const bookingsApi = createApiInstance(API_ENDPOINTS.bookings)
 export const userApi = createApiInstance(API_ENDPOINTS.user)
 export const terrazaApi = createApiInstance(API_ENDPOINTS.terraza)
+
+// Global refresh state to prevent infinite loops
+let isRefreshing = false
+let failedQueue = []
+
+// Process failed requests queue
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error)
+    } else {
+      prom.resolve(token)
+    }
+  })
+  
+  failedQueue = []
+}
 
 // Request interceptor function to add JWT token
 const addAuthInterceptor = (apiInstance) => {
@@ -60,33 +77,76 @@ const addResponseInterceptor = (apiInstance) => {
     (response) => response,
     async (error) => {
       const originalRequest = error.config;
+      
+      // Only handle 401 errors and avoid refresh loops
       if (error.response?.status === 401 && !originalRequest._retry) {
+        if (isRefreshing) {
+          // If already refreshing, queue this request
+          return new Promise((resolve, reject) => {
+            failedQueue.push({ resolve, reject })
+          }).then(token => {
+            originalRequest.headers['Authorization'] = `Bearer ${token}`;
+            return apiInstance(originalRequest);
+          }).catch(err => {
+            return Promise.reject(err);
+          });
+        }
+
         originalRequest._retry = true;
+        isRefreshing = true;
+
         const refreshToken = localStorage.getItem('refreshToken');
+        
         if (refreshToken) {
           try {
-            const res = await api.post('/auth/jwt/refresh/', { refresh: refreshToken });
+            console.log('[API] Attempting token refresh...');
+            // Use authApi for refresh, not the main api instance
+            const res = await authApi.post('jwt/refresh/', { refresh: refreshToken });
             const newAccess = res.data.access;
+            
             localStorage.setItem('accessToken', newAccess);
             originalRequest.headers['Authorization'] = `Bearer ${newAccess}`;
+            
+            processQueue(null, newAccess);
+            isRefreshing = false;
+            
             return apiInstance(originalRequest);
           } catch (refreshError) {
-            // SOLO UNA VEZ: limpiar y redirigir
+            console.log('[API] Token refresh failed, clearing auth and redirecting...');
+            processQueue(refreshError, null);
+            isRefreshing = false;
+            
+            // Clear all auth data
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
             localStorage.removeItem('user');
-            // Detén el ciclo: no recargues ni redirijas infinitamente
-            window.location.href = '/login';
+            
+            // Redirect to login (only once)
+            if (window.location.pathname !== '/login') {
+              window.location.href = '/login';
+            }
+            
             return Promise.reject(refreshError);
           }
         } else {
+          console.log('[API] No refresh token found, clearing auth and redirecting...');
+          processQueue(error, null);
+          isRefreshing = false;
+          
+          // Clear all auth data
           localStorage.removeItem('accessToken');
           localStorage.removeItem('refreshToken');
           localStorage.removeItem('user');
-          window.location.href = '/login';
+          
+          // Redirect to login (only once)
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login';
+          }
+          
           return Promise.reject(error);
         }
       }
+      
       return Promise.reject(error);
     }
   );
