@@ -6,6 +6,7 @@
       :min-date="minDate"
       :max-date="maxDate"
       :attributes="calendarAttributes"
+      :disabled-dates="disabledDates"
       is-inline
       locale="es"
       @update:model-value="onDateChange"
@@ -54,6 +55,11 @@ const occupiedDatesMap = computed(() => {
   return map
 })
 
+// Computed property for disabled dates
+const disabledDates = computed(() => {
+  return occupiedDates.value.map(item => item.date)
+})
+
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('es-ES', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
@@ -93,9 +99,21 @@ const calendarAttributes = computed(() => {
       popover: {
         label: `Ocupado por ${item.user_initials}`,
       },
-      customData: { isOccupied: true }
+      customData: { isOccupied: true },
+      // Mark the date as disabled so it can't be selected
+      order: 0
     })
   })
+  
+  // Add disabled dates attribute to prevent selection
+  if (occupiedDates.value.length > 0) {
+    attributes.push({
+      key: 'disabled-dates',
+      dates: occupiedDates.value.map(item => item.date),
+      order: 1
+    })
+  }
+  
   return attributes
 })
 
@@ -107,25 +125,57 @@ const getUserInitials = (date) => {
 }
 
 const onDateChange = (val) => {
-  selectedDate.value = toDate(val)
+  const newDate = toDate(val)
+  if (!newDate) {
+    selectedDate.value = null
+    return
+  }
+  
+  // Check if the date is occupied/reserved
+  const dateString = newDate.toDateString()
+  if (occupiedDatesMap.value.has(dateString)) {
+    // Don't update if trying to select a reserved date
+    console.log('[Calendar] Cannot select reserved date:', dateString)
+    // Keep the previous value or set to null
+    if (!selectedDate.value || occupiedDatesMap.value.has(selectedDate.value.toDateString())) {
+      selectedDate.value = null
+    }
+    return
+  }
+  
+  selectedDate.value = newDate
 }
 
 onMounted(fetchOccupiedEvents)
 </script>
 
 <style scoped>
+/* Disabled dates (past dates, etc.) */
 :deep(.my-calendar .vc-day.vc-disabled) {
   background: #f1f5f9 !important;
   color: #cbd5e1 !important;
   opacity: 1 !important;
   cursor: not-allowed !important;
 }
+
+/* Reserved/Occupied dates - RED color */
 :deep(.my-calendar .vc-day.vc-highlight[data-highlight-key="occupied"]) {
-  background: #e5e7eb !important;
-  color: #94a3b8 !important;
-  font-weight: 700;
+  background: #fecaca !important; /* Light red background */
+  color: #991b1b !important; /* Dark red text */
+  font-weight: 700 !important;
   opacity: 1 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important; /* Prevent any click events */
 }
+
+/* Hover state for reserved dates - keep red */
+:deep(.my-calendar .vc-day.vc-highlight[data-highlight-key="occupied"]:hover) {
+  background: #fca5a5 !important; /* Slightly darker red on hover */
+  color: #7f1d1d !important;
+  cursor: not-allowed !important;
+}
+
+/* Selected date (non-reserved) */
 :deep(.my-calendar .vc-day.vc-selected) {
   background: #0ea5e9 !important;
   color: #fff !important;
@@ -133,9 +183,22 @@ onMounted(fetchOccupiedEvents)
   font-weight: 800;
   box-shadow: 0 2px 8px #0ea5e933;
 }
+
+/* If somehow a reserved date gets selected (shouldn't happen), keep it red */
 :deep(.my-calendar .vc-day.vc-highlight[data-highlight-key="occupied"].vc-selected) {
-  background: #0ea5e9 !important;
+  background: #dc2626 !important; /* Solid red */
   color: #fff !important;
   opacity: 1 !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
 }
+
+/* Additional styling for disabled reserved dates */
+:deep(.my-calendar .vc-day.vc-disabled.vc-highlight[data-highlight-key="occupied"]) {
+  background: #fca5a5 !important;
+  color: #7f1d1d !important;
+  cursor: not-allowed !important;
+  pointer-events: none !important;
+}
+
 </style> 
