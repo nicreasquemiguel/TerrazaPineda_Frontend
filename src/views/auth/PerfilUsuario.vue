@@ -315,15 +315,32 @@ import { useAuthStore } from '@/stores/auth'
 import { getNotifications, markNotificationRead } from '@/services/api'
 import api from '@/services/api'
 import { useToast } from 'vue-toastification'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const authStore = useAuthStore()
 const user = computed(() => authStore.user)
 const toast = useToast()
 const router = useRouter()
+const route = useRoute()
 
 // Tab management
 const activeTab = ref('profile')
+
+// Check URL query params to auto-open notifications tab
+onMounted(() => {
+  if (route.query.notifications === 'true') {
+    activeTab.value = 'notifications'
+    console.log('[Perfil] Auto-opening notifications tab from URL param')
+  }
+})
+
+// Watch for route changes to handle navigation with query params
+watch(() => route.query.notifications, (newVal) => {
+  if (newVal === 'true') {
+    activeTab.value = 'notifications'
+    console.log('[Perfil] Switching to notifications tab from route change')
+  }
+})
 
 // Profile editing
 const isEditing = ref(false)

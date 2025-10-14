@@ -81,7 +81,7 @@ const routes = [
     meta: { title: 'Mis Reservas', requiresAuth: true }
   },
   {
-    path: '/reservas',
+    path: '/mis-reservas',
     name: 'Reservas',
     component: MisReservas,
     meta: { title: 'Reservas', requiresAuth: true }

@@ -284,9 +284,9 @@ const isStaff = computed(() => {
   return authStore.user?.is_staff
 })
 
-// Determine if this is the staff view (accessed via /reservas)
+// Determine if this is the staff view (accessed via /mis-reservas)
 const isStaffView = computed(() => {
-  return route.path === '/reservas'
+  return route.path === '/mis-reservas'
 })
 
 // Filtered reservations

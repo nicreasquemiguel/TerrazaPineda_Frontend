@@ -114,7 +114,7 @@
               to="/mis-reservas"
               class="btn-primary"
             >
-              Mis Reservas
+              Reservas
             </router-link>
             <!-- User avatar and popover for desktop -->
             <div class="relative" @mouseenter="cancelCloseDesktop; openUserMenuDesktop" @mouseleave="closeUserMenuDesktop">
@@ -123,8 +123,10 @@
                   {{ authStore.user.first_name.charAt(0).toUpperCase() + authStore.user.last_name.charAt(0).toUpperCase() }}
                 </span>
                 <span v-else class="text-base font-bold text-white"><i class="fa-regular fa-user"></i></span>
-                <!-- Red dot for unread notifications -->
-                <span v-if="unreadCount > 0" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                <!-- Notification count badge -->
+                <span v-if="unreadCount > 0" class="flex absolute -top-1 -right-1 justify-center items-center px-1 h-5 text-xs font-bold text-white bg-red-500 rounded-full border-2 border-white min-w-5">
+                  {{ unreadCount > 99 ? '99+' : unreadCount }}
+                </span>
               </button>
               
               <!-- User Dropdown Menu -->
@@ -133,60 +135,90 @@
                 ref="userMenuRef"
                 @mouseenter="cancelCloseDesktop"
                 @mouseleave="closeUserMenuDesktop"
-                class="absolute right-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                class="absolute right-0 z-50 mt-1 w-64 bg-white rounded-lg border border-gray-200 shadow-lg"
               >
                 <div class="p-4 border-b border-gray-200">
-                  <div class="flex items-center space-x-3">
-                    <div class="relative">
-                      <div v-if="user && user.profile && user.profile.image" class="w-10 h-10 rounded-full overflow-hidden">
-                        <img 
-                          :src="user.profile.image" 
-                          :alt="`${userName} Profile`" 
-                          class="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div v-else class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-                        <span class="text-white font-bold text-sm">{{ userInitials }}</span>
-                      </div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <div class="text-sm font-medium text-gray-900 truncate">{{ userName }}</div>
-                      <div class="text-xs text-gray-500 truncate">{{ user && user.email ? user.email : '' }}</div>
-                    </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-gray-900 truncate">{{ userName }}</div>
+                    <div class="text-xs text-gray-500 truncate">{{ user && user.email ? user.email : '' }}</div>
                   </div>
                 </div>
                 
                 <div class="py-2">
                   <router-link
-                    to="/mis-reservas"
-                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    to="/perfil"
+                    class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
                   >
-                    <i class="mr-3 fa-solid fa-calendar-check text-gray-400"></i>
-                    Mis Reservas
+                    <i class="mr-3 text-gray-400 fa-solid fa-user"></i>
+                    Perfil
+                  </router-link>
+                  
+                  <router-link
+                    to="/mis-reservas"
+                    class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
+                  >
+                    <i class="mr-3 text-gray-400 fa-solid fa-calendar-check"></i>
+                    Reservas
                   </router-link>
                   
                   <router-link
                     v-if="authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')"
                     to="/dashboard"
-                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
                   >
-                    <i class="mr-3 fa-solid fa-tachometer-alt text-gray-400"></i>
+                    <i class="mr-3 text-gray-400 fa-solid fa-tachometer-alt"></i>
                     Dashboard
                   </router-link>
                   
+                  <!-- Notifications Section -->
+                  <div class="px-4 py-2">
+                    <div class="flex justify-between items-center mb-2">
+                      <span class="text-xs font-semibold text-gray-500 uppercase">Notificaciones</span>
+                      <span v-if="unreadCount > 0" class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-red-500 rounded-full">
+                        {{ unreadCount }}
+                      </span>
+                    </div>
+                    
+                    <!-- Last 5 Notifications -->
+                    <div v-if="lastFiveNotifications.length > 0" class="overflow-y-auto space-y-1 max-h-64">
+                      <div
+                        v-for="notification in lastFiveNotifications"
+                        :key="notification.id"
+                        @click="router.push('/perfil?notifications=true')"
+                        class="p-2 rounded-md transition-colors cursor-pointer"
+                        :class="notification.read ? 'bg-gray-50 hover:bg-gray-100' : 'bg-blue-50 hover:bg-blue-100'"
+                      >
+                        <div class="flex items-start space-x-2">
+                          <i class="mt-0.5 text-sm fa-solid fa-bell" :class="notification.read ? 'text-gray-400' : 'text-blue-500'"></i>
+                          <div class="flex-1 min-w-0">
+                            <p class="text-xs font-medium text-gray-900 line-clamp-2">{{ notification.message }}</p>
+                            <p class="mt-0.5 text-xs text-gray-400">{{ formatNotificationDate(notification.created_at) }}</p>
+                          </div>
+                          <div v-if="!notification.read" class="flex-shrink-0 mt-1 w-2 h-2 bg-blue-500 rounded-full"></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- No notifications message -->
+                    <div v-else class="py-3 text-center">
+                      <i class="text-2xl text-gray-300 fa-solid fa-bell-slash"></i>
+                      <p class="mt-1 text-xs text-gray-400">Sin notificaciones</p>
+                    </div>
+                    
+                    <!-- View all link -->
                   <button
-                    class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      @click="router.push('/perfil?notifications=true')"
+                      class="px-3 py-1.5 mt-2 w-full text-xs font-medium text-blue-600 bg-blue-50 rounded-md transition-colors hover:bg-blue-100"
                   >
-                    <i class="mr-3 fa-solid fa-bell text-gray-400"></i>
-                    Notificaciones
-                    <span v-if="unreadCount > 0" class="ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
+                      Ver todas →
                   </button>
+                  </div>
                   
-                  <div class="border-t border-gray-200 my-1"></div>
+                  <div class="my-1 border-t border-gray-200"></div>
                   
                   <button
                     @click="handleLogout"
-                    class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    class="flex items-center px-4 py-2 w-full text-sm text-red-600 transition-colors hover:bg-red-50"
                   >
                     <i class="mr-3 fa-solid fa-sign-out-alt"></i>
                     Cerrar Sesión
@@ -224,8 +256,10 @@
                   {{ authStore.user.first_name.charAt(0).toUpperCase() + authStore.user.last_name.charAt(0).toUpperCase() }}
                 </span>
                 <span v-else class="text-base font-bold text-white"><i class="fa-regular fa-user"></i></span>
-                <!-- Red dot for unread notifications -->
-                <span v-if="unreadCount > 0" class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+                <!-- Notification count badge -->
+                <span v-if="unreadCount > 0" class="flex absolute -top-1 -right-1 justify-center items-center px-1 h-5 text-xs font-bold text-white bg-red-500 rounded-full border-2 border-white min-w-5">
+                  {{ unreadCount > 99 ? '99+' : unreadCount }}
+                </span>
               </button>
               
               <!-- Mobile User Dropdown Menu -->
@@ -234,26 +268,12 @@
                 ref="userMenuMobileRef"
                 @mouseenter="cancelCloseMobile"
                 @mouseleave="closeUserMenuMobile"
-                class="absolute right-0 mt-1 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50"
+                class="absolute right-0 z-50 mt-1 w-64 bg-white rounded-lg border border-gray-200 shadow-lg"
               >
                 <div class="p-4 border-b border-gray-200">
-                  <div class="flex items-center space-x-3">
-                    <div class="relative">
-                      <div v-if="user && user.profile && user.profile.image" class="w-10 h-10 rounded-full overflow-hidden">
-                        <img 
-                          :src="user.profile.image" 
-                          :alt="`${userName} Profile`" 
-                          class="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div v-else class="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-                        <span class="text-white font-bold text-sm">{{ userInitials }}</span>
-                      </div>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                      <div class="text-sm font-medium text-gray-900 truncate">{{ userName }}</div>
-                      <div class="text-xs text-gray-500 truncate">{{ user && user.email ? user.email : '' }}</div>
-                    </div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-gray-900 truncate">{{ userName }}</div>
+                    <div class="text-xs text-gray-500 truncate">{{ user && user.email ? user.email : '' }}</div>
                   </div>
                 </div>
                 
@@ -261,9 +281,9 @@
                   <router-link
                     to="/mis-reservas"
                     @click="closeUserMenuMobile"
-                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
                   >
-                    <i class="mr-3 fa-solid fa-calendar-check text-gray-400"></i>
+                    <i class="mr-3 text-gray-400 fa-solid fa-calendar-check"></i>
                     Mis Reservas
                   </router-link>
                   
@@ -271,25 +291,61 @@
                     v-if="authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')"
                     to="/dashboard"
                     @click="closeUserMenuMobile"
-                    class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
                   >
-                    <i class="mr-3 fa-solid fa-tachometer-alt text-gray-400"></i>
+                    <i class="mr-3 text-gray-400 fa-solid fa-tachometer-alt"></i>
                     Dashboard
                   </router-link>
                   
+                  <!-- Notifications Section -->
+                  <div class="px-4 py-2">
+                    <div class="flex justify-between items-center mb-2">
+                      <span class="text-xs font-semibold text-gray-500 uppercase">Notificaciones</span>
+                      <span v-if="unreadCount > 0" class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-red-500 rounded-full">
+                        {{ unreadCount }}
+                      </span>
+                    </div>
+                    
+                    <!-- Last 5 Notifications -->
+                    <div v-if="lastFiveNotifications.length > 0" class="overflow-y-auto space-y-1 max-h-64">
+                      <div
+                        v-for="notification in lastFiveNotifications"
+                        :key="notification.id"
+                        @click="router.push('/perfil?notifications=true'); closeUserMenuMobile()"
+                        class="p-2 rounded-md transition-colors cursor-pointer"
+                        :class="notification.read ? 'bg-gray-50 hover:bg-gray-100' : 'bg-blue-50 hover:bg-blue-100'"
+                      >
+                        <div class="flex items-start space-x-2">
+                          <i class="mt-0.5 text-sm fa-solid fa-bell" :class="notification.read ? 'text-gray-400' : 'text-blue-500'"></i>
+                          <div class="flex-1 min-w-0">
+                            <p class="text-xs font-medium text-gray-900 line-clamp-2">{{ notification.message }}</p>
+                            <p class="mt-0.5 text-xs text-gray-400">{{ formatNotificationDate(notification.created_at) }}</p>
+                          </div>
+                          <div v-if="!notification.read" class="flex-shrink-0 mt-1 w-2 h-2 bg-blue-500 rounded-full"></div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <!-- No notifications message -->
+                    <div v-else class="py-3 text-center">
+                      <i class="text-2xl text-gray-300 fa-solid fa-bell-slash"></i>
+                      <p class="mt-1 text-xs text-gray-400">Sin notificaciones</p>
+                    </div>
+                    
+                    <!-- View all link -->
                   <button
-                    class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                      @click="router.push('/perfil?notifications=true'); closeUserMenuMobile()"
+                      class="px-3 py-1.5 mt-2 w-full text-xs font-medium text-blue-600 bg-blue-50 rounded-md transition-colors hover:bg-blue-100"
                   >
-                    <i class="mr-3 fa-solid fa-bell text-gray-400"></i>
-                    Notificaciones
-                    <span v-if="unreadCount > 0" class="ml-auto w-2 h-2 bg-red-500 rounded-full"></span>
+                      Ver todas →
                   </button>
+                  </div>
                   
-                  <div class="border-t border-gray-200 my-1"></div>
+                  <div class="my-1 border-t border-gray-200"></div>
                   
                   <button
                     @click="handleLogout; closeUserMenuMobile()"
-                    class="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    class="flex items-center px-4 py-2 w-full text-sm text-red-600 transition-colors hover:bg-red-50"
                   >
                     <i class="mr-3 fa-solid fa-sign-out-alt"></i>
                     Cerrar Sesión
@@ -332,7 +388,7 @@
               {{ item.name }}
             </router-link>
             <template v-if="authStore.isAuthenticated">
-              <router-link v-if="!(authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin'))" to="/mis-reservas" class="block px-3 py-2 text-base font-medium text-white rounded-md border-b-2 hover:text-green-400 hover:border-green-400" @click="closeMobileMenu">Mis Reservas</router-link>
+              <router-link v-if="!(authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin'))" to="/mis-reservas" class="block px-3 py-2 text-base font-medium text-white rounded-md border-b-2 hover:text-green-400 hover:border-green-400" @click="closeMobileMenu">Reservas</router-link>
               <router-link v-if="authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')" to="/dashboard" class="block px-3 py-2 text-base font-medium text-white rounded-md border-b-2 hover:text-green-400 hover:border-green-400" @click="closeMobileMenu">Dashboard</router-link>
               <button @click="handleLogout" class="block px-3 py-2 w-full text-base font-medium text-left text-white rounded-md border-b-2 hover:text-green-400 hover:border-green-400">Logout</button>
             </template>
@@ -396,25 +452,25 @@
         <div class="flex items-center space-x-3">
           <div class="relative">
             <!-- User Image or Initials Circle -->
-            <div v-if="false" class="w-12 h-12 rounded-full overflow-hidden">
+            <div v-if="false" class="overflow-hidden w-12 h-12 rounded-full">
               <img 
                 :src="user.profile.image" 
                 :alt="`${userName} Profile`" 
-                class="w-full h-full object-cover"
+                class="object-cover w-full h-full"
               />
             </div>
-            <div v-else class="w-12 h-12 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 flex items-center justify-center">
-              <span class="text-white font-bold text-lg">{{ userInitials }}</span>
+            <div v-else class="flex justify-center items-center w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full">
+              <span class="text-lg font-bold text-white">{{ userInitials }}</span>
   </div>
             <!-- Notification indicator -->
-            <div v-if="unreadCount > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full flex items-center justify-center">
-              <span class="text-xs text-white font-bold">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+            <div v-if="unreadCount > 0" class="flex absolute -top-1 -right-1 justify-center items-center w-4 h-4 bg-red-500 rounded-full">
+              <span class="text-xs font-bold text-white">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
     </div>
   </div>
           <div class="flex-1">
             <router-link 
               to="/perfil" 
-              class="text-lg font-bold text-white hover:text-blue-400 transition-colors cursor-pointer block"
+              class="block text-lg font-bold text-white transition-colors cursor-pointer hover:text-blue-400"
             >
               {{ userName }}
             </router-link>
@@ -425,14 +481,20 @@
           </div>
           <div class="flex flex-col space-y-2">
             <!-- Notification icon -->
-            <button class="relative p-2 text-gray-400 hover:text-white transition-colors">
+            <button 
+              @click="router.push('/perfil?notifications=true'); closeMobileSidebar()"
+              class="relative p-2 text-gray-400 transition-colors hover:text-white"
+              title="Ver Notificaciones"
+            >
               <i class="text-lg fa-solid fa-bell"></i>
-              <div v-if="unreadCount > 0" class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+              <span v-if="unreadCount > 0" class="flex absolute -top-1 -right-1 justify-center items-center px-1 h-4 text-xs font-bold text-white bg-red-500 rounded-full min-w-4">
+                {{ unreadCount > 9 ? '9+' : unreadCount }}
+              </span>
             </button>
             <!-- Logout button -->
             <button 
               @click="handleLogout"
-              class="p-2 text-gray-400 hover:text-red-400 transition-colors"
+              class="p-2 text-gray-400 transition-colors hover:text-red-400"
               title="Cerrar Sesión"
             >
               <i class="text-lg fa-solid fa-sign-out-alt"></i>
@@ -457,7 +519,7 @@
           
           <!-- Authenticated Navigation Items -->
           <template v-if="authStore.isAuthenticated">
-            <div class="border-t border-gray-700 my-2"></div>
+            <div class="my-2 border-t border-gray-700"></div>
             <div 
               v-for="item in filteredAuthenticatedItems" 
               :key="item.name"
@@ -530,6 +592,51 @@ const user = ref(null)
 
 // Notifications state
 const unreadCount = ref(0)
+const notifications = ref([])
+const lastFiveNotifications = computed(() => {
+  return notifications.value.slice(0, 5)
+})
+
+// Fetch notifications
+const fetchNotifications = async () => {
+  if (!authStore.isAuthenticated) return
+  
+  try {
+    const response = await fetch('/api/bookings/notifications/', {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
+        'Content-Type': 'application/json',
+      }
+    })
+    
+    if (response.ok) {
+      const data = await response.json()
+      // Handle both array and paginated response
+      const notificationsList = Array.isArray(data) ? data : (data.results || [])
+      notifications.value = notificationsList
+      unreadCount.value = notificationsList.filter(n => !n.read).length
+      console.log('[Navbar] Notifications loaded:', notificationsList.length, 'Unread:', unreadCount.value)
+    }
+  } catch (error) {
+    console.error('[Navbar] Error fetching notifications:', error)
+  }
+}
+
+// Format notification date
+const formatNotificationDate = (dateString) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffInHours = (now - date) / (1000 * 60 * 60)
+  
+  if (diffInHours < 1) {
+    return 'Hace unos minutos'
+  } else if (diffInHours < 24) {
+    return `Hace ${Math.floor(diffInHours)} horas`
+  } else {
+    const diffInDays = Math.floor(diffInHours / 24)
+    return `Hace ${diffInDays} día${diffInDays > 1 ? 's' : ''}`
+  }
+}
 
 // Navigation items
 const navigationItems = [
@@ -553,7 +660,7 @@ const publicNavigationItems = [
 // Authenticated navigation items (only for logged in users)
 const authenticatedNavigationItems = [
   { name: 'Reservar', path: '/reservar' },
-  { name: 'Mis Reservas', path: '/mis-reservas' },
+  { name: 'Reservas', path: '/mis-reservas' },
   { name: 'Dashboard', path: '/dashboard', condition: 'staff' },
 ]
 
@@ -571,6 +678,21 @@ onMounted(async () => {
         console.error('Error parsing user from localStorage:', error)
       }
     }
+  }
+  
+  // Fetch notifications if authenticated
+  if (authStore.isAuthenticated) {
+    await fetchNotifications()
+  }
+})
+
+// Watch auth state to fetch notifications when user logs in
+watch(() => authStore.isAuthenticated, (isAuth) => {
+  if (isAuth) {
+    fetchNotifications()
+  } else {
+    notifications.value = []
+    unreadCount.value = 0
   }
 })
 
@@ -714,6 +836,7 @@ const getNavigationIcon = (name) => {
     'Reglamento': 'fa-solid fa-file-contract',
     'Preguntas': 'fa-solid fa-question-circle',
     'Mis Reservas': 'fa-solid fa-calendar-check',
+    'Reservas': 'fa-solid fa-calendar-check',
     'Dashboard': 'fa-solid fa-tachometer-alt'
   }
   return iconMap[name] || 'fa-solid fa-link'

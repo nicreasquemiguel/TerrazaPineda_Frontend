@@ -221,6 +221,21 @@ import { useToast } from 'vue-toastification'
 const date = ref(null);
 const splitTextKey = ref(0);
 const selectedPackage = ref(null);
+
+// Watch date changes to update splitTextKey for SplitText animation
+watch(date, (newDate, oldDate) => {
+  const formatDateStr = (d) => {
+    if (!d) return null;
+    const dateObj = d instanceof Date ? d : new Date(d);
+    return dateObj.toDateString();
+  }
+  
+  console.log('[Reserve] Date changed:', {
+    old: formatDateStr(oldDate),
+    new: formatDateStr(newDate)
+  })
+  splitTextKey.value++;
+})
 const selectedExtras = ref([]);
 const extrasOptions = [
   { label: 'DJ', value: 'dj' },

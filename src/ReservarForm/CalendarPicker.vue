@@ -2,14 +2,13 @@
   <div>
     <v-date-picker
       class="my-calendar"
-      v-model="selectedDate"
+      v-model="internalDate"
       :min-date="minDate"
       :max-date="maxDate"
       :attributes="calendarAttributes"
       :disabled-dates="disabledDates"
       is-inline
       locale="es"
-      @update:model-value="onDateChange"
     />
   </div>
 </template>
@@ -26,22 +25,20 @@ const emit = defineEmits(['update:modelValue'])
 
 function toDate(val) {
   if (!val) return null;
-  if (val instanceof Date) return val;
+  if (val instanceof Date) {
+    const d = new Date(val);
+    d.setHours(0, 0, 0, 0); // Normalize to midnight
+    return d;
+  }
   // If it's a string, try to parse as date
   const d = new Date(val);
-  return isNaN(d) ? null : d;
+  if (isNaN(d)) return null;
+  d.setHours(0, 0, 0, 0); // Normalize to midnight
+  return d;
 }
-const selectedDate = ref(toDate(props.modelValue))
 
-// Keep selectedDate in sync with v-model
-watch(() => props.modelValue, (val) => {
-  const d = toDate(val);
-  // Always sync from parent, even if it's the same
-  selectedDate.value = d;
-})
-watch(selectedDate, (val) => {
-  emit('update:modelValue', val)
-})
+// Internal date for v-calendar
+const internalDate = ref(toDate(props.modelValue))
 
 const occupiedDates = ref([])
 const minDate = new Date()
@@ -75,8 +72,10 @@ const fetchOccupiedEvents = async () => {
     // Store the full data for popover display
     occupiedDates.value = bookedDates.map(item => {
       const [year, month, day] = item.date.split('-').map(Number)
+      const date = new Date(year, month - 1, day) // month is 0-indexed
+      date.setHours(0, 0, 0, 0) // Normalize to midnight
       return {
-        date: new Date(year, month - 1, day), // month is 0-indexed
+        date: date,
         user_initials: item.user_initials
       }
     })
@@ -125,25 +124,66 @@ const getUserInitials = (date) => {
   return initials ? `Ocupado por ${initials}` : 'Ocupado'
 }
 
-const onDateChange = (val) => {
-  const newDate = toDate(val)
-  if (!newDate) {
-    selectedDate.value = null
+// Watch internal date changes from v-calendar (AFTER occupiedDatesMap is defined)
+watch(internalDate, (newVal, oldVal) => {
+  console.log('[Calendar] internalDate changed:', {
+    newVal: newVal ? newVal.toDateString() : null,
+    oldVal: oldVal ? oldVal.toDateString() : null
+  })
+  
+  if (!newVal) {
+    console.log('[Calendar] Emitting null')
+    emit('update:modelValue', null)
     return
   }
   
-  // Check if the date is occupied/reserved
-  const dateString = newDate.toDateString()
+  // Normalize the date to midnight for comparison
+  const normalized = new Date(newVal);
+  normalized.setHours(0, 0, 0, 0);
+  
+  // Check if the selected date is reserved
+  const dateString = normalized.toDateString()
   if (occupiedDatesMap.value.has(dateString)) {
-    // Don't update if trying to select a reserved date
-    console.log('[Calendar] Cannot select reserved date:', dateString)
-    // Don't change the selection - calendar will revert to previous state
+    console.log('[Calendar] ❌ Blocked reserved date selection:', dateString)
+    // Don't emit, calendar will stay on previous selection
     return
   }
   
-  // Always update to the new valid date
-  selectedDate.value = newDate
-}
+  // Check if value actually changed to prevent loops
+  const oldNormalized = oldVal ? toDate(oldVal) : null;
+  if (oldNormalized && oldNormalized.getTime() === normalized.getTime()) {
+    console.log('[Calendar] ⏭️  Same date, skipping emit:', dateString);
+    return; // Same date, don't emit
+  }
+  
+  // Emit the new valid date
+  console.log('[Calendar] ✅ Emitting new date:', dateString)
+  emit('update:modelValue', normalized)
+})
+
+// Sync from parent (when programmatically changed)
+watch(() => props.modelValue, (val) => {
+  const d = toDate(val);
+  const current = internalDate.value;
+  
+  console.log('[Calendar] Parent modelValue changed:', {
+    newValue: d ? d.toDateString() : null,
+    currentInternal: current ? current.toDateString() : null
+  })
+  
+  // Only update if actually different to prevent loops
+  if (!d && !current) {
+    console.log('[Calendar] Both null, skipping')
+    return;
+  }
+  if (d && current && d.getTime() === current.getTime()) {
+    console.log('[Calendar] Same timestamp, skipping sync')
+    return;
+  }
+  
+  console.log('[Calendar] Updating internalDate from parent')
+  internalDate.value = d;
+})
 
 onMounted(fetchOccupiedEvents)
 </script>
@@ -158,7 +198,7 @@ onMounted(fetchOccupiedEvents)
 }
 
 /* Reserved/Occupied dates - RED color */
-:deep(.my-calendar .vc-day.vc-highlight[data-highlight-key="occupied"]) {
+:deep(.my-calendar .vc-day.vc-highlight[data-highlight-key^="occupied"]) {
   background: #fecaca !important; /* Light red background */
   color: #991b1b !important; /* Dark red text */
   font-weight: 700 !important;
@@ -168,7 +208,7 @@ onMounted(fetchOccupiedEvents)
 }
 
 /* Hover state for reserved dates - keep red */
-:deep(.my-calendar .vc-day.vc-highlight[data-highlight-key="occupied"]:hover) {
+:deep(.my-calendar .vc-day.vc-highlight[data-highlight-key^="occupied"]:hover) {
   background: #fca5a5 !important; /* Slightly darker red on hover */
   color: #7f1d1d !important;
   cursor: not-allowed !important;
@@ -184,7 +224,7 @@ onMounted(fetchOccupiedEvents)
 }
 
 /* If somehow a reserved date gets selected (shouldn't happen), keep it red */
-:deep(.my-calendar .vc-day.vc-highlight[data-highlight-key="occupied"].vc-selected) {
+:deep(.my-calendar .vc-day.vc-highlight[data-highlight-key^="occupied"].vc-selected) {
   background: #dc2626 !important; /* Solid red */
   color: #fff !important;
   opacity: 1 !important;
@@ -193,7 +233,7 @@ onMounted(fetchOccupiedEvents)
 }
 
 /* Additional styling for disabled reserved dates */
-:deep(.my-calendar .vc-day.vc-disabled.vc-highlight[data-highlight-key="occupied"]) {
+:deep(.my-calendar .vc-day.vc-disabled.vc-highlight[data-highlight-key^="occupied"]) {
   background: #fca5a5 !important;
   color: #7f1d1d !important;
   cursor: not-allowed !important;

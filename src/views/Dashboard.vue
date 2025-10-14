@@ -1,52 +1,74 @@
 <template>
   <div class="min-h-screen bg-white">
+    <!-- Navbar for all screen sizes -->
+    <Navbar />
+    
     <!-- Desktop Layout (md and larger) -->
-    <div class="hidden md:flex min-h-screen">
-      <div class="w-80 min-h-screen bg-black flex-shrink-0">
-        <!-- Branding -->
-        <div class="p-6 border-b border-gray-700">
-          <div class="flex items-center space-x-2">
-            <div class="flex justify-center items-center w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
-              <i class="text-sm text-white fa-solid fa-paperclip"></i>
-            </div>
-            <span class="text-xl font-bold text-white">RomBok</span>
-          </div>
-        </div>
-
+    <div class="hidden pt-16 min-h-screen md:flex">
+      <!-- Desktop Sidebar - Same style as Navbar mobile sidebar -->
+      <div class="overflow-hidden flex-shrink-0 w-80 h-screen bg-black border-r border-gray-800">
         <!-- Sidebar Content -->
         <div class="flex flex-col h-full">
         <!-- User Profile -->
           <div class="p-6 border-b border-gray-700">
             <div class="flex items-center space-x-3">
-              <img 
-                :src="`https://ui-avatars.com/api/?name=${userInitials}&background=6366f1&color=fff`" 
-                :alt="`${userName} Profile`" 
-                class="w-12 h-12 rounded-full"
-              />
-              <div>
-                <div class="text-lg font-bold text-white">{{ userName }}</div>
-                <div class="text-sm text-gray-400">{{ userRole }}</div>
+              <div class="relative">
+                <div class="flex justify-center items-center w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full">
+                  <span class="text-lg font-bold text-white">{{ userInitials }}</span>
               </div>
+                <div v-if="unreadCount > 0" class="flex absolute -top-1 -right-1 justify-center items-center w-4 h-4 bg-red-500 rounded-full">
+                  <span class="text-xs font-bold text-white">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
             </div>
           </div>
-          
-          <!-- Quick Actions -->
-          <div class="p-4 border-b border-gray-700">
-            <div class="flex space-x-2">
-              <!-- Notification Button -->
-              <button class="relative flex-1 px-4 py-3 text-gray-300 rounded-lg transition-colors hover:bg-gray-800 hover:text-white">
-                <i class="mr-2 fa-solid fa-bell"></i>
-                <span>Notificaciones</span>
-                <div class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></div>
+              <div class="flex-1">
+                <router-link 
+                  to="/perfil" 
+                  class="block text-lg font-bold text-white transition-colors cursor-pointer hover:text-blue-400"
+                >
+                  {{ userName }}
+                </router-link>
+                <div class="text-sm text-gray-400">{{ userRole }}</div>
+              </div>
+              <div class="flex flex-col space-y-2">
+                <!-- Notification icon -->
+                <button 
+                  @click="router.push('/perfil?notifications=true')"
+                  class="relative p-2 text-gray-400 transition-colors hover:text-white"
+                  title="Ver Notificaciones"
+                >
+                  <i class="text-lg fa-solid fa-bell"></i>
+                  <div v-if="unreadCount > 0" class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                </button>
+                <!-- Logout button -->
+                <button 
+                  @click="handleLogout"
+                  class="p-2 text-gray-400 transition-colors hover:text-red-400"
+                  title="Cerrar Sesión"
+                >
+                  <i class="text-lg fa-solid fa-sign-out-alt"></i>
               </button>
+              </div>
             </div>
           </div>
           
           <!-- Navigation Menu -->
           <div class="overflow-y-auto flex-1">
             <nav class="p-4 space-y-2">
+              <!-- Public Navigation Items -->
               <div 
-                v-for="item in navigationItems" 
+                v-for="item in publicNavigationItems" 
+                :key="item.name"
+                @click="goToPage(item.path)"
+                class="flex items-center px-4 py-3 text-gray-300 rounded-lg transition-colors cursor-pointer hover:bg-gray-800 hover:text-white"
+              >
+                <i :class="getNavigationIcon(item.name) + ' mr-3 text-lg'"></i>
+                <span class="text-base">{{ item.name }}</span>
+          </div>
+          
+              <!-- Authenticated Navigation Items -->
+              <div class="my-2 border-t border-gray-700"></div>
+              <div 
+                v-for="item in filteredAuthenticatedItems" 
                 :key="item.name"
                 @click="goToPage(item.path)"
                 class="flex items-center px-4 py-3 text-gray-300 rounded-lg transition-colors cursor-pointer hover:bg-gray-800 hover:text-white"
@@ -55,17 +77,6 @@
                 <span class="text-base">{{ item.name }}</span>
               </div>
             </nav>
-          </div>
-          
-          <!-- Sidebar Footer -->
-          <div class="p-6 border-t border-gray-700">
-            <button 
-              @click="handleLogout"
-              class="flex justify-center items-center px-4 py-3 w-full text-white bg-red-600 rounded-lg transition-colors hover:bg-red-700"
-            >
-              <i class="mr-3 text-lg fa-solid fa-sign-out-alt"></i>
-              <span class="text-base font-medium">Cerrar Sesión</span>
-            </button>
           </div>
         </div>
       </div>
@@ -309,116 +320,8 @@
     </div>
 
     <!-- Mobile Layout (sm and smaller) -->
-    <div class="md:hidden min-h-screen bg-white">
-      <!-- Mobile Sidebar Overlay -->
-      <div 
-        v-if="showMobileSidebar" 
-        class="fixed inset-0 z-40 bg-black bg-opacity-50"
-        @click="closeMobileSidebar"
-      ></div>
-      
-      <!-- Mobile Sidebar -->
-      <div 
-        class="fixed top-0 left-0 z-50 w-80 h-full bg-black transition-transform duration-300 ease-in-out transform"
-        :class="showMobileSidebar ? 'translate-x-0' : '-translate-x-full'"
-      >
-        <!-- Sidebar Header -->
-        <div class="flex justify-between items-center p-6 border-b border-gray-700">
-          <div class="flex items-center space-x-3">
-            <div class="flex justify-center items-center w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg">
-              <i class="text-sm text-white fa-solid fa-paperclip"></i>
-            </div>
-            <span class="text-xl font-bold text-white">RomBok</span>
-          </div>
-          <button 
-            @click="closeMobileSidebar"
-            class="text-gray-400 hover:text-white"
-          >
-            <i class="text-xl fa-solid fa-times"></i>
-          </button>
-        </div>
-        
-        <!-- Sidebar Content -->
-        <div class="flex flex-col h-full overflow-y-auto">
-          <!-- User Profile -->
-          <div class="p-6 border-b border-gray-700 flex-shrink-0">
-            <div class="flex items-center space-x-3">
-              <img 
-                :src="`https://ui-avatars.com/api/?name=${userInitials}&background=6366f1&color=fff`" 
-                :alt="`${userName} Profile`" 
-                class="w-12 h-12 rounded-full"
-              />
-              <div>
-                <div class="text-lg font-bold text-white">{{ userName }}</div>
-                <div class="text-sm text-gray-400">{{ userRole }}</div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Quick Actions -->
-          <div class="p-4 border-b border-gray-700 flex-shrink-0">
-            <div class="flex space-x-2">
-              <!-- Notification Button -->
-              <button class="relative flex-1 px-4 py-3 text-gray-300 rounded-lg transition-colors hover:bg-gray-800 hover:text-white">
-                <i class="mr-2 fa-solid fa-bell"></i>
-                <span>Notificaciones</span>
-                <div class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></div>
-              </button>
-            </div>
-          </div>
-          
-          <!-- Navigation Menu -->
-          <div class="flex-1 p-4">
-            <nav class="space-y-2">
-              <div 
-                v-for="item in navigationItems" 
-                :key="item.name"
-                @click="goToPage(item.path); closeMobileSidebar()"
-                class="flex items-center px-4 py-3 text-gray-300 rounded-lg transition-colors cursor-pointer hover:bg-gray-800 hover:text-white"
-              >
-                <i :class="getNavigationIcon(item.name) + ' mr-3 text-lg'"></i>
-                <span class="text-base">{{ item.name }}</span>
-              </div>
-            </nav>
-          </div>
-          
-          <!-- Sidebar Footer -->
-          <div class="p-6 border-t border-gray-700 flex-shrink-0">
-            <button 
-              @click="handleLogout"
-              class="flex justify-center items-center px-4 py-3 w-full text-white bg-red-600 rounded-lg transition-colors hover:bg-red-700"
-            >
-              <i class="mr-3 text-lg fa-solid fa-sign-out-alt"></i>
-              <span class="text-base font-medium">Cerrar Sesión</span>
-            </button>
-          </div>
-        </div>
-      </div>
-      
-      <!-- Top Profile Section -->
-      <div class="px-3 pt-4 bg-white">
-        <div class="flex justify-between items-center mb-6">
-          <div class="flex items-center space-x-3">
-            <img 
-              :src="`https://ui-avatars.com/api/?name=${userInitials}&background=6366f1&color=fff`" 
-              :alt="`${userName} Profile`" 
-              class="w-12 h-12 rounded-full"
-            />
-            <div>
-              <div class="text-sm text-gray-500">Hola</div>
-              <div class="text-lg font-bold text-gray-800">{{ userName }}</div>
-            </div>
-          </div>
-          
-          <!-- Hamburger Menu Button -->
-          <button 
-            @click="openMobileSidebar"
-            class="p-2 text-gray-600 rounded-lg transition-colors hover:text-gray-800 hover:bg-gray-100"
-          >
-            <i class="text-xl fa-solid fa-bars"></i>
-            </button>
-          </div>
-        </div>
+    <div class="pt-16 min-h-screen bg-white md:hidden">
+      <!-- Mobile uses Navbar component (no custom sidebar) -->
       
         <!-- Mobile Week Calendar Section -->
         <div class="px-3 bg-white">
@@ -1147,6 +1050,8 @@ import { ref, onMounted, computed, onUnmounted, inject, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
+import Navbar from '@/components/Navbar.vue'
+import { Icon } from '@iconify/vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -1205,6 +1110,57 @@ const navigationItems = [
   { name: 'Reglamento', path: '/reglamento' },
   { name: 'Preguntas', path: '/preguntas-frecuentes' },
 ]
+
+// Public navigation items (same as Navbar)
+const publicNavigationItems = [
+  { name: 'Home', path: '/' },
+  { name: 'Precios', path: '/precios' },
+  { name: 'Fotos', path: '/fotos' },
+  { name: 'Reglamento', path: '/reglamento' },
+  { name: 'Preguntas', path: '/preguntas-frecuentes' },
+]
+
+// Authenticated navigation items
+const authenticatedNavigationItems = [
+  { name: 'Reservar', path: '/reservar' },
+  { name: 'Mis Reservas', path: '/mis-reservas' },
+  { name: 'Dashboard', path: '/dashboard', condition: 'staff' },
+]
+
+// Filtered authenticated items based on user role
+const filteredAuthenticatedItems = computed(() => {
+  if (!authStore.isAuthenticated) return []
+  
+  return authenticatedNavigationItems.filter(item => {
+    if (item.condition === 'staff') {
+      return authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')
+    }
+    return true
+  })
+})
+
+// Navigation icon mapping
+const getNavigationIcon = (name) => {
+  const iconMap = {
+    'Home': 'fa-solid fa-home',
+    'Precios': 'fa-solid fa-tags',
+    'Reservar': 'fa-solid fa-calendar-plus',
+    'Fotos': 'fa-solid fa-images',
+    'Reglamento': 'fa-solid fa-file-contract',
+    'Preguntas': 'fa-solid fa-question-circle',
+    'Mis Reservas': 'fa-solid fa-calendar-check',
+    'Dashboard': 'fa-solid fa-tachometer-alt'
+  }
+  return iconMap[name] || 'fa-solid fa-link'
+}
+
+// Navigation function
+const goToPage = (path) => {
+  router.push(path)
+}
+
+// Notification count
+const unreadCount = ref(0)
 
 // Fetch dashboard data
 const fetchDashboardData = async () => {
@@ -1476,26 +1432,9 @@ const statsCards = computed(() => {
   return baseCards
 })
 
-// Navigation functions
-const goToPage = (path) => {
-  router.push(path)
-}
-
+// handleLogout function
 const handleLogout = () => {
   authStore.logout(router)
-}
-
-// Helper function to get navigation icons
-const getNavigationIcon = (name) => {
-  const iconMap = {
-    'Home': 'fa-solid fa-home',
-    'Precios': 'fa-solid fa-tags',
-    'Reservar': 'fa-solid fa-calendar-plus',
-    'Fotos': 'fa-solid fa-images',
-    'Reglamento': 'fa-solid fa-file-contract',
-    'Preguntas': 'fa-solid fa-question-circle',
-  }
-  return iconMap[name] || 'fa-solid fa-link'
 }
 
 // Helper function to get status color
@@ -2302,8 +2241,8 @@ const getDayStatusClasses = (date) => {
 const navigateToBookingDetail = (bookingId) => {
   console.log('navigateToBookingDetail called with bookingId:', bookingId)
   if (bookingId) {
-    // If user is staff, navigate to /reservas, otherwise to /mis-reservas
-    const route = authStore.user?.is_staff ? '/reservas' : '/mis-reservas'
+    // If user is staff, navigate to /mis-reservas, otherwise to /mis-reservas
+    const route = authStore.user?.is_staff ? '/mis-reservas' : '/mis-reservas'
     console.log('Navigating to:', `/detalle-reserva/${bookingId}`)
     router.push(`/detalle-reserva/${bookingId}`)
   } else {

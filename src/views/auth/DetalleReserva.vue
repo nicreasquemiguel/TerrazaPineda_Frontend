@@ -400,7 +400,7 @@
       <nav class="mb-2 text-xs text-gray-500">
         <router-link to="/dashboard" class="hover:underline">Dashboard</router-link>
         <span class="mx-2">/</span>
-        <router-link :to="isStaff ? '/reservas' : '/mis-reservas'" class="hover:underline">
+        <router-link :to="isStaff ? '/mis-reservas' : '/mis-reservas'" class="hover:underline">
           {{ isStaff ? 'Reservas' : 'Mis Reservas' }}
         </router-link>
         <span class="mx-2">/</span>
