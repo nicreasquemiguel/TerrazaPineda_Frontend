@@ -714,6 +714,159 @@
           </div>
         </div>
 
+        <!-- Payment Methods Section (shown when status is aceptacion) -->
+        <div v-if="event && event.status === 'aceptacion'" class="mt-6">
+          <div class="p-6 bg-white rounded-2xl border border-gray-100 shadow-lg">
+            <div class="flex justify-between items-center mb-4">
+              <h2 class="text-lg font-bold text-primary-700">Métodos de Pago Disponibles</h2>
+              <div class="flex items-center space-x-2">
+                <i class="text-green-500 fa-solid fa-check-circle"></i>
+                <span class="text-sm font-semibold text-green-600">Reserva Aceptada</span>
+              </div>
+            </div>
+            
+            <div class="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div class="flex items-start space-x-3">
+                <i class="text-blue-500 fa-solid fa-info-circle mt-0.5"></i>
+                <div>
+                  <h3 class="font-semibold text-blue-800">¡Tu reserva ha sido aceptada!</h3>
+                  <p class="text-sm text-blue-700 mt-1">
+                    Ahora puedes proceder con el pago del apartado. Selecciona tu método de pago preferido:
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Payment Amount Summary -->
+            <div class="mb-6 p-4 bg-gray-50 rounded-lg">
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-gray-600">Total de la reserva:</span>
+                <span class="font-bold text-gray-900">${{ (parseFloat(event.total_price) || 0).toLocaleString() }}</span>
+              </div>
+              <div class="flex justify-between items-center mb-2">
+                <span class="text-sm font-medium text-gray-600">Ya pagado:</span>
+                <span class="font-bold text-green-600">${{ (parseFloat(event.advance_paid) || 0).toLocaleString() }}</span>
+              </div>
+              <div class="flex justify-between items-center pt-2 border-t">
+                <span class="text-sm font-semibold text-gray-700">Pendiente por pagar:</span>
+                <span class="font-bold text-red-600">${{ remainingAmount.toLocaleString() }}</span>
+              </div>
+            </div>
+
+            <!-- Payment Methods Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <!-- Stripe Payment -->
+              <div class="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all">
+                <div class="flex items-center space-x-3 mb-3">
+                  <div class="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-full">
+                    <i class="text-blue-600 fa-brands fa-stripe"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-gray-900">Pago con Tarjeta</h3>
+                    <p class="text-sm text-gray-500">Visa, Mastercard, American Express</p>
+                  </div>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">
+                  Pago seguro y rápido con tarjeta de crédito o débito. Procesado por Stripe.
+                </p>
+                <button 
+                  @click="showPaymentModal = true"
+                  class="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Pagar con Tarjeta
+                </button>
+              </div>
+
+              <!-- MercadoPago Payment -->
+              <div class="p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:shadow-md transition-all">
+                <div class="flex items-center space-x-3 mb-3">
+                  <div class="flex justify-center items-center w-10 h-10 bg-purple-100 rounded-full">
+                    <i class="text-purple-600 fa-brands fa-cc-mastercard"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-gray-900">MercadoPago</h3>
+                    <p class="text-sm text-gray-500">Tarjetas, efectivo, transferencia</p>
+                  </div>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">
+                  Paga con tu método preferido: tarjeta, efectivo en tiendas o transferencia bancaria.
+                </p>
+                <button 
+                  @click="pagarMercadoPago()"
+                  :disabled="isPaying || remainingAmount <= 0"
+                  class="w-full px-4 py-2 font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span v-if="isPaying" class="flex items-center justify-center space-x-2">
+                    <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
+                    <span>Procesando...</span>
+                  </span>
+                  <span v-else>Pagar con MercadoPago</span>
+                </button>
+              </div>
+
+              <!-- Bank Transfer -->
+              <div class="p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all">
+                <div class="flex items-center space-x-3 mb-3">
+                  <div class="flex justify-center items-center w-10 h-10 bg-green-100 rounded-full">
+                    <i class="text-green-600 fa-solid fa-money-bill-transfer"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-gray-900">Transferencia Bancaria</h3>
+                    <p class="text-sm text-gray-500">Depósito directo a cuenta</p>
+                  </div>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">
+                  Realiza una transferencia bancaria y sube tu comprobante de pago.
+                </p>
+                <button 
+                  @click="showTransferModal = true"
+                  class="w-full px-4 py-2 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Transferencia Bancaria
+                </button>
+              </div>
+
+              <!-- Cash Payment -->
+              <div class="p-4 border border-gray-200 rounded-lg hover:border-yellow-300 hover:shadow-md transition-all">
+                <div class="flex items-center space-x-3 mb-3">
+                  <div class="flex justify-center items-center w-10 h-10 bg-yellow-100 rounded-full">
+                    <i class="text-yellow-600 fa-solid fa-money-bill-wave"></i>
+                  </div>
+                  <div>
+                    <h3 class="font-semibold text-gray-900">Pago en Efectivo</h3>
+                    <p class="text-sm text-gray-500">Presencial en nuestras oficinas</p>
+                  </div>
+                </div>
+                <p class="text-sm text-gray-600 mb-4">
+                  Acude a nuestras oficinas para realizar el pago en efectivo.
+                </p>
+                <button 
+                  @click="contactForCashPayment()"
+                  class="w-full px-4 py-2 font-semibold text-white bg-yellow-600 rounded-lg hover:bg-yellow-700 transition-colors"
+                >
+                  Contactar para Pago en Efectivo
+                </button>
+              </div>
+            </div>
+
+            <!-- Payment Instructions -->
+            <div class="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+              <div class="flex items-start space-x-3">
+                <i class="text-yellow-600 fa-solid fa-lightbulb mt-0.5"></i>
+                <div>
+                  <h4 class="font-semibold text-yellow-800">Información Importante</h4>
+                  <ul class="text-sm text-yellow-700 mt-2 space-y-1">
+                    <li>• El apartado debe ser pagado dentro de las próximas 24 horas</li>
+                    <li>• Una vez confirmado el pago, tu reserva pasará al estado "Apartado"</li>
+                    <li>• Los pagos restantes pueden realizarse hasta 7 días antes del evento</li>
+                    <li>• Si tienes dudas, contacta a nuestro equipo de atención</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Review & Rating (shown after steps when finalizado) -->
         <div v-if="event && (event.status === 'finalizado' || event.status_display === 'Finalizado')" class="mt-4">
           <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-lg">
@@ -2208,6 +2361,12 @@ const rejectBooking = async () => {
   } finally {
     isSubmitting.value = false
   }
+}
+
+// Function to handle cash payment contact
+const contactForCashPayment = () => {
+  toast.info('Para pago en efectivo, contacta a nuestro equipo de atención al teléfono: +52 123-456-7890 o por WhatsApp')
+  // You can also open a modal with contact information or redirect to a contact page
 }
 
 
