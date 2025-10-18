@@ -602,21 +602,14 @@ const fetchNotifications = async () => {
   if (!authStore.isAuthenticated) return
   
   try {
-    const response = await fetch('/api/bookings/notifications/', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('accessToken')}`,
-        'Content-Type': 'application/json',
-      }
-    })
-    
-    if (response.ok) {
-      const data = await response.json()
-      // Handle both array and paginated response
-      const notificationsList = Array.isArray(data) ? data : (data.results || [])
-      notifications.value = notificationsList
-      unreadCount.value = notificationsList.filter(n => !n.read).length
-      console.log('[Navbar] Notifications loaded:', notificationsList.length, 'Unread:', unreadCount.value)
-    }
+    const { getNotifications } = await import('@/services/api')
+    const response = await getNotifications()
+    const data = response.data
+    // Handle both array and paginated response
+    const notificationsList = Array.isArray(data) ? data : (data.results || [])
+    notifications.value = notificationsList
+    unreadCount.value = notificationsList.filter(n => !n.read).length
+    console.log('[Navbar] Notifications loaded:', notificationsList.length, 'Unread:', unreadCount.value)
   } catch (error) {
     console.error('[Navbar] Error fetching notifications:', error)
   }

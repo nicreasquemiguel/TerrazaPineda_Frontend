@@ -84,6 +84,20 @@ const initAnimation = () => {
   const el = textRef.value
   if (!el || animationCompletedRef.value) return
 
+  // Wait for fonts to load before initializing SplitText
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(() => {
+      createSplitText(el)
+    })
+  } else {
+    // Fallback for browsers without font loading API
+    setTimeout(() => {
+      createSplitText(el)
+    }, 100)
+  }
+}
+
+const createSplitText = (el) => {
   const absoluteLines = props.splitType === 'lines'
   if (absoluteLines) el.style.position = 'relative'
 
