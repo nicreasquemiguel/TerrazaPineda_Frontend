@@ -1,8 +1,5 @@
 <template>
   <div class="min-h-screen bg-white">
-    <!-- Navbar for all screen sizes -->
-    <Navbar />
-    
     <!-- Desktop Layout (md and larger) -->
     <div class="hidden pt-16 min-h-screen md:flex">
       <!-- Desktop Sidebar - Same style as Navbar mobile sidebar -->
@@ -1050,7 +1047,6 @@ import { ref, onMounted, computed, onUnmounted, inject, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
-import Navbar from '@/components/Navbar.vue'
 import { Icon } from '@iconify/vue'
 
 const router = useRouter()

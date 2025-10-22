@@ -126,8 +126,8 @@
               step="0.01" 
               :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
               :max="remainingAmount"
-              :disabled="remainingAmount <= 0"
-              class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              :disabled="remainingAmount <= 0 || parseFloat(paymentAmount) >= remainingAmount"
+              class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="0.00"
             />
           </div>
@@ -136,6 +136,9 @@
           </div>
           <div v-if="remainingAmount <= 0" class="mt-2 text-xs font-bold text-green-600">
             ¡Reserva pagada por completo!
+          </div>
+          <div v-else-if="parseFloat(paymentAmount) >= remainingAmount" class="mt-2 text-xs font-bold text-blue-600">
+            ✓ Monto máximo alcanzado
           </div>
         </div>
 
@@ -226,7 +229,8 @@
               step="50" 
               :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
               :max="remainingAmount"
-              class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+              :disabled="remainingAmount <= 0 || parseFloat(transferAmount) >= remainingAmount"
+              class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
               placeholder="0.00"
             />
           </div>
@@ -781,8 +785,8 @@
                         step="0.01" 
                         :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
                         :max="remainingAmount"
-                        :disabled="remainingAmount <= 0"
-                        class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        :disabled="remainingAmount <= 0 || parseFloat(paymentAmount) >= remainingAmount"
+                        class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         placeholder="0.00"
                       />
                     </div>
@@ -885,8 +889,8 @@
                         step="0.01" 
                         :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
                         :max="remainingAmount"
-                        :disabled="remainingAmount <= 0"
-                        class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        :disabled="remainingAmount <= 0 || parseFloat(paymentAmount) >= remainingAmount"
+                        class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         placeholder="0.00"
                       />
                     </div>
@@ -989,7 +993,8 @@
                         step="50" 
                         :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
                         :max="remainingAmount"
-                        class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        :disabled="remainingAmount <= 0 || parseFloat(transferAmount) >= remainingAmount"
+                        class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
                         placeholder="0.00"
                       />
                     </div>
@@ -1986,6 +1991,13 @@ const isPaying = ref(false)
 
 const paymentAmount = ref('')
 
+// Watch paymentAmount to limit it to remainingAmount
+watch(paymentAmount, (newValue) => {
+  if (newValue && parseFloat(newValue) > remainingAmount.value) {
+    paymentAmount.value = remainingAmount.value.toString()
+  }
+})
+
 // Add computed for remaining amount
 const remainingAmount = computed(() => {
   const total = parseFloat(event.value?.total_price) || 0
@@ -2287,6 +2299,14 @@ const showPaymentModal = ref(false)
 const showTransferModal = ref(false)
 const showRejectModal = ref(false)
 const transferAmount = ref('')
+
+// Watch transferAmount to limit it to remainingAmount
+watch(transferAmount, (newValue) => {
+  if (newValue && parseFloat(newValue) > remainingAmount.value) {
+    transferAmount.value = remainingAmount.value.toString()
+  }
+})
+
 const rejectReason = ref('')
 const isSubmitting = ref(false)
 
