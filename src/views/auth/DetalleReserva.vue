@@ -714,153 +714,443 @@
           </div>
         </div>
 
-        <!-- Payment Methods Section (shown when status is aceptacion) -->
-        <div v-if="event && event.status === 'aceptacion'" class="mt-6">
-          <div class="p-6 bg-white rounded-2xl border border-gray-100 shadow-lg">
+        <!-- Payment Methods Section (shown when reservation is accepted) -->
+        <div v-if="event && (event.status === 'aceptacion' || event.status === 'apartado' || event.status === 'liquidado' || event.status === 'entregado' || event.status === 'finalizado')" class="mt-6">
+          <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-lg">
             <div class="flex justify-between items-center mb-4">
-              <h2 class="text-lg font-bold text-primary-700">Métodos de Pago Disponibles</h2>
+              <h2 class="text-lg font-bold text-primary-700">Métodos de Pago</h2>
               <div class="flex items-center space-x-2">
-                <i class="text-green-500 fa-solid fa-check-circle"></i>
-                <span class="text-sm font-semibold text-green-600">Reserva Aceptada</span>
-              </div>
-            </div>
-            
-            <div class="mb-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <div class="flex items-start space-x-3">
-                <i class="text-blue-500 fa-solid fa-info-circle mt-0.5"></i>
-                <div>
-                  <h3 class="font-semibold text-blue-800">¡Tu reserva ha sido aceptada!</h3>
-                  <p class="text-sm text-blue-700 mt-1">
-                    Ahora puedes proceder con el pago del apartado. Selecciona tu método de pago preferido:
-                  </p>
-                </div>
+                <i class="text-green-500 fa-solid fa-credit-card"></i>
+                <span class="text-sm font-medium text-gray-600">Disponibles</span>
               </div>
             </div>
 
-            <!-- Payment Amount Summary -->
-            <div class="mb-6 p-4 bg-gray-50 rounded-lg">
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm font-medium text-gray-600">Total de la reserva:</span>
-                <span class="font-bold text-gray-900">${{ (parseFloat(event.total_price) || 0).toLocaleString() }}</span>
-              </div>
-              <div class="flex justify-between items-center mb-2">
-                <span class="text-sm font-medium text-gray-600">Ya pagado:</span>
-                <span class="font-bold text-green-600">${{ (parseFloat(event.advance_paid) || 0).toLocaleString() }}</span>
-              </div>
-              <div class="flex justify-between items-center pt-2 border-t">
-                <span class="text-sm font-semibold text-gray-700">Pendiente por pagar:</span>
-                <span class="font-bold text-red-600">${{ remainingAmount.toLocaleString() }}</span>
-              </div>
-            </div>
-
-            <!-- Payment Methods Grid -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <!-- Stripe Payment -->
-              <div class="p-4 border border-gray-200 rounded-lg hover:border-blue-300 hover:shadow-md transition-all">
-                <div class="flex items-center space-x-3 mb-3">
-                  <div class="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-full">
-                    <i class="text-blue-600 fa-brands fa-stripe"></i>
+            <!-- Payment Methods Accordions -->
+            <div class="space-y-4">
+              <!-- Stripe Payment Accordion -->
+              <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <button 
+                  @click="selectedPaymentMethod = selectedPaymentMethod === 'stripe' ? '' : 'stripe'"
+                  :class="[
+                    'flex w-full items-center justify-between p-4 text-left transition-colors',
+                    selectedPaymentMethod === 'stripe' ? 'border-blue-200' : 'hover:bg-gray-50'
+                  ]"
+                >
+                  <div class="flex gap-3 items-center">
+                    <div class="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-full">
+                      <i class="text-blue-600 fa-brands fa-stripe"></i>
+                    </div>
+                    <div>
+                      <div class="font-semibold text-gray-900">Pago con Tarjeta</div>
+                      <div class="text-sm text-gray-500">Visa, Mastercard, Amex</div>
+                    </div>
                   </div>
-                  <div>
-                    <h3 class="font-semibold text-gray-900">Pago con Tarjeta</h3>
-                    <p class="text-sm text-gray-500">Visa, Mastercard, American Express</p>
+                  <i class="text-gray-400 fa-solid fa-chevron-down" :class="{ 'rotate-180': selectedPaymentMethod === 'stripe' }"></i>
+                </button>
+                
+                <div v-if="selectedPaymentMethod === 'stripe'" class="p-4 border-t border-gray-200">
+                  <!-- Payment Summary -->
+                  <div class="p-4 mb-4 bg-white rounded-lg border border-gray-200">
+                    <h4 class="mb-3 text-sm font-semibold text-gray-700">Resumen del Pago</h4>
+                    <div class="space-y-2 text-sm">
+                      <div class="flex justify-between">
+                        <span class="font-medium">Total de la reserva:</span>
+                        <span class="font-mono">${{ (parseFloat(event?.total_price) || 0).toLocaleString() }}</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="font-medium">Ya pagado:</span>
+                        <span class="font-mono text-green-600">${{ (parseFloat(event?.advance_paid) || 0).toLocaleString() }}</span>
+                      </div>
+                      <div class="flex justify-between pt-2 border-t">
+                        <span class="font-medium">Pendiente por pagar:</span>
+                        <span class="font-mono text-red-600">${{ ((parseFloat(event?.total_price) || 0) - (parseFloat(event?.advance_paid) || 0)).toLocaleString() }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Amount Input -->
+                  <div class="mb-4">
+                    <label class="block mb-2 text-sm font-semibold text-gray-700">Cantidad a pagar:</label>
+                    <div class="relative">
+                      <span class="absolute left-3 top-1/2 text-gray-500 transform -translate-y-1/2">$</span>
+                      <input 
+                        v-model="paymentAmount" 
+                        type="number" 
+                        step="0.01" 
+                        :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
+                        :max="remainingAmount"
+                        :disabled="remainingAmount <= 0"
+                        class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div class="mt-2 text-xs text-gray-500">
+                      <span v-if="(parseFloat(event?.advance_paid) || 0) === 0">
+                        Mínimo: $1,000 | Máximo: ${{ remainingAmount.toLocaleString() }}
+                      </span>
+                      <span v-else>
+                        Máximo: ${{ remainingAmount.toLocaleString() }}
+                      </span>
+                    </div>
+                    
+                    <!-- Quick Amount Buttons -->
+                    <div class="flex flex-wrap gap-2 mt-3">
+                      <button 
+                        @click="paymentAmount = remainingAmount"
+                        class="px-3 py-1 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 hover:bg-blue-100"
+                      >
+                        Pagar todo
+                      </button>
+                      <button 
+                        @click="paymentAmount = Math.min(1000, remainingAmount)"
+                        class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
+                      >
+                        $1,000
+                      </button>
+                      <button 
+                        @click="paymentAmount = Math.min(500, remainingAmount)"
+                        class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
+                      >
+                        $500
+                      </button>
+                    </div>
+                  </div>
+
+
+                  <div class="flex gap-3">
+                    <button 
+                      @click="pagar()"
+                      :disabled="!paymentAmount || paymentAmount <= 0 || isPaying || ((parseFloat(event?.advance_paid) || 0) === 0 && paymentAmount < 1000)"
+                      class="flex-1 px-6 py-3 text-sm font-semibold text-white bg-blue-600 rounded-lg transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <i class="mr-2 fa-solid fa-credit-card"></i>
+                      <span v-if="isPaying">Procesando...</span>
+                      <span v-else>Pagar con Stripe</span>
+                    </button>
                   </div>
                 </div>
-                <p class="text-sm text-gray-600 mb-4">
-                  Pago seguro y rápido con tarjeta de crédito o débito. Procesado por Stripe.
-                </p>
-                <button 
-                  @click="showPaymentModal = true"
-                  class="w-full px-4 py-2 font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Pagar con Tarjeta
-                </button>
               </div>
 
-              <!-- MercadoPago Payment -->
-              <div class="p-4 border border-gray-200 rounded-lg hover:border-purple-300 hover:shadow-md transition-all">
-                <div class="flex items-center space-x-3 mb-3">
-                  <div class="flex justify-center items-center w-10 h-10 bg-purple-100 rounded-full">
-                    <i class="text-purple-600 fa-brands fa-cc-mastercard"></i>
+              <!-- MercadoPago Payment Accordion -->
+              <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <button 
+                  @click="selectedPaymentMethod = selectedPaymentMethod === 'mercadopago' ? '' : 'mercadopago'"
+                  :class="[
+                    'flex w-full items-center justify-between p-4 text-left transition-colors',
+                    selectedPaymentMethod === 'mercadopago' ? 'border-purple-200' : 'hover:bg-gray-50'
+                  ]"
+                >
+                  <div class="flex gap-3 items-center">
+                    <div class="flex justify-center items-center w-10 h-10 bg-purple-100 rounded-full">
+                      <i class="text-purple-600 fa-brands fa-cc-mastercard"></i>
+                    </div>
+                    <div>
+                      <div class="font-semibold text-gray-900">MercadoPago</div>
+                      <div class="text-sm text-gray-500">Tarjetas, efectivo, transferencia</div>
+                    </div>
                   </div>
-                  <div>
-                    <h3 class="font-semibold text-gray-900">MercadoPago</h3>
-                    <p class="text-sm text-gray-500">Tarjetas, efectivo, transferencia</p>
+                  <i class="text-gray-400 fa-solid fa-chevron-down" :class="{ 'rotate-180': selectedPaymentMethod === 'mercadopago' }"></i>
+                </button>
+                
+                <div v-if="selectedPaymentMethod === 'mercadopago'" class="p-4 border-t border-gray-200">
+                  <!-- Payment Summary -->
+                  <div class="p-4 mb-4 bg-white rounded-lg border border-gray-200">
+                    <h4 class="mb-3 text-sm font-semibold text-gray-700">Resumen del Pago</h4>
+                    <div class="space-y-2 text-sm">
+                      <div class="flex justify-between">
+                        <span class="font-medium">Total de la reserva:</span>
+                        <span class="font-mono">${{ (parseFloat(event?.total_price) || 0).toLocaleString() }}</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="font-medium">Ya pagado:</span>
+                        <span class="font-mono text-green-600">${{ (parseFloat(event?.advance_paid) || 0).toLocaleString() }}</span>
+                      </div>
+                      <div class="flex justify-between pt-2 border-t">
+                        <span class="font-medium">Pendiente por pagar:</span>
+                        <span class="font-mono text-red-600">${{ ((parseFloat(event?.total_price) || 0) - (parseFloat(event?.advance_paid) || 0)).toLocaleString() }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Amount Input -->
+                  <div class="mb-4">
+                    <label class="block mb-2 text-sm font-semibold text-gray-700">Cantidad a pagar:</label>
+                    <div class="relative">
+                      <span class="absolute left-3 top-1/2 text-gray-500 transform -translate-y-1/2">$</span>
+                      <input 
+                        v-model="paymentAmount" 
+                        type="number" 
+                        step="0.01" 
+                        :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
+                        :max="remainingAmount"
+                        :disabled="remainingAmount <= 0"
+                        class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div class="mt-2 text-xs text-gray-500">
+                      <span v-if="(parseFloat(event?.advance_paid) || 0) === 0">
+                        Mínimo: $1,000 | Máximo: ${{ remainingAmount.toLocaleString() }}
+                      </span>
+                      <span v-else>
+                        Máximo: ${{ remainingAmount.toLocaleString() }}
+                      </span>
+                    </div>
+                    
+                    <!-- Quick Amount Buttons -->
+                    <div class="flex flex-wrap gap-2 mt-3">
+                      <button 
+                        @click="paymentAmount = remainingAmount"
+                        class="px-3 py-1 text-xs font-semibold text-purple-700 bg-purple-50 rounded border border-purple-200 hover:bg-purple-100"
+                      >
+                        Pagar todo
+                      </button>
+                      <button 
+                        @click="paymentAmount = Math.min(1000, remainingAmount)"
+                        class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
+                      >
+                        $1,000
+                      </button>
+                      <button 
+                        @click="paymentAmount = Math.min(500, remainingAmount)"
+                        class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
+                      >
+                        $500
+                      </button>
+                    </div>
+                  </div>
+
+
+                  <div class="flex gap-3">
+                    <button 
+                      @click="pagarMercadoPago()"
+                      :disabled="!paymentAmount || paymentAmount <= 0 || isPaying || ((parseFloat(event?.advance_paid) || 0) === 0 && paymentAmount < 1000)"
+                      class="flex-1 px-6 py-3 text-sm font-semibold text-white bg-purple-600 rounded-lg transition-colors hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <i class="mr-2 fa-solid fa-credit-card"></i>
+                      <span v-if="isPaying">Procesando...</span>
+                      <span v-else>Pagar con MercadoPago</span>
+                    </button>
                   </div>
                 </div>
-                <p class="text-sm text-gray-600 mb-4">
-                  Paga con tu método preferido: tarjeta, efectivo en tiendas o transferencia bancaria.
-                </p>
-                <button 
-                  @click="pagarMercadoPago()"
-                  :disabled="isPaying || remainingAmount <= 0"
-                  class="w-full px-4 py-2 font-semibold text-white bg-purple-600 rounded-lg hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <span v-if="isPaying" class="flex items-center justify-center space-x-2">
-                    <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
-                    <span>Procesando...</span>
-                  </span>
-                  <span v-else>Pagar con MercadoPago</span>
-                </button>
               </div>
 
-              <!-- Bank Transfer -->
-              <div class="p-4 border border-gray-200 rounded-lg hover:border-green-300 hover:shadow-md transition-all">
-                <div class="flex items-center space-x-3 mb-3">
-                  <div class="flex justify-center items-center w-10 h-10 bg-green-100 rounded-full">
-                    <i class="text-green-600 fa-solid fa-money-bill-transfer"></i>
+              <!-- Bank Transfer Payment Accordion -->
+              <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
+                <button 
+                  @click="selectedPaymentMethod = selectedPaymentMethod === 'transfer' ? '' : 'transfer'"
+                  :class="[
+                    'flex w-full items-center justify-between p-4 text-left transition-colors',
+                    selectedPaymentMethod === 'transfer' ? 'border-green-200' : 'hover:bg-gray-50'
+                  ]"
+                >
+                  <div class="flex gap-3 items-center">
+                    <div class="flex justify-center items-center w-10 h-10 bg-green-100 rounded-full">
+                      <i class="text-green-600 fa-solid fa-money-bill-transfer"></i>
+                    </div>
+                    <div>
+                      <div class="font-semibold text-gray-900">Transferencia Bancaria</div>
+                      <div class="text-sm text-gray-500">Depósito directo a cuenta</div>
+                    </div>
                   </div>
-                  <div>
-                    <h3 class="font-semibold text-gray-900">Transferencia Bancaria</h3>
-                    <p class="text-sm text-gray-500">Depósito directo a cuenta</p>
+                  <i class="text-gray-400 fa-solid fa-chevron-down" :class="{ 'rotate-180': selectedPaymentMethod === 'transfer' }"></i>
+                </button>
+                
+                <div v-if="selectedPaymentMethod === 'transfer'" class="p-4 border-t border-gray-200">
+                  <!-- Payment Summary -->
+                  <div class="p-4 mb-4 bg-white rounded-lg border border-gray-200">
+                    <h4 class="mb-3 text-sm font-semibold text-gray-700">Resumen del Pago</h4>
+                    <div class="space-y-2 text-sm">
+                      <div class="flex justify-between">
+                        <span class="font-medium">Total de la reserva:</span>
+                        <span class="font-mono">${{ (parseFloat(event?.total_price) || 0).toLocaleString() }}</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="font-medium">Ya pagado:</span>
+                        <span class="font-mono text-green-600">${{ (parseFloat(event?.advance_paid) || 0).toLocaleString() }}</span>
+                      </div>
+                      <div class="flex justify-between pt-2 border-t">
+                        <span class="font-medium">Pendiente por pagar:</span>
+                        <span class="font-mono text-red-600">${{ ((parseFloat(event?.total_price) || 0) - (parseFloat(event?.advance_paid) || 0)).toLocaleString() }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <!-- Amount Input -->
+                  <div class="mb-4">
+                    <label class="block mb-2 text-sm font-semibold text-gray-700">Cantidad a pagar:</label>
+                    <div class="relative">
+                      <span class="absolute left-3 top-1/2 text-gray-500 transform -translate-y-1/2">$</span>
+                      <input 
+                        v-model="transferAmount" 
+                        type="number" 
+                        step="50" 
+                        min="1000" 
+                        :max="remainingAmount"
+                        class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div class="mt-2 text-xs text-gray-500">
+                      Máximo: ${{ remainingAmount.toLocaleString() }}
+                    </div>
+                    
+                    <!-- Quick Amount Buttons -->
+                    <div class="flex flex-wrap gap-2 mt-3">
+                      <button 
+                        @click="transferAmount = remainingAmount"
+                        class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
+                      >
+                        Pagar todo
+                      </button>
+                      <button 
+                        @click="transferAmount = Math.min(1000, remainingAmount)"
+                        class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
+                      >
+                        $1,000
+                      </button>
+                      <button 
+                        @click="transferAmount = Math.min(500, remainingAmount)"
+                        class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
+                      >
+                        $500
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Bank Cards -->
+                  <div class="mb-4">
+                    <div class="mb-3 text-sm font-semibold text-gray-700">Selecciona una cuenta:</div>
+                    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                      <!-- Card 1 -->
+                      <div class="relative p-4 text-white bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl shadow-lg transition-shadow cursor-pointer hover:shadow-xl">
+                        <div class="flex justify-between items-start mb-4">
+                          <div class="text-sm font-medium opacity-90">Cuenta Principal</div>
+                          <div class="w-8 h-6 bg-white rounded opacity-20"></div>
+                        </div>
+                        <div class="mb-2 text-lg font-bold tracking-wider">**** **** **** 1234</div>
+                        <div class="text-xs opacity-90">Banco de México</div>
+                        <div class="mt-2 text-xs opacity-75">CLABE: 012345678901234567</div>
+                      </div>
+                      
+                      <!-- Card 2 -->
+                      <div class="relative p-4 text-white bg-gradient-to-br from-green-600 to-green-800 rounded-xl shadow-lg transition-shadow cursor-pointer hover:shadow-xl">
+                        <div class="flex justify-between items-start mb-4">
+                          <div class="text-sm font-medium opacity-90">Cuenta Alternativa</div>
+                          <div class="w-8 h-6 bg-white rounded opacity-20"></div>
+                        </div>
+                        <div class="mb-2 text-lg font-bold tracking-wider">**** **** **** 5678</div>
+                        <div class="text-xs opacity-90">Banco Santander</div>
+                        <div class="mt-2 text-xs opacity-75">CLABE: 014180000000000000</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Upload de comprobante -->
+                  <div class="mb-4">
+                    <label class="block mb-2 text-sm font-semibold text-gray-700">Comprobante de pago:</label>
+                    <div class="p-6 text-center rounded-lg border-2 border-gray-300 border-dashed transition-colors hover:border-green-400">
+                      <input 
+                        type="file" 
+                        accept="image/*"
+                        @change="handleFileUpload" 
+                        class="hidden" 
+                        ref="fileInput"
+                      />
+                      <div v-if="!uploadedFile" @click="$refs.fileInput.click()" class="cursor-pointer">
+                        <i class="mb-2 text-4xl text-gray-400 fa-solid fa-cloud-upload-alt"></i>
+                        <div class="text-sm text-gray-600">
+                          <span class="font-semibold text-green-600">Haz clic para subir</span> o arrastra aquí
+                        </div>
+                        <div class="mt-1 text-xs text-gray-500">PNG, JPG, JPEG, GIF, WebP hasta 10MB</div>
+                      </div>
+                      <div v-else class="flex justify-between items-center">
+                        <div class="flex gap-3 items-center">
+                          <i class="text-green-500 fa-solid fa-check-circle"></i>
+                          <span class="text-sm font-medium text-gray-700">{{ uploadedFile.name }}</span>
+                        </div>
+                        <button @click="removeFile" class="text-red-500 hover:text-red-700">
+                          <i class="fa-solid fa-times"></i>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex gap-3">
+                    <button 
+                      @click="submitTransferPayment()" 
+                      :disabled="!transferAmount || !uploadedFile || isSubmittingTransfer"
+                      class="flex-1 px-6 py-3 text-sm font-semibold text-white bg-green-600 rounded-lg transition-colors hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <i class="mr-2 fa-solid fa-upload"></i>
+                      <span v-if="isSubmittingTransfer">Enviando...</span>
+                      <span v-else>Enviar Comprobante</span>
+                    </button>
                   </div>
                 </div>
-                <p class="text-sm text-gray-600 mb-4">
-                  Realiza una transferencia bancaria y sube tu comprobante de pago.
-                </p>
-                <button 
-                  @click="showTransferModal = true"
-                  class="w-full px-4 py-2 font-semibold text-white bg-green-600 rounded-lg hover:bg-green-700 transition-colors"
-                >
-                  Transferencia Bancaria
-                </button>
               </div>
 
-              <!-- Cash Payment -->
-              <div class="p-4 border border-gray-200 rounded-lg hover:border-yellow-300 hover:shadow-md transition-all">
-                <div class="flex items-center space-x-3 mb-3">
-                  <div class="flex justify-center items-center w-10 h-10 bg-yellow-100 rounded-full">
-                    <i class="text-yellow-600 fa-solid fa-money-bill-wave"></i>
-                  </div>
-                  <div>
-                    <h3 class="font-semibold text-gray-900">Pago en Efectivo</h3>
-                    <p class="text-sm text-gray-500">Presencial en nuestras oficinas</p>
-                  </div>
-                </div>
-                <p class="text-sm text-gray-600 mb-4">
-                  Acude a nuestras oficinas para realizar el pago en efectivo.
-                </p>
+              <!-- Cash Payment Accordion -->
+              <div class="bg-white rounded-lg border border-gray-200 shadow-sm">
                 <button 
-                  @click="contactForCashPayment()"
-                  class="w-full px-4 py-2 font-semibold text-white bg-yellow-600 rounded-lg hover:bg-yellow-700 transition-colors"
+                  @click="selectedPaymentMethod = selectedPaymentMethod === 'cash' ? '' : 'cash'"
+                  :class="[
+                    'flex w-full items-center justify-between p-4 text-left transition-colors',
+                    selectedPaymentMethod === 'cash' ? 'border-yellow-200' : 'hover:bg-gray-50'
+                  ]"
                 >
-                  Contactar para Pago en Efectivo
+                  <div class="flex gap-3 items-center">
+                    <div class="flex justify-center items-center w-10 h-10 bg-yellow-100 rounded-full">
+                      <i class="text-yellow-600 fa-solid fa-money-bill-wave"></i>
+                    </div>
+                    <div>
+                      <div class="font-semibold text-gray-900">Pago en Efectivo</div>
+                      <div class="text-sm text-gray-500">Pago presencial en el evento</div>
+                    </div>
+                  </div>
+                  <i class="text-gray-400 fa-solid fa-chevron-down" :class="{ 'rotate-180': selectedPaymentMethod === 'cash' }"></i>
                 </button>
-              </div>
-            </div>
+                
+                <div v-if="selectedPaymentMethod === 'cash'" class="p-4 border-t border-gray-200">
+                  <!-- Payment Summary -->
+                  <div class="p-4 mb-4 bg-white rounded-lg border border-gray-200">
+                    <h4 class="mb-3 text-sm font-semibold text-gray-700">Resumen del Pago</h4>
+                    <div class="space-y-2 text-sm">
+                      <div class="flex justify-between">
+                        <span class="font-medium">Total de la reserva:</span>
+                        <span class="font-mono">${{ (parseFloat(event?.total_price) || 0).toLocaleString() }}</span>
+                      </div>
+                      <div class="flex justify-between">
+                        <span class="font-medium">Ya pagado:</span>
+                        <span class="font-mono text-green-600">${{ (parseFloat(event?.advance_paid) || 0).toLocaleString() }}</span>
+                      </div>
+                      <div class="flex justify-between pt-2 border-t">
+                        <span class="font-medium">Pendiente por pagar:</span>
+                        <span class="font-mono text-red-600">${{ ((parseFloat(event?.total_price) || 0) - (parseFloat(event?.advance_paid) || 0)).toLocaleString() }}</span>
+                      </div>
+                    </div>
+                  </div>
 
-            <!-- Payment Instructions -->
-            <div class="mt-6 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
-              <div class="flex items-start space-x-3">
-                <i class="text-yellow-600 fa-solid fa-lightbulb mt-0.5"></i>
-                <div>
-                  <h4 class="font-semibold text-yellow-800">Información Importante</h4>
-                  <ul class="text-sm text-yellow-700 mt-2 space-y-1">
-                    <li>• El apartado debe ser pagado dentro de las próximas 24 horas</li>
-                    <li>• Una vez confirmado el pago, tu reserva pasará al estado "Apartado"</li>
-                    <li>• Los pagos restantes pueden realizarse hasta 7 días antes del evento</li>
-                    <li>• Si tienes dudas, contacta a nuestro equipo de atención</li>
-                  </ul>
+
+                  <div class="p-4 mb-4 bg-yellow-100 rounded-lg border border-yellow-200">
+                    <div class="flex items-start space-x-2">
+                      <i class="mt-0.5 text-yellow-600 fa-solid fa-info-circle"></i>
+                      <div class="text-sm text-yellow-800">
+                        <div class="font-medium">Importante:</div>
+                        <div>Contacta con nosotros para coordinar el pago en efectivo y confirmar la disponibilidad.</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="flex gap-3">
+                    <button 
+                      @click="contactForCashPayment()"
+                      class="flex-1 px-6 py-3 text-sm font-semibold text-white bg-yellow-600 rounded-lg transition-colors hover:bg-yellow-700"
+                    >
+                      <i class="mr-2 fa-solid fa-phone"></i>
+                      Contactar para Coordinar
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1696,7 +1986,14 @@ const paymentAmount = ref('')
 const remainingAmount = computed(() => {
   const total = parseFloat(event.value?.total_price) || 0
   const paid = parseFloat(event.value?.advance_paid) || 0
-  return Math.max(0, total - paid)
+  const remaining = Math.max(0, total - paid)
+  
+  // If no advance payment has been made, minimum payment is $1,000
+  if (paid === 0 && remaining > 0) {
+    return Math.max(1000, remaining)
+  }
+  
+  return remaining
 })
 
 async function pagar(amount = paymentAmount.value) {
@@ -1988,6 +2285,16 @@ const showRejectModal = ref(false)
 const transferAmount = ref('')
 const rejectReason = ref('')
 const isSubmitting = ref(false)
+
+// Payment method selection
+const selectedPaymentMethod = ref('')
+
+// Function for cash payment contact
+const contactForCashPayment = () => {
+  toast.info('Redirigiendo para coordinar pago en efectivo...')
+  // You can add logic here to open contact form or redirect to contact page
+  console.log('Contact for cash payment:', paymentAmount.value)
+}
 
 const reviewRating = ref(0)
 // const reviewText = ref('')
@@ -2363,11 +2670,17 @@ const rejectBooking = async () => {
   }
 }
 
-// Function to handle cash payment contact
-const contactForCashPayment = () => {
-  toast.info('Para pago en efectivo, contacta a nuestro equipo de atención al teléfono: +52 123-456-7890 o por WhatsApp')
-  // You can also open a modal with contact information or redirect to a contact page
-}
-
 
 </script>
+
+<style scoped>
+/* Accordion chevron rotation animation */
+.rotate-180 {
+  transform: rotate(180deg);
+}
+
+/* Smooth transitions for accordion content */
+.accordion-content {
+  transition: all 0.3s ease-in-out;
+}
+</style>
