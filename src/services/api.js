@@ -78,8 +78,10 @@ const addResponseInterceptor = (apiInstance) => {
     async (error) => {
       const originalRequest = error.config;
       
-      // Only handle 401 errors and avoid refresh loops
-      if (error.response?.status === 401 && !originalRequest._retry) {
+      // Handle 401 errors (unauthorized) and 403 errors (forbidden)
+      if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
+        console.log(`[API] ${error.response.status} error detected, attempting token refresh...`);
+        
         if (isRefreshing) {
           // If already refreshing, queue this request
           return new Promise((resolve, reject) => {
@@ -113,18 +115,12 @@ const addResponseInterceptor = (apiInstance) => {
             return apiInstance(originalRequest);
           } catch (refreshError) {
             console.log('[API] Token refresh failed, clearing auth and redirecting...');
+            console.log('[API] Refresh error:', refreshError.response?.data || refreshError.message);
             processQueue(refreshError, null);
             isRefreshing = false;
             
             // Clear all auth data
-            localStorage.removeItem('accessToken');
-            localStorage.removeItem('refreshToken');
-            localStorage.removeItem('user');
-            
-            // Redirect to login (only once)
-            if (window.location.pathname !== '/login') {
-              window.location.href = '/login';
-            }
+            clearAuthData();
             
             return Promise.reject(refreshError);
           }
@@ -134,22 +130,38 @@ const addResponseInterceptor = (apiInstance) => {
           isRefreshing = false;
           
           // Clear all auth data
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('user');
-          
-          // Redirect to login (only once)
-          if (window.location.pathname !== '/login') {
-            window.location.href = '/login';
-          }
+          clearAuthData();
           
           return Promise.reject(error);
         }
       }
       
+      // Handle other token-related errors
+      if (error.response?.status === 400 && error.response?.data?.detail?.includes('token')) {
+        console.log('[API] Invalid token detected, clearing auth...');
+        clearAuthData();
+        return Promise.reject(error);
+      }
+      
       return Promise.reject(error);
     }
   );
+}
+
+// Helper function to clear authentication data
+const clearAuthData = () => {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+  localStorage.removeItem('user');
+  
+  // Reset global state
+  isRefreshing = false;
+  failedQueue = [];
+  
+  // Redirect to login (only once)
+  if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
+    window.location.href = '/login';
+  }
 }
 
 // Add interceptors to all API instances

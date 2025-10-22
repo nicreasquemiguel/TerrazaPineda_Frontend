@@ -12,6 +12,7 @@ import VCalendar from 'v-calendar'
 import Toast, { POSITION } from 'vue-toastification'
 import 'vue-toastification/dist/index.css'
 import { useAuthStore } from '@/stores/auth'
+import { useAuthCheck } from '@/composables/useAuthCheck'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -23,6 +24,7 @@ app.use(PrimeVue, { unstyled: true, pt: Aura })
 app.use(VCalendar, {})
 app.use(Toast, { position: POSITION.TOP_RIGHT, timeout: 3500 })
 
+// Initialize auth check
 const authStore = useAuthStore()
 if (authStore.accessToken && !authStore.user) {
   const storedUser = localStorage.getItem('user')
@@ -31,5 +33,12 @@ if (authStore.accessToken && !authStore.user) {
   }
   authStore.fetchUser()
 }
+
+// Check token validity on app mount
+app.mixin({
+  setup() {
+    useAuthCheck()
+  }
+})
 
 app.mount('#app') 

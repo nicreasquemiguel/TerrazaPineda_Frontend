@@ -40,9 +40,30 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const res = await api.get('/auth/users/me/')
       setUser(res.data)
-    } catch {
+    } catch (error) {
+      console.log('[Auth] Error fetching user, logging out:', error.response?.status);
       logout()
     }
+  }
+
+  // Function to check if token is valid
+  async function checkTokenValidity() {
+    if (!accessToken.value) return false
+    
+    try {
+      const res = await api.post('/auth/jwt/verify/', { token: accessToken.value })
+      return res.status === 200
+    } catch (error) {
+      console.log('[Auth] Token is invalid, clearing auth...');
+      logout()
+      return false
+    }
+  }
+
+  // Function to clear auth data when token is invalid
+  function clearInvalidAuth() {
+    console.log('[Auth] Clearing invalid authentication data...');
+    logout()
   }
 
   // Login action for Django JWT
@@ -148,6 +169,8 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     setUser,
     fetchUser,
+    checkTokenValidity,
+    clearInvalidAuth,
     login,
     register,
   }

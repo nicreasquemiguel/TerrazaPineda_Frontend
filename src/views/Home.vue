@@ -99,7 +99,7 @@
       style="background-image: url('/hero.jpg')"
     >
       <div class="absolute inset-0 bg-black opacity-50"></div>
-      <div class="relative px-4 pt-10 pb-24 mx-auto max-w-7xl sm:px-6 lg:px-32 lg:py-32">
+      <div class="relative px-4 pt-20 pb-24 mx-auto max-w-7xl sm:px-6 lg:px-32 lg:py-32">
         <div class="grid gap-12 items-center lg:grid-cols-2">
           <div class="space-y-8 text-center lg:text-left">
             <img src="/tp-white.svg" alt="Terraza Pineda Logo" class="block mx-auto mb-6 w-20 h-20 md:hidden" />

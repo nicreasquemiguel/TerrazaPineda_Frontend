@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="pt-16">
     <!-- Cambiar paquete Modal -->
     <div v-if="showPackageModal" class="flex fixed inset-0 z-50 justify-center items-center bg-black/40">
       <div class="relative p-6 w-full max-w-md bg-white rounded-2xl shadow-xl">
@@ -124,7 +124,7 @@
               v-model="paymentAmount" 
               type="number" 
               step="0.01" 
-              min="0.01" 
+              :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
               :max="remainingAmount"
               :disabled="remainingAmount <= 0"
               class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -132,7 +132,7 @@
             />
           </div>
           <div class="mt-2 text-xs text-gray-500">
-            Máximo: ${{ remainingAmount.toLocaleString() }}
+            Mínimo: ${{ (parseFloat(event?.advance_paid) || 0) === 0 ? '1,000' : '0.01' }} | Máximo: ${{ remainingAmount.toLocaleString() }}
           </div>
           <div v-if="remainingAmount <= 0" class="mt-2 text-xs font-bold text-green-600">
             ¡Reserva pagada por completo!
@@ -151,13 +151,15 @@
             </button>
             <button 
               @click="paymentAmount = Math.min(1000, remainingAmount)"
-              class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
+              :disabled="remainingAmount < 1000"
+              class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               $1,000
             </button>
             <button 
               @click="paymentAmount = Math.min(500, remainingAmount)"
-              class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
+              :disabled="remainingAmount < 500"
+              class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               $500
             </button>
@@ -222,14 +224,14 @@
               v-model="transferAmount" 
               type="number" 
               step="50" 
-              min="1000" 
+              :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
               :max="remainingAmount"
               class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500"
               placeholder="0.00"
             />
           </div>
           <div class="mt-2 text-xs text-gray-500">
-            Máximo: ${{ remainingAmount.toLocaleString() }}
+            Mínimo: ${{ (parseFloat(event?.advance_paid) || 0) === 0 ? '1,000' : '0.01' }} | Máximo: ${{ remainingAmount.toLocaleString() }}
           </div>
         </div>
 
@@ -985,14 +987,14 @@
                         v-model="transferAmount" 
                         type="number" 
                         step="50" 
-                        min="1000" 
+                        :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
                         :max="remainingAmount"
                         class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500"
                         placeholder="0.00"
                       />
                     </div>
                     <div class="mt-2 text-xs text-gray-500">
-                      Máximo: ${{ remainingAmount.toLocaleString() }}
+                      Mínimo: ${{ (parseFloat(event?.advance_paid) || 0) === 0 ? '1,000' : '0.01' }} | Máximo: ${{ remainingAmount.toLocaleString() }}
                     </div>
                     
                     <!-- Quick Amount Buttons -->
@@ -1005,13 +1007,15 @@
                       </button>
                       <button 
                         @click="transferAmount = Math.min(1000, remainingAmount)"
-                        class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
+                        :disabled="remainingAmount < 1000"
+                        class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         $1,000
                       </button>
                       <button 
                         @click="transferAmount = Math.min(500, remainingAmount)"
-                        class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
+                        :disabled="remainingAmount < 500"
+                        class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         $500
                       </button>
