@@ -12,7 +12,6 @@ import VCalendar from 'v-calendar'
 import Toast, { POSITION } from 'vue-toastification'
 import 'vue-toastification/dist/index.css'
 import { useAuthStore } from '@/stores/auth'
-import { useAuthCheck } from '@/composables/useAuthCheck'
 
 const app = createApp(App)
 const pinia = createPinia()
@@ -34,11 +33,6 @@ if (authStore.accessToken && !authStore.user) {
   authStore.fetchUser()
 }
 
-// Check token validity on app mount
-app.mixin({
-  setup() {
-    useAuthCheck()
-  }
-})
+// Check token validity on app mount - moved to App.vue
 
 app.mount('#app') 

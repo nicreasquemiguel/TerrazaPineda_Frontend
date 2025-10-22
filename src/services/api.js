@@ -55,30 +55,30 @@ const processQueue = (error, token = null) => {
 // Request interceptor function to add JWT token
 const addAuthInterceptor = (apiInstance) => {
   apiInstance.interceptors.request.use(
-    (config) => {
-      const token = localStorage.getItem('accessToken')
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`
-        console.log('[API] Adding Authorization header:', config.headers.Authorization)
-      } else {
-        console.log('[API] No accessToken found in localStorage')
-      }
-      return config
-    },
-    (error) => {
-      return Promise.reject(error)
+  (config) => {
+    const token = localStorage.getItem('accessToken')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+      console.log('[API] Adding Authorization header:', config.headers.Authorization)
+    } else {
+      console.log('[API] No accessToken found in localStorage')
     }
-  )
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
 }
 
 // Response interceptor function to handle token expiration and refresh
 const addResponseInterceptor = (apiInstance) => {
   apiInstance.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-      const originalRequest = error.config;
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
       
-      // Handle 401 errors (unauthorized) and 403 errors (forbidden)
+git       // Handle 401 errors (unauthorized) and 403 errors (forbidden)
       if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
         console.log(`[API] ${error.response.status} error detected, attempting token refresh...`);
         
@@ -94,26 +94,26 @@ const addResponseInterceptor = (apiInstance) => {
           });
         }
 
-        originalRequest._retry = true;
+      originalRequest._retry = true;
         isRefreshing = true;
 
-        const refreshToken = localStorage.getItem('refreshToken');
+      const refreshToken = localStorage.getItem('refreshToken');
         
-        if (refreshToken) {
-          try {
+      if (refreshToken) {
+        try {
             console.log('[API] Attempting token refresh...');
             // Use authApi for refresh, not the main api instance
             const res = await authApi.post('jwt/refresh/', { refresh: refreshToken });
-            const newAccess = res.data.access;
+          const newAccess = res.data.access;
             
-            localStorage.setItem('accessToken', newAccess);
-            originalRequest.headers['Authorization'] = `Bearer ${newAccess}`;
+          localStorage.setItem('accessToken', newAccess);
+          originalRequest.headers['Authorization'] = `Bearer ${newAccess}`;
             
             processQueue(null, newAccess);
             isRefreshing = false;
             
             return apiInstance(originalRequest);
-          } catch (refreshError) {
+        } catch (refreshError) {
             console.log('[API] Token refresh failed, clearing auth and redirecting...');
             console.log('[API] Refresh error:', refreshError.response?.data || refreshError.message);
             processQueue(refreshError, null);
@@ -122,9 +122,9 @@ const addResponseInterceptor = (apiInstance) => {
             // Clear all auth data
             clearAuthData();
             
-            return Promise.reject(refreshError);
-          }
-        } else {
+          return Promise.reject(refreshError);
+        }
+      } else {
           console.log('[API] No refresh token found, clearing auth and redirecting...');
           processQueue(error, null);
           isRefreshing = false;
@@ -143,9 +143,9 @@ const addResponseInterceptor = (apiInstance) => {
         return Promise.reject(error);
       }
       
-      return Promise.reject(error);
-    }
-  );
+    return Promise.reject(error);
+  }
+);
 }
 
 // Helper function to clear authentication data
@@ -157,6 +157,17 @@ const clearAuthData = () => {
   // Reset global state
   isRefreshing = false;
   failedQueue = [];
+  
+  // Clear Pinia store if available
+  if (window.__PINIA__) {
+    try {
+      const { useAuthStore } = require('@/stores/auth');
+      const authStore = useAuthStore();
+      authStore.logout();
+    } catch (error) {
+      console.log('[API] Could not clear Pinia store:', error);
+    }
+  }
   
   // Redirect to login (only once)
   if (window.location.pathname !== '/login' && window.location.pathname !== '/') {

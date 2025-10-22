@@ -1,6 +1,6 @@
 <template>
   <div class="flex flex-col min-h-screen bg-white">
-    <div class="flex flex-col flex-1 items-center px-2 pt-16 pb-8 w-full md:min-h-[36rem]">
+    <div class="flex flex-col flex-1 items-center px-2 pb-8 w-full md:min-h-[36rem]">
       <!-- Logo -->
       <img src="/tp.svg" alt="Terraza Pineda Logo" class="mb-4 w-12 h-12 md:w-16 md:h-16" />
       <!-- Title -->

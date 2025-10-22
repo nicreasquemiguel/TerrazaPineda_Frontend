@@ -1,7 +1,7 @@
 <template>
-  <div class="min-h-screen bg-white">
+  <div class="min-h-screen bg-white" style="padding-top: 4rem !important;">
     <!-- Desktop Layout (md and larger) -->
-    <div class="hidden pt-16 min-h-screen md:flex">
+    <div class="hidden min-h-screen md:flex">
       <!-- Desktop Sidebar - Same style as Navbar mobile sidebar -->
       <div class="overflow-hidden flex-shrink-0 w-80 h-screen bg-black border-r border-gray-800">
         <!-- Sidebar Content -->
@@ -317,7 +317,7 @@
     </div>
 
     <!-- Mobile Layout (sm and smaller) -->
-    <div class="pt-16 min-h-screen bg-white md:hidden">
+    <div class="min-h-screen bg-white md:hidden">
       <!-- Mobile uses Navbar component (no custom sidebar) -->
       
         <!-- Mobile Week Calendar Section -->
@@ -1047,7 +1047,6 @@ import { ref, onMounted, computed, onUnmounted, inject, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
-import { Icon } from '@iconify/vue'
 
 const router = useRouter()
 const authStore = useAuthStore()

@@ -1,5 +1,5 @@
 <template>
-  <div class="pt-16 pb-4 min-h-screen bg-gray-50 sm:py-8">
+   <div class="pb-4 min-h-screen bg-gray-50 sm:py-8">
     <div class="px-4 mx-auto max-w-lg sm:px-6 lg:px-8">
       <!-- Header Section -->
       <div class="p-4 mb-4 bg-white rounded-lg shadow-sm sm:p-6 sm:mb-6">
@@ -151,7 +151,7 @@
                 <button 
                   @click="toggleEdit"
                   class="px-4 py-2 w-full text-white bg-gray-400 rounded-md transition-colors sm:w-auto hover:bg-gray-500"
-                >
+                > 
                   Cancelar
                 </button>
               </div>

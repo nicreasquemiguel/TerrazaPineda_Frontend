@@ -1,5 +1,5 @@
 <template>
-  <div class="pt-16">
+  <div>
     <!-- Cambiar paquete Modal -->
     <div v-if="showPackageModal" class="flex fixed inset-0 z-50 justify-center items-center bg-black/40">
       <div class="relative p-6 w-full max-w-md bg-white rounded-2xl shadow-xl">
