@@ -129,6 +129,7 @@
                   ></div>
                   </div>
                 
+                
                 <!-- Stats Card Content -->
                 <div v-if="card.type === 'stats'" class="flex justify-between items-center">
                   <div class="text-white">
@@ -141,6 +142,61 @@
                 </div>
                   <div class="text-white opacity-80">
                     <i :class="card.icon + ' text-2xl'"></i>
+                  </div>
+                </div>
+
+                <!-- Calendar Event Card Content (Desktop) -->
+                <div v-else-if="card.type === 'calendar-event'" class="text-white">
+                  <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center space-x-2">
+                      <span class="text-sm font-medium opacity-90">{{ card.title }}</span>
+                      <span 
+                        class="px-1.5 py-0.5 text-xs font-medium text-white bg-white bg-opacity-30 rounded-full"
+                      >
+                        {{ getStatusText(card.eventData.bookings?.[0]?.status || 'pendiente') }}
+                      </span>
+                    </div>
+                    <button 
+                      @click="closeCalendarEventCard"
+                      class="text-white opacity-80 hover:opacity-100"
+                    >
+                      <i class="text-sm fa-solid fa-times"></i>
+                    </button>
+                  </div>
+                  
+                  <!-- Ultra compact info -->
+                  <div class="mb-2">
+                    <div class="text-xs font-semibold truncate mb-1">{{ card.eventData.bookings?.[0]?.package_name || 'Package' }}</div>
+                    <div class="flex items-center justify-between text-xs">
+                      <div class="flex items-center space-x-1">
+                        <span class="px-1.5 py-0.5 text-white bg-white bg-opacity-20 rounded text-xs">
+                          {{ card.eventData.bookings?.[0]?.people_count || 0 }}p
+                        </span>
+                        <span class="px-1.5 py-0.5 text-white bg-white bg-opacity-20 rounded text-xs">
+                          ${{ parseFloat(card.eventData.bookings?.[0]?.amount_due || 0).toLocaleString() }}
+                        </span>
+                      </div>
+                      <a 
+                        :href="`tel:${card.eventData.bookings?.[0]?.client_phone}`"
+                        class="text-white opacity-75 hover:opacity-100 text-xs"
+                      >
+                        <i class="fa-solid fa-phone mr-1"></i>{{ card.eventData.bookings?.[0]?.client_phone }}
+                      </a>
+                    </div>
+                  </div>
+                  
+                  <!-- Client name and link in one line -->
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center space-x-1">
+                      <i class="fa-solid fa-user"></i>
+                      <span class="truncate">{{ card.eventData.bookings?.[0]?.client_first_name }} {{ card.eventData.bookings?.[0]?.client_last_name }}</span>
+                    </div>
+                    <a 
+                      :href="`/detalle-reserva/${card.eventData.bookings?.[0]?.booking_id}`"
+                      class="px-2 py-1 text-xs font-medium text-white bg-white bg-opacity-20 rounded hover:bg-opacity-30 transition-all duration-200"
+                    >
+                      <i class="fa-solid fa-eye mr-1"></i>Ver
+                    </a>
                   </div>
                 </div>
 
@@ -203,67 +259,63 @@
                 <h3 class="text-lg font-bold text-gray-800">Calendario Semanal</h3>
               </div>
               
-              <!-- Days of the week header -->
-              <div class="grid grid-cols-7 gap-1 p-4 bg-gray-50">
-                <div 
-                  v-for="day in (dashboardData?.daily_cards || [])" 
-                  :key="day.date"
-                  class="text-center"
-                >
-                  <div class="text-sm font-semibold text-gray-600">{{ day?.day_name || '' }}</div>
-                  <div class="text-lg font-bold text-gray-800">{{ day?.day_number || '' }}</div>
-                </div>
+              <!-- Loading State -->
+              <div v-if="weekCalendarLoading" class="p-8 text-center">
+                <div class="text-gray-500">Cargando calendario...</div>
               </div>
               
-              <!-- Daily booking cards -->
-              <div class="grid grid-cols-7 gap-1 p-4">
-                <div 
-                  v-for="day in (dashboardData?.daily_cards || [])" 
-                  :key="day.date"
-                  class="min-h-32"
-                >
-                  <div v-if="day?.bookings && day.bookings.length > 0" class="space-y-2">
+              <!-- Calendar Content -->
+              <div v-else-if="weekCalendarData?.daily_cards && weekCalendarData.daily_cards.length > 0">
+                <div class="relative px-6 py-4">
+                  <!-- Navigation Arrows -->
+                  <button 
+                    @click="goToPreviousWeek"
+                    class="absolute left-2 top-1/2 z-10 p-2 text-gray-600 bg-white rounded-full shadow-sm transform -translate-y-1/2 hover:text-gray-800 hover:bg-gray-100"
+                  >
+                    <i class="text-sm fa-solid fa-chevron-left"></i>
+                  </button>
+                  
+                  <button 
+                    @click="goToNextWeek"
+                    class="absolute right-2 top-1/2 z-10 p-2 text-gray-600 bg-white rounded-full shadow-sm transform -translate-y-1/2 hover:text-gray-800 hover:bg-gray-100"
+                  >
+                    <i class="text-sm fa-solid fa-chevron-right"></i>
+                  </button>
+                  
+                  <!-- Week Header -->
+                  <div class="grid grid-cols-7 gap-6 px-8 mb-6">
                     <div 
-                      v-for="booking in day.bookings" 
-                      :key="booking.booking_id"
-                      class="p-3 bg-white rounded-lg border border-gray-200 shadow-sm transition-shadow hover:shadow-md"
+                      v-for="date in getWeekDates" 
+                      :key="date.toISOString()"
+                      class="text-center calendar-day"
+                      :data-date="date.toISOString()"
                     >
-                      <!-- Package and people count -->
-                      <div class="flex justify-between items-start mb-2">
-                        <div class="text-xs font-medium text-gray-700 truncate">{{ booking?.package_name || '' }}</div>
-                        <div class="flex items-center px-2 py-1 text-xs font-semibold text-blue-800 bg-blue-100 rounded-full">
-                          <i class="mr-1 fa-solid fa-users"></i>
-                          {{ booking?.people_count || 0 }}
+                      <div 
+                        class="mb-2 text-sm font-medium text-center text-gray-500"
+                        :class="isToday(date) ? 'text-blue-600' : ''"
+                      >
+                        {{ formatWeekDate(date).charAt(0).toUpperCase() }}
                         </div>
-                      </div>
-                      
-                      <!-- Client info -->
-                      <div class="mb-2">
-                        <div class="text-xs font-semibold text-gray-800">
-                          {{ (booking?.client_first_name || '') + ' ' + (booking?.client_last_name || '') }}
-                        </div>
-                      </div>
-                      
-                      <!-- Phone and status -->
-                      <div class="flex justify-between items-center">
+                      <div class="flex justify-center">
                         <button 
-                          @click="makeCall(booking?.client_phone)"
-                          class="flex items-center text-xs text-blue-600 transition-colors hover:text-blue-800"
+                          class="flex justify-center items-center w-12 h-12 text-lg font-medium rounded-full transition-transform cursor-pointer calendar-day hover:scale-110 active:scale-95"
+                          :class="[getDayStatusClasses(date), getDayStatus(date) ? 'hover:scale-110' : '']"
+                          @click="handleDayClick(date)"
+                          type="button"
+                          style="min-width: 48px; min-height: 48px; max-width: 48px; max-height: 48px;"
                         >
-                          <i class="mr-1 fa-solid fa-phone"></i>
-                          {{ formatPhone(booking?.client_phone || '') }}
+                          {{ date.getDate() }}
                         </button>
-                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                          :class="getStatusColor(booking?.status || '')">
-                          {{ getStatusText(booking?.status || '') }}
-                        </span>
                       </div>
                     </div>
                   </div>
-                  <div v-else class="flex justify-center items-center h-full">
-                    <div class="text-xs text-center text-gray-400">Sin reservas</div>
                   </div>
                 </div>
+              
+              <!-- Empty State -->
+              <div v-else class="p-8 text-center">
+                <i class="mb-4 text-4xl text-gray-300 fa-solid fa-calendar"></i>
+                <div class="text-gray-500">No hay datos del calendario disponibles</div>
               </div>
             </div>
 
@@ -477,56 +529,56 @@
 
               <!-- Calendar Event Card Content -->
               <div v-else-if="card.type === 'calendar-event'" class="text-white">
-                <div class="flex justify-between items-start mb-2">
+                <div class="flex justify-between items-center mb-2">
                   <div class="flex items-center space-x-2">
-                    <span class="text-sm opacity-90">{{ card.title }}</span>
+                    <span class="text-sm font-medium opacity-90">{{ card.title }}</span>
                     <span 
-                      class="px-2 py-1 text-xs font-medium text-white bg-white bg-opacity-30 rounded-full"
+                      class="px-1.5 py-0.5 text-xs font-medium text-white bg-white bg-opacity-30 rounded-full"
                     >
                       {{ getStatusText(card.eventData.bookings?.[0]?.status || 'pendiente') }}
                     </span>
-            </div>
+                  </div>
                   <button 
                     @click="closeCalendarEventCard"
                     class="text-white opacity-80 hover:opacity-100"
                   >
-                    <i class="text-lg fa-solid fa-times"></i>
+                    <i class="text-sm fa-solid fa-times"></i>
                   </button>
-          </div>
-          
+                </div>
+                
+                <!-- Ultra compact info -->
                 <div class="mb-2">
-                  <div class="text-lg font-bold truncate">{{ card.eventData.bookings?.[0]?.package_name || 'Package' }}</div>
-                  <div class="flex items-center mt-1 space-x-2">
-                    <span class="px-2 py-1 text-xs font-medium text-white truncate bg-white bg-opacity-30 rounded-full">
-                      {{ card.eventData.bookings?.[0]?.people_count || 0 }} personas  
-                    </span>
-                    <span class="px-2 py-1 text-xs font-medium text-white bg-white bg-opacity-30 rounded-full">
-                      ${{ parseFloat(card.eventData.bookings?.[0]?.amount_due || 0).toLocaleString() }}
-                    </span>
+                  <div class="text-xs font-semibold truncate mb-1">{{ card.eventData.bookings?.[0]?.package_name || 'Package' }}</div>
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center space-x-1">
+                      <span class="px-1.5 py-0.5 text-white bg-white bg-opacity-20 rounded text-xs">
+                        {{ card.eventData.bookings?.[0]?.people_count || 0 }}p
+                      </span>
+                      <span class="px-1.5 py-0.5 text-white bg-white bg-opacity-20 rounded text-xs">
+                        ${{ parseFloat(card.eventData.bookings?.[0]?.amount_due || 0).toLocaleString() }}
+                      </span>
+                    </div>
+                    <a 
+                      :href="`tel:${card.eventData.bookings?.[0]?.client_phone}`"
+                      class="text-white opacity-75 hover:opacity-100 text-xs"
+                    >
+                      <i class="fa-solid fa-phone mr-1"></i>{{ card.eventData.bookings?.[0]?.client_phone }}
+                    </a>
                   </div>
                 </div>
                 
-                <div class="space-y-1">
-                  <div 
-                    v-for="booking in card.eventData.bookings" 
-                    :key="booking.booking_id"
-                    class="flex justify-between items-center"
-                  >
-                    <div class="flex items-center space-x-2">
-                      <span class="flex items-center text-sm opacity-90">
-                        <i class="mr-1 fa-solid fa-user"></i>
-                        {{ booking.client_first_name }} {{ booking.client_last_name }}
-                      </span>
-                      <a 
-                        :href="`tel:${booking.client_phone}`"
-                        class="flex items-center text-sm text-white opacity-90 cursor-pointer hover:text-white"
-                        @click="makeCall(booking.client_phone)"
-                      >
-                        <i class="mr-1 fa-solid fa-phone"></i>
-                        <span class="underline">{{ booking.client_phone }}</span>
-                      </a>
-                    </div>
+                <!-- Client name and link in one line -->
+                <div class="flex items-center justify-between text-xs">
+                  <div class="flex items-center space-x-1">
+                    <i class="fa-solid fa-user"></i>
+                    <span class="truncate">{{ card.eventData.bookings?.[0]?.client_first_name }} {{ card.eventData.bookings?.[0]?.client_last_name }}</span>
                   </div>
+                  <a 
+                    :href="`/detalle-reserva/${card.eventData.bookings?.[0]?.booking_id}`"
+                    class="px-2 py-1 text-xs font-medium text-white bg-white bg-opacity-20 rounded hover:bg-opacity-30 transition-all duration-200"
+                  >
+                    <i class="fa-solid fa-eye mr-1"></i>Ver
+                  </a>
                 </div>
           </div>
             </div>
@@ -1393,7 +1445,11 @@ const statsCards = computed(() => {
 
   // Add calendar event card if a date is selected from calendar
   if (showCalendarEventCard.value && selectedCalendarEvent.value) {
-    console.log('Creating calendar event card in statsCards computed')
+    console.log('=== Creating calendar event card ===')
+    console.log('selectedCalendarEvent.value:', selectedCalendarEvent.value)
+    console.log('dayData:', selectedCalendarEvent.value.dayData)
+    console.log('bookings:', selectedCalendarEvent.value.bookings)
+    
     const totalAmount = selectedCalendarEvent.value.bookings.reduce((sum, booking) => sum + (parseFloat(booking.amount_due) || 0), 0)
     const eventCard = {
       title: `${selectedCalendarEvent.value.dayData.day_name} ${selectedCalendarEvent.value.dayData.day_number}`,
@@ -1406,7 +1462,9 @@ const statsCards = computed(() => {
       eventData: selectedCalendarEvent.value
     }
     console.log('Event card created:', eventCard)
-    return [eventCard, ...baseCards]
+    console.log('Returning cards:', [eventCard, ...baseCards.slice(0, 3)])
+    // Show only the first 3 base cards + the event card (hide the last base card)
+    return [eventCard, ...baseCards.slice(0, 3)]
   }
 
   // Add single event details card if a day is selected (replaces any existing event card)
@@ -2150,6 +2208,12 @@ const goToCurrentWeek = () => {
 
 // Get week dates for display
 const getWeekDates = computed(() => {
+  // Use the actual dates from weekCalendarData if available
+  if (weekCalendarData.value?.daily_cards && weekCalendarData.value.daily_cards.length > 0) {
+    return weekCalendarData.value.daily_cards.map(day => new Date(day.date + 'T00:00:00'))
+  }
+  
+  // Fallback to currentWeekStart if no data
   if (!currentWeekStart.value) {
     return []
   }
@@ -2191,12 +2255,16 @@ const isToday = (date) => {
 
 // Get day's booking status for coloring
 const getDayStatus = (date) => {
-  if (!date || !weekCalendarData.value?.daily_cards) return null
+  if (!date || !weekCalendarData.value?.daily_cards) {
+    return null
+  }
   
   const dateStr = date.toISOString().split('T')[0]
   const dayData = weekCalendarData.value.daily_cards.find(day => day.date === dateStr)
   
-  if (!dayData || !dayData.bookings || dayData.bookings.length === 0) return null
+  if (!dayData || !dayData.bookings || dayData.bookings.length === 0) {
+    return null
+  }
   
   // Priority order: rechazado > pendiente > solicitud > aceptacion > cancelado
   if (dayData.bookings.some(b => b.status === 'rechazado')) return 'rechazado'
