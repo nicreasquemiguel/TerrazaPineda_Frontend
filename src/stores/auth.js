@@ -138,11 +138,23 @@ export const useAuthStore = defineStore('auth', () => {
       if (error.response?.data) {
         const data = error.response.data
         
-        // Handle field-specific errors
+        // Handle field-specific errors with better error messages
         if (data.email) {
-          errorMessage = Array.isArray(data.email) ? data.email[0] : data.email
+          const emailError = Array.isArray(data.email) ? data.email[0] : data.email
+          if (emailError.includes('already exists')) {
+            errorMessage = 'Ya existe una cuenta con este correo electrónico.'
+          } else {
+            errorMessage = emailError
+          }
         } else if (data.password) {
-          errorMessage = Array.isArray(data.password) ? data.password[0] : data.password
+          const passwordError = Array.isArray(data.password) ? data.password[0] : data.password
+          if (passwordError.includes('too common')) {
+            errorMessage = 'La contraseña es muy común. Elige una contraseña más segura.'
+          } else if (passwordError.includes('too short')) {
+            errorMessage = 'La contraseña debe tener al menos 8 caracteres.'
+          } else {
+            errorMessage = passwordError
+          }
         } else if (data.first_name) {
           errorMessage = Array.isArray(data.first_name) ? data.first_name[0] : data.first_name
         } else if (data.last_name) {

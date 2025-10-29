@@ -107,10 +107,14 @@ const handleRegister = async () => {
         router.push('/mis-reservas')
       }
     } else {
-      error.value = result.error || 'Error al registrar. Intenta de nuevo.'
+      const errorMessage = result.error || 'Error al registrar. Intenta de nuevo.'
+      error.value = errorMessage
+      toast.error(errorMessage)
     }
   } catch (err) {
-    error.value = 'Error de conexión. Verifica tu internet e intenta de nuevo.'
+    const connectionError = 'Error de conexión. Verifica tu internet e intenta de nuevo.'
+    error.value = connectionError
+    toast.error(connectionError)
     console.error('Registration error:', err)
   } finally {
     loading.value = false
