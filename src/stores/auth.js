@@ -172,6 +172,122 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // Activate account with Djoser
+  async function activateAccount(uid, token) {
+    try {
+      const res = await api.post('/auth/users/activation/', { uid, token })
+      return { success: true, message: 'Cuenta activada exitosamente' }
+    } catch (error) {
+      console.error('Activation error:', error.response?.data)
+      let errorMessage = 'Error al activar la cuenta. El enlace puede haber expirado.'
+      
+      if (error.response?.data) {
+        const data = error.response.data
+        if (data.detail) {
+          errorMessage = data.detail
+        } else if (data.non_field_errors) {
+          errorMessage = Array.isArray(data.non_field_errors) ? data.non_field_errors[0] : data.non_field_errors
+        }
+      }
+      
+      return { success: false, error: errorMessage }
+    }
+  }
+
+  // Resend activation email
+  async function resendActivation(email) {
+    try {
+      const res = await api.post('/auth/users/resend_activation/', { email })
+      return { success: true, message: 'Email de activación reenviado' }
+    } catch (error) {
+      console.error('Resend activation error:', error.response?.data)
+      let errorMessage = 'Error al reenviar el email de activación.'
+      
+      if (error.response?.data) {
+        const data = error.response.data
+        if (data.email) {
+          errorMessage = Array.isArray(data.email) ? data.email[0] : data.email
+        } else if (data.detail) {
+          errorMessage = data.detail
+        }
+      }
+      
+      return { success: false, error: errorMessage }
+    }
+  }
+
+  // Request password reset
+  async function requestPasswordReset(email) {
+    try {
+      const res = await api.post('/auth/users/reset_password/', { email })
+      return { success: true, message: 'Email de restablecimiento enviado' }
+    } catch (error) {
+      console.error('Password reset request error:', error.response?.data)
+      let errorMessage = 'Error al solicitar restablecimiento de contraseña.'
+      
+      if (error.response?.data) {
+        const data = error.response.data
+        if (data.email) {
+          errorMessage = Array.isArray(data.email) ? data.email[0] : data.email
+        } else if (data.detail) {
+          errorMessage = data.detail
+        }
+      }
+      
+      return { success: false, error: errorMessage }
+    }
+  }
+
+  // Reset password with token
+  async function resetPassword(uid, token, newPassword) {
+    try {
+      const res = await api.post('/auth/users/reset_password_confirm/', { 
+        uid, 
+        token, 
+        new_password: newPassword 
+      })
+      return { success: true, message: 'Contraseña restablecida exitosamente' }
+    } catch (error) {
+      console.error('Password reset error:', error.response?.data)
+      let errorMessage = 'Error al restablecer la contraseña.'
+      
+      if (error.response?.data) {
+        const data = error.response.data
+        if (data.new_password) {
+          errorMessage = Array.isArray(data.new_password) ? data.new_password[0] : data.new_password
+        } else if (data.detail) {
+          errorMessage = data.detail
+        }
+      }
+      
+      return { success: false, error: errorMessage }
+    }
+  }
+
+  // Change email
+  async function changeEmail(newEmail) {
+    try {
+      const res = await api.post('/auth/users/set_username/', { 
+        new_email: newEmail 
+      })
+      return { success: true, message: 'Email de confirmación enviado' }
+    } catch (error) {
+      console.error('Change email error:', error.response?.data)
+      let errorMessage = 'Error al cambiar el email.'
+      
+      if (error.response?.data) {
+        const data = error.response.data
+        if (data.new_email) {
+          errorMessage = Array.isArray(data.new_email) ? data.new_email[0] : data.new_email
+        } else if (data.detail) {
+          errorMessage = data.detail
+        }
+      }
+      
+      return { success: false, error: errorMessage }
+    }
+  }
+
   return {
     accessToken,
     refreshToken,
@@ -185,5 +301,10 @@ export const useAuthStore = defineStore('auth', () => {
     clearInvalidAuth,
     login,
     register,
+    activateAccount,
+    resendActivation,
+    requestPasswordReset,
+    resetPassword,
+    changeEmail,
   }
 }) 

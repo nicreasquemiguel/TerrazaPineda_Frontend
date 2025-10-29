@@ -10,6 +10,10 @@ import Gallery from '@/views/Gallery.vue'
 import PerfilUsuario from '@/views/auth/PerfilUsuario.vue'
 import MisReservas from '@/views/auth/MisReservas.vue'
 import DetalleReserva from '@/views/auth/DetalleReserva.vue'
+import VerifyEmail from '@/views/auth/VerifyEmail.vue'
+import ActivateAccount from '@/views/auth/ActivateAccount.vue'
+import ForgotPassword from '@/views/auth/ForgotPassword.vue'
+import ResetPassword from '@/views/auth/ResetPassword.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const routes = [
@@ -95,6 +99,31 @@ const routes = [
   {
     path: '/register',
     redirect: '/registrar'
+  },
+  // Email verification and activation routes
+  {
+    path: '/auth/verify-email',
+    name: 'VerifyEmail',
+    component: VerifyEmail,
+    meta: { title: 'Verificar Email' }
+  },
+  {
+    path: '/auth/activate/:uid/:token',
+    name: 'ActivateAccount',
+    component: ActivateAccount,
+    meta: { title: 'Activar Cuenta' }
+  },
+  {
+    path: '/auth/forgot-password',
+    name: 'ForgotPassword',
+    component: ForgotPassword,
+    meta: { title: 'Restablecer Contraseña' }
+  },
+  {
+    path: '/auth/reset-password/:uid/:token',
+    name: 'ResetPassword',
+    component: ResetPassword,
+    meta: { title: 'Nueva Contraseña' }
   }
 ]
 

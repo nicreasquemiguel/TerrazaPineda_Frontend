@@ -93,19 +93,16 @@ const handleRegister = async () => {
     })
     
     if (result.success) {
-      toast.success('¡Registro exitoso! Ya puedes iniciar sesión')
-      // Redirect to ?next if present
-      const next = route.query.next
-      if (next) {
-        router.push(next)
-        return
-      }
-      // Redirect based on user role
-      if (authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')) {
-        router.push('/dashboard')
-      } else {
-        router.push('/mis-reservas')
-      }
+      // Store email for verification page
+      localStorage.setItem('pendingEmail', email.value)
+      
+      toast.success('¡Registro exitoso! Revisa tu email para activar tu cuenta')
+      
+      // Redirect to email verification page
+      router.push({ 
+        path: '/auth/verify-email', 
+        query: { email: email.value } 
+      })
     } else {
       const errorMessage = result.error || 'Error al registrar. Intenta de nuevo.'
       error.value = errorMessage

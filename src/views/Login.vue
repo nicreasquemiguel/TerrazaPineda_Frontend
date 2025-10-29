@@ -42,6 +42,15 @@
           </button>
           <div v-if="error" class="mt-2 text-sm text-center text-red-500">{{ error }}</div>
         </form>
+        
+        <!-- Forgot Password Link -->
+        <router-link 
+          to="/auth/forgot-password" 
+          class="block mt-4 text-center text-[#7c3aed] hover:text-[#22d3ee] underline text-sm"
+        >
+          ¿Olvidaste tu contraseña?
+        </router-link>
+        
         <!-- Decorative Gradient -->
         <div class="absolute -z-10 left-1/2 top-0 w-[400px] h-[400px] -translate-x-1/2 bg-gradient-to-br from-[#f472b6]/30 via-[#7c3aed]/20 to-[#22d3ee]/10 rounded-full blur-3xl opacity-60"></div>
       </div>
