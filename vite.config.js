@@ -24,17 +24,17 @@ export default defineConfig({
     ],
     proxy: {
       '/terraza/api': {
-        target: 'https://api.terrazapineda.com/',
+        target: 'https://terrazapineda-backend.onrender.com',
         changeOrigin: true,
         secure: true,
       },
       '/auth': {
-        target: 'https://api.terrazapineda.com/',
+        target: 'https://terrazapineda-backend.onrender.com',
         changeOrigin: true,
         secure: true,
       },
       '/api': {
-        target: 'https://api.terrazapineda.com/',
+        target: 'https://terrazapineda-backend.onrender.com',
         changeOrigin: true,
         secure: true,
       },
