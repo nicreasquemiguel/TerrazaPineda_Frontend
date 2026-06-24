@@ -141,8 +141,6 @@ const slideFiles = [
   'mesasadornos.jpg',
 ]
 const slides = slideFiles.map(file => images[`/src/assets/terraza/${file}`])
-const FALLBACK_URL = '/data/pricing-fallback.json'
-const USE_FALLBACK_ONLY = false // temporal: usar solo datos locales mientras se arregla el backend
 
 const currentSlide = ref(0)
 let interval = null
@@ -196,56 +194,16 @@ const normalizeExtra = (extra) => ({
   icon: extra.icon || 'mdi:music',
 })
 
-async function loadFallbackData({ fillPackages, fillExtras }) {
-  try {
-    const res = await fetch(FALLBACK_URL)
-    if (!res.ok) throw new Error('No se pudo cargar el fallback local')
-    const data = await res.json()
-
-    let packagesLoaded = false
-    let extrasLoaded = false
-
-    if (fillPackages && Array.isArray(data.packages)) {
-      paquetes.value = data.packages.map(normalizePackage)
-      packagesLoaded = paquetes.value.length > 0
-    }
-
-    if (fillExtras && Array.isArray(data.extras)) {
-      extras.value = data.extras.map(normalizeExtra)
-      extrasLoaded = extras.value.length > 0
-    }
-
-    return { packagesLoaded, extrasLoaded }
-  } catch (err) {
-    console.error('Error loading fallback pricing data', err)
-    return { packagesLoaded: false, extrasLoaded: false }
-  }
-}
-
 async function fetchPackagesAndExtras() {
   paquetesLoading.value = true
   extrasLoading.value = true
   paquetesError.value = null
   extrasError.value = null
 
-  if (USE_FALLBACK_ONLY) {
-    const fallbackResult = await loadFallbackData({ fillPackages: true, fillExtras: true })
-    if (!fallbackResult.packagesLoaded) paquetesError.value = new Error('No se pudieron cargar los paquetes locales')
-    if (!fallbackResult.extrasLoaded) extrasError.value = new Error('No se pudieron cargar los extras locales')
-    paquetesLoading.value = false
-    extrasLoading.value = false
-    return
-  }
-
-  let packagesOk = false
-  let extrasOk = false
-
   try {
     const res = await api.get('/api/bookings/packages/?limit=10')
-    console.log('Fetched packages:', res.data)
     const pkgs = Array.isArray(res.data) ? res.data : (Array.isArray(res.data.results) ? res.data.results : [])
     paquetes.value = pkgs.map(normalizePackage)
-    packagesOk = paquetes.value.length > 0
   } catch (err) {
     paquetesError.value = err
     paquetes.value = []
@@ -253,19 +211,11 @@ async function fetchPackagesAndExtras() {
 
   try {
     const res = await api.get('/api/bookings/extras/?limit=10')
-    console.log('Fetched extras:', res.data)
     const exs = Array.isArray(res.data) ? res.data : (Array.isArray(res.data.results) ? res.data.results : [])
     extras.value = exs.map(normalizeExtra)
-    extrasOk = extras.value.length > 0
   } catch (err) {
     extrasError.value = err
     extras.value = []
-  }
-
-  if (!packagesOk || !extrasOk) {
-    const fallbackResult = await loadFallbackData({ fillPackages: !packagesOk, fillExtras: !extrasOk })
-    if (fallbackResult.packagesLoaded) paquetesError.value = null
-    if (fallbackResult.extrasLoaded) extrasError.value = null
   }
 
   paquetesLoading.value = false
