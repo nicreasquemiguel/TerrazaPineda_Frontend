@@ -142,7 +142,7 @@ const slideFiles = [
 ]
 const slides = slideFiles.map(file => images[`/src/assets/terraza/${file}`])
 const FALLBACK_URL = '/data/pricing-fallback.json'
-const USE_FALLBACK_ONLY = true // temporal: usar solo datos locales mientras se arregla el backend
+const USE_FALLBACK_ONLY = false // temporal: usar solo datos locales mientras se arregla el backend
 
 const currentSlide = ref(0)
 let interval = null
