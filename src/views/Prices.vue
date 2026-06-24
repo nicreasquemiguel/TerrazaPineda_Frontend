@@ -82,18 +82,32 @@
     </section>
 
     <!-- Included Section -->
-    <section class="py-12 bg-gray-50">
-      <div class="max-w-5xl px-4 mx-auto">
-        <h2 class="mb-8 text-3xl font-bold text-center text-gray-900">¿Qué incluyen?</h2>
-        <div class="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-          <div v-for="(cat, i) in included" :key="i" class="flex flex-col items-center p-6 bg-white border border-gray-200 rounded-xl">
-            <div class="mb-2 text-xl font-bold uppercase text-sky-700">{{ cat.title }}</div>
-            <div class="grid w-full grid-cols-1 gap-3">
-              <div v-for="(item, j) in cat.items" :key="j" class="flex items-center gap-2 text-gray-700">
-                <Icon :icon="item.icon" class="w-6 h-6 text-primary-600" />
-                <span>{{ item.label }}</span>
+    <section class="py-16 bg-gray-50">
+      <div class="max-w-6xl px-4 mx-auto">
+        <h2 class="mb-2 text-3xl font-extrabold text-center text-gray-900 md:text-4xl">¿Qué incluyen?</h2>
+        <p class="mb-10 text-center text-gray-500">Todo lo que necesitas para tu evento en un solo lugar</p>
+        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          <div
+            v-for="(cat, i) in included"
+            :key="i"
+            class="relative flex flex-col p-6 bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group hover:shadow-md transition-shadow duration-300"
+          >
+            <!-- top accent bar -->
+            <div class="absolute top-0 left-0 right-0 h-1 rounded-t-2xl" :style="`background: ${catGradients[i % catGradients.length]}`"></div>
+            <!-- icon + title -->
+            <div class="flex items-center gap-3 mb-5">
+              <div class="flex items-center justify-center w-10 h-10 rounded-xl shrink-0" :style="`background: ${catBg[i % catBg.length]}`">
+                <Icon :icon="cat.icon" class="w-5 h-5" :style="`color: ${catColor[i % catColor.length]}`" />
               </div>
+              <span class="text-sm font-bold tracking-wider uppercase" :style="`color: ${catColor[i % catColor.length]}`">{{ cat.title }}</span>
             </div>
+            <!-- items -->
+            <ul class="flex flex-col gap-2.5">
+              <li v-for="(item, j) in cat.items" :key="j" class="flex items-center gap-2.5 text-gray-700 text-sm">
+                <Icon :icon="item.icon" class="w-4 h-4 shrink-0 text-gray-400" />
+                <span>{{ item.label }}</span>
+              </li>
+            </ul>
           </div>
         </div>
       </div>
@@ -226,9 +240,19 @@ onMounted(() => {
   fetchPackagesAndExtras()
 })
 
+const catGradients = [
+  'linear-gradient(90deg,#7c3aed,#a78bfa)',
+  'linear-gradient(90deg,#0ea5e9,#22d3ee)',
+  'linear-gradient(90deg,#06b6d4,#34d399)',
+  'linear-gradient(90deg,#f472b6,#fb923c)',
+]
+const catColor = ['#7c3aed', '#0ea5e9', '#06b6d4', '#f472b6']
+const catBg   = ['#f3f0ff', '#e0f2fe', '#ecfeff', '#fdf2f8']
+
 const included = [
   {
     title: 'Mobiliario',
+    icon: 'mdi:table-furniture',
     items: [
       { label: 'Mesas', icon: 'mdi:table-chair' },
       { label: 'Sillas', icon: 'mdi:chair-rolling' },
@@ -237,22 +261,25 @@ const included = [
   },
   {
     title: 'Horario',
+    icon: 'mdi:clock-time-four-outline',
     items: [
       { label: '10am a 10pm', icon: 'mdi:clock-outline' },
       { label: 'Sin límite dentro del horario', icon: 'mdi:clock-check-outline' },
-      { label: 'Horas extras', icon: 'mdi:clock-plus-outline' },
+      { label: 'Horas extras disponibles', icon: 'mdi:clock-plus-outline' },
     ]
   },
   {
     title: 'Alberca',
+    icon: 'mdi:pool',
     items: [
       { label: 'Climatizada', icon: 'mdi:fire' },
-      { label: '1.20 mts', icon: 'mdi:waves' },
-      { label: 'Bancas', icon: 'mdi:bench' },
+      { label: '1.20 mts de profundidad', icon: 'mdi:waves' },
+      { label: 'Bancas alrededor', icon: 'mdi:bench' },
     ]
   },
   {
     title: 'Otras Amenidades',
+    icon: 'mdi:star-circle-outline',
     items: [
       { label: 'Futbolito', icon: 'mdi:soccer' },
       { label: 'Wifi', icon: 'mdi:wifi' },

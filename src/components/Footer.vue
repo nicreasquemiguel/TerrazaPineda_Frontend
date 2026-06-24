@@ -36,28 +36,20 @@
           <div>Zapopan, Jal., México</div>
         </div>
         <div class="flex gap-2 justify-center items-center mb-1 md:justify-start">
-          <div class="w-5 h-5 text-primary-400">
-            <Icon icon="mdi:email-outline" />
-          </div>
+          <Icon icon="mdi:email-outline" class="w-5 h-5 shrink-0 text-primary-400" />
           <a href="mailto:terrazapineda7@gmail.com" class="text-sm underline transition hover:text-cyan-300">terrazapineda7@gmail.com</a>
         </div>
         <div class="flex flex-col gap-1 items-center w-full md:items-start">
           <div class="flex gap-2 justify-center items-center md:justify-start">
-            <div class="w-5 h-5 text-primary-400">
-              <Icon icon="mdi:phone-outline" />
-            </div>
+            <Icon icon="mdi:phone-outline" class="w-5 h-5 shrink-0 text-primary-400" />
             <a href="tel:+523323439936" class="text-lg underline transition hover:text-cyan-300">33 2343 9936</a>
           </div>
           <div class="flex gap-2 justify-center items-center md:justify-start">
-            <div class="w-5 h-5 text-primary-400">
-              <Icon icon="mdi:phone-outline" />
-            </div>
+            <Icon icon="mdi:phone-outline" class="w-5 h-5 shrink-0 text-primary-400" />
             <a href="tel:+523334952066" class="text-sm underline transition hover:text-cyan-300">33 3495 2066</a>
           </div>
           <div class="flex gap-2 justify-center items-center md:justify-start">
-            <div class="w-5 h-5 text-primary-400">
-              <Icon icon="mdi:phone-outline" />
-            </div>
+            <Icon icon="mdi:phone-outline" class="w-5 h-5 shrink-0 text-primary-400" />
             <a href="tel:+523338094228" class="text-sm underline transition hover:text-cyan-300">33 3809 4228</a>
           </div>
         </div>
@@ -73,24 +65,16 @@
           <span class="block mb-2 text-center text-white/80">Síguenos</span>
           <div class="flex gap-3 justify-center">
             <a href="https://www.facebook.com/terrazapineda" target="_blank" rel="noopener" class="rounded-lg p-2 bg-[#1877F3] hover:opacity-80 transition">
-              <div class="w-6 h-6 text-white">
-                <Icon icon="mdi:facebook" />
-              </div>
+              <Icon icon="mdi:facebook" class="w-6 h-6 text-white" />
             </a>
             <a href="https://www.instagram.com/terrazapineda/" target="_blank" rel="noopener" class="rounded-lg p-2 bg-[#DD2A7B] hover:opacity-80 transition">
-              <div class="w-6 h-6 text-white">
-                <Icon icon="mdi:instagram" />
-              </div>
+              <Icon icon="mdi:instagram" class="w-6 h-6 text-white" />
             </a>
             <a href="https://www.tiktok.com/@terrazapineda" target="_blank" rel="noopener" class="rounded-lg p-2 bg-[#010101] hover:opacity-80 transition">
-              <div class="w-6 h-6 text-white">
-                <Icon icon="simple-icons:tiktok" />
-              </div>
+              <Icon icon="mdi:tiktok" class="w-6 h-6 text-white" />
             </a>
             <a href="https://api.whatsapp.com/send?phone=523323439936&text=Hola%20quiero%20rentar%20Terraza%20Pineda" target="_blank" rel="noopener" class="rounded-lg p-2 bg-[#25D366] hover:opacity-80 transition">
-              <div class="w-6 h-6 text-white">
-                <Icon icon="mdi:whatsapp" />
-              </div>
+              <Icon icon="mdi:whatsapp" class="w-6 h-6 text-white" />
             </a>
           </div>
         </div>
