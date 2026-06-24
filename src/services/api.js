@@ -1,13 +1,15 @@
 import axios from 'axios'
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://terrazapineda-backend.onrender.com'
+
 // API Configuration
 const API_CONFIG = {
-  baseURL: 'https://api.terrazapineda.com/', // HTTPS API domain
+  baseURL: `${API_BASE}/`,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
   },
-  withCredentials: false, // Ensure no credentials are sent
+  withCredentials: false,
 }
 
 // Create main API instance
@@ -15,10 +17,10 @@ const api = axios.create(API_CONFIG)
 
 // Alternative base URLs for different environments
 export const API_ENDPOINTS = {
-  auth: 'https://api.terrazapineda.com/auth/',
-  bookings: 'https://api.terrazapineda.com/api/bookings/',
-  user: 'https://api.terrazapineda.com/api/auth/user/',
-  terraza: 'https://api.terrazapineda.com/terraza/api/',
+  auth: `${API_BASE}/auth/`,
+  bookings: `${API_BASE}/api/bookings/`,
+  user: `${API_BASE}/api/auth/user/`,
+  terraza: `${API_BASE}/terraza/api/`,
 }
 
 // Helper function to create API instances for specific endpoints
@@ -78,7 +80,7 @@ const addResponseInterceptor = (apiInstance) => {
   async (error) => {
     const originalRequest = error.config;
       
-git       // Handle 401 errors (unauthorized) and 403 errors (forbidden)
+      // Handle 401 errors (unauthorized) and 403 errors (forbidden)
       if ((error.response?.status === 401 || error.response?.status === 403) && !originalRequest._retry) {
         console.log(`[API] ${error.response.status} error detected, attempting token refresh...`);
         
