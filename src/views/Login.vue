@@ -14,7 +14,7 @@
             <input
               id="email"
               v-model="email"
-              type="email"se
+              type="email"
               class="rounded-xl border border-gray-200 bg-white/60 px-4 py-3 text-lg focus:outline-none focus:ring-2 focus:ring-[#7c3aed] placeholder-gray-400"
               placeholder="Ingresa tu correo..."
               required

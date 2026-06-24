@@ -119,7 +119,6 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import Footer from '@/components/Footer.vue'
 
 const selectedCategory = ref('all')
 const lightboxOpen = ref(false)

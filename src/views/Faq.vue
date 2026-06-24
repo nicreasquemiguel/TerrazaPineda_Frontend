@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-start pb-12 px-0 md:py-12 md:px-2 bg-[#fdf6ef]">
+  <div class="min-h-screen flex flex-col items-center justify-start py-8 px-0 md:py-12 md:px-2 bg-[#fdf6ef]">
     <div class="overflow-hidden relative p-8 w-full max-w-3xl rounded-3xl shadow-2xl bg-white/80">
       <!-- Logo -->
       <div class="flex justify-center mb-4">

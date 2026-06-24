@@ -1,172 +1,236 @@
 <template>
   <div class="flex flex-col min-h-screen bg-white">
-    <div class="flex flex-col flex-1 items-center px-2 pb-8 w-full md:min-h-[36rem]">
-      <!-- Logo -->
-      <img src="/tp.svg" alt="Terraza Pineda Logo" class="mb-4 w-12 h-12 md:w-16 md:h-16" />
-      <!-- Title -->
-      <h1 class="mb-2 text-4xl font-extrabold text-center md:text-5xl reserve-gradient-text">Solicitud</h1>
-      <p class="mb-6 max-w-xl text-base text-center text-gray-600 md:text-lg">Se aprobará según los detalles de tu evento, tales como fecha, paquete, descripción, seguir pasos...</p>
-      <!-- Stepper -->
-      <div class="flex justify-center items-center mb-8 w-full max-w-2xl">
-        <div class="flex flex-1 gap-2 justify-between items-center">
-          <div v-for="(step, idx) in steps" :key="step" class="flex flex-col flex-1 items-center">
-            <div 
-              :class="[
-                'w-9 h-9 flex items-center justify-center rounded-full font-bold text-lg mb-1 border-2 transition cursor-pointer',
-              currentStep === idx + 1
-                ? 'bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] text-white border-[#22d3ee] shadow'
-                : 'bg-gray-100 text-[#22d3ee] border-gray-300'
-              ]"
+    <!-- Two-panel: stacked on mobile, side-by-side on lg+ -->
+    <div class="flex flex-col flex-1 lg:flex-row">
+
+      <!-- ── Left Sidebar ── -->
+      <aside class="flex flex-col items-center px-6 pt-8 pb-4 bg-gray-50 border-b border-gray-200
+                    lg:w-72 xl:w-80 lg:border-b-0 lg:border-r lg:py-10 lg:shrink-0">
+        <img src="/tp.svg" alt="Terraza Pineda Logo" class="mb-3 w-12 h-12" />
+        <h1 class="mb-1 text-3xl font-extrabold text-center reserve-gradient-text">Solicitud</h1>
+        <p class="mb-5 max-w-xs text-sm text-center text-gray-500 lg:mb-8">
+          Se aprobará según los detalles de tu evento, tales como fecha, paquete, descripción, seguir pasos...
+        </p>
+
+        <!-- Mobile: compact horizontal stepper -->
+        <div class="w-full lg:hidden">
+          <div class="flex justify-between items-center">
+            <div
+              v-for="(step, idx) in steps"
+              :key="step"
               @click="goToStep(idx + 1)"
+              class="flex flex-col flex-1 items-center cursor-pointer"
             >
-              {{ idx + 1 }}
+              <div
+                :class="[
+                  'w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm mb-1 border-2 transition',
+                  currentStep === idx + 1
+                    ? 'bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] text-white border-[#22d3ee] shadow'
+                    : 'bg-gray-100 text-[#22d3ee] border-gray-300'
+                ]"
+              >{{ idx + 1 }}</div>
+              <span
+                :class="[
+                  'text-[10px] font-semibold text-center leading-tight',
+                  currentStep === idx + 1 ? 'text-[#22d3ee]' : 'text-gray-400'
+                ]"
+              >{{ step }}</span>
             </div>
-            <span :class="[
-              'text-xs font-semibold',
-              currentStep === idx + 1 ? 'text-[#22d3ee]' : 'text-gray-400'
-            ]">{{ step }}</span>
           </div>
         </div>
-      </div>
-      <!-- Step Content -->
-      <div class="flex flex-col gap-6 items-center mb-8 w-full max-w-xl">
-        <div v-if="currentStep === 1" class="flex flex-col gap-4 items-center w-full">
-          <h2 class="mb-1 text-2xl font-extrabold text-gray-900">Selecciona tu fecha</h2>
-          <CalendarPicker v-model="date" />
-          <div class="flex flex-col items-center mt-6 w-full">
-            <template v-if="date">
-              <SplitText
-                :key="splitTextKey"
-                :text="formatDate(date)"
-                split-type="words, chars"
-                :duration="0.7"
-                :delay="40"
-                :useScroll="false"
-                className="selected-date-text"
-              />
-              <div class="fecha-label">FECHA SELECCIONADA</div>
-            </template>
-            <template v-else>
-              <div class="fecha-label">FECHA SELECCIONADA</div>
-            </template>
+
+        <!-- Desktop: vertical stepper -->
+        <nav class="hidden lg:flex flex-col w-full gap-0.5">
+          <div
+            v-for="(step, idx) in steps"
+            :key="step"
+            @click="goToStep(idx + 1)"
+            :class="[
+              'flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all',
+              currentStep === idx + 1 ? 'bg-cyan-50' : 'hover:bg-gray-100'
+            ]"
+          >
+            <div
+              :class="[
+                'w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm border-2 transition flex-shrink-0',
+                currentStep === idx + 1
+                  ? 'bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] text-white border-[#22d3ee] shadow'
+                  : currentStep > idx + 1
+                    ? 'bg-cyan-100 text-cyan-600 border-cyan-300'
+                    : 'bg-gray-100 text-gray-400 border-gray-300'
+              ]"
+            >
+              <svg v-if="currentStep > idx + 1" class="w-4 h-4" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+              <span v-else>{{ idx + 1 }}</span>
+            </div>
+            <span
+              :class="[
+                'text-sm font-semibold',
+                currentStep === idx + 1 ? 'text-cyan-600' : currentStep > idx + 1 ? 'text-gray-700' : 'text-gray-400'
+              ]"
+            >{{ step }}</span>
           </div>
-        </div>
-        <div v-else-if="currentStep === 2" class="flex flex-col gap-0 items-center w-full">
-          <h2 class="mb-1 text-2xl font-extrabold text-gray-900">Elige un paquete</h2>
-          <SliderPersonas v-model="selectedPackage" />
-        </div>
-        <div v-else-if="currentStep === 3" class="flex flex-col gap-4 items-center w-full">
-          <h2 class="mb-1 text-2xl font-extrabold text-gray-900">Servicios extra (opcional)</h2>
-          <ExtrasSlider v-model="selectedExtras" />
-        </div>
-        <div v-else-if="currentStep === 4" class="flex flex-col gap-4 items-center w-full">
-          <h2 class="mb-1 text-2xl font-extrabold text-gray-900">Descripción del evento</h2>
-          <DescriptionInput v-model="description" />
-        </div>
-        <div v-else-if="currentStep === 5" class="flex flex-col gap-4 items-center w-full">
-          <h2 class="mb-1 text-2xl font-extrabold text-gray-900">Resumen y Enviar</h2>
-          <div class="flex flex-col gap-4 p-4 w-full max-w-md bg-gray-50 rounded-xl shadow">
-            <!-- Fecha -->
-            <div class="relative">
-              <div class="flex justify-between items-center mb-2 font-bold text-gray-700">
-                <span>Fecha seleccionada</span>
-                <button @click="goToStep(1)" class="ml-2 px-2 py-0.5 rounded-full bg-[#e0f2fe] text-[#0369a1] text-[11px] font-semibold shadow-sm hover:bg-[#bae6fd] transition">Editar</button>
-              </div>
-              <div class="flex gap-2 items-center p-2 bg-white rounded-lg border">
-                <span class="text-xl"><Icon icon="mdi:calendar" /></span>
-                <div class="flex-1">
-                  <div class="font-semibold">{{ date ? formatDate(date) : 'No seleccionada' }}</div>
+        </nav>
+      </aside>
+
+      <!-- ── Right Content Panel ── -->
+      <div class="flex flex-col flex-1 items-center px-4 pb-8 pt-6 lg:pt-10 lg:px-12 lg:pr-72 xl:pr-80">
+
+        <!-- Step Content -->
+        <div class="flex flex-col gap-6 items-center mb-8 w-full max-w-xl">
+
+          <!-- Step 1: Date -->
+          <div v-if="currentStep === 1" class="flex flex-col gap-4 items-center w-full">
+            <h2 class="mb-1 text-2xl font-extrabold text-gray-900">Selecciona tu fecha</h2>
+            <CalendarPicker v-model="date" />
+            <div class="flex flex-col items-center mt-6 w-full">
+              <template v-if="date">
+                <SplitText
+                  :key="splitTextKey"
+                  :text="formatDate(date)"
+                  split-type="words, chars"
+                  :duration="0.7"
+                  :delay="40"
+                  :useScroll="false"
+                  className="selected-date-text"
+                />
+                <div class="fecha-label">FECHA SELECCIONADA</div>
+              </template>
+              <template v-else>
+                <div class="fecha-label">FECHA SELECCIONADA</div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Step 2: Package -->
+          <div v-else-if="currentStep === 2" class="flex flex-col gap-0 items-center w-full">
+            <h2 class="mb-1 text-2xl font-extrabold text-gray-900">Elige un paquete</h2>
+            <SliderPersonas v-model="selectedPackage" />
+          </div>
+
+          <!-- Step 3: Extras -->
+          <div v-else-if="currentStep === 3" class="flex flex-col gap-4 items-center w-full">
+            <h2 class="mb-1 text-2xl font-extrabold text-gray-900">Servicios extra (opcional)</h2>
+            <ExtrasSlider v-model="selectedExtras" />
+          </div>
+
+          <!-- Step 4: Description -->
+          <div v-else-if="currentStep === 4" class="flex flex-col gap-4 items-center w-full">
+            <h2 class="mb-1 text-2xl font-extrabold text-gray-900">Descripción del evento</h2>
+            <DescriptionInput v-model="description" />
+          </div>
+
+          <!-- Step 5: Summary -->
+          <div v-else-if="currentStep === 5" class="flex flex-col gap-4 items-center w-full">
+            <h2 class="mb-1 text-2xl font-extrabold text-gray-900">Resumen y Enviar</h2>
+            <div class="flex flex-col gap-4 p-4 w-full max-w-md bg-gray-50 rounded-xl shadow">
+              <!-- Fecha -->
+              <div class="relative">
+                <div class="flex justify-between items-center mb-2 font-bold text-gray-700">
+                  <span>Fecha seleccionada</span>
+                  <button @click="goToStep(1)" class="ml-2 px-2 py-0.5 rounded-full bg-[#e0f2fe] text-[#0369a1] text-[11px] font-semibold shadow-sm hover:bg-[#bae6fd] transition">Editar</button>
+                </div>
+                <div class="flex gap-2 items-center p-2 bg-white rounded-lg border">
+                  <span class="text-xl"><Icon icon="mdi:calendar" /></span>
+                  <div class="flex-1">
+                    <div class="font-semibold">{{ date ? formatDate(date) : 'No seleccionada' }}</div>
+                  </div>
                 </div>
               </div>
-            </div>
-            <!-- Package Information -->
-            <div class="relative">
-              <div class="flex justify-between items-center mb-2 font-bold text-gray-700">
-                <span>Paquete seleccionado</span>
-                <button @click="goToStep(2)" class="ml-2 px-2 py-0.5 rounded-full bg-[#e0f2fe] text-[#0369a1] text-[11px] font-semibold shadow-sm hover:bg-[#bae6fd] transition">Editar</button>
-              </div>
-              <div class="flex gap-2 items-center p-2 bg-white rounded-lg border">
-                <span class="text-2xl">
-                  <Icon v-if="selectedPackage?.icon" :icon="selectedPackage.icon" />
-                  <Icon v-else icon="mdi:package-variant" />
-                </span>
-                <div class="flex-1">
-                  <div class="font-semibold">{{ selectedPackage?.title || selectedPackage?.label || 'No seleccionado' }}</div>
+              <!-- Package -->
+              <div class="relative">
+                <div class="flex justify-between items-center mb-2 font-bold text-gray-700">
+                  <span>Paquete seleccionado</span>
+                  <button @click="goToStep(2)" class="ml-2 px-2 py-0.5 rounded-full bg-[#e0f2fe] text-[#0369a1] text-[11px] font-semibold shadow-sm hover:bg-[#bae6fd] transition">Editar</button>
                 </div>
-                <span class="text-base font-bold text-gray-500">${{ Math.round(selectedPackage?.price || 0) }}</span>
-              </div>
-            </div>
-            <!-- Extras -->
-            <div class="relative">
-              <div class="flex justify-between items-center mb-2 font-bold text-gray-700">
-                <span>Servicios extra</span>
-                <button @click="goToStep(3)" class="ml-2 px-2 py-0.5 rounded-full bg-[#e0f2fe] text-[#0369a1] text-[11px] font-semibold shadow-sm hover:bg-[#bae6fd] transition">Editar</button>
-              </div>
-              <div v-if="selectedExtrasDetails.length" class="flex flex-col gap-1">
-                <div v-for="extra in selectedExtrasDetails" :key="extra.id" class="flex justify-between items-center px-3 py-1 text-sm bg-white rounded-lg border">
-                  <span class="flex gap-2 items-center text-base font-semibold">
-                    <span v-if="extra.icon"><Icon :icon="extra.icon" class="text-lg" /></span>
-                    {{ extra.name || extra.title }}
+                <div class="flex gap-2 items-center p-2 bg-white rounded-lg border">
+                  <span class="text-2xl">
+                    <Icon v-if="selectedPackage?.icon" :icon="selectedPackage.icon" />
+                    <Icon v-else icon="mdi:package-variant" />
                   </span>
-                  <span class="text-base font-bold text-gray-500">${{ Math.round(extra.price) }}</span>
+                  <div class="flex-1">
+                    <div class="font-semibold">{{ selectedPackage?.title || selectedPackage?.label || 'No seleccionado' }}</div>
+                  </div>
+                  <span class="text-base font-bold text-gray-500">${{ Math.round(selectedPackage?.price || 0) }}</span>
                 </div>
               </div>
-              <div v-else class="text-xs text-gray-500">Ninguno</div>
-            </div>
-            <!-- Descripción -->
-            <div>
-              <div class="mb-2 font-bold text-gray-700">Descripción del evento</div>
-              <div class="px-3 py-2 text-sm bg-white rounded-lg border">{{ description }}</div>
-            </div>
-            <!-- Checkboxes -->
-            <div class="flex flex-col gap-2 mt-2">
-              <label class="flex gap-2 items-center text-sm">
-                <input type="checkbox" v-model="isOver18" />
-                Soy mayor de 18 años
-              </label>
-              <label class="flex gap-2 items-center text-sm">
-                <input type="checkbox" v-model="acceptTerms" />
-                Acepto los <a href="#" class="text-blue-500 underline" @click.prevent="showTermsModal = true">términos y condiciones</a>
-              </label>
-            </div>
-            <!-- Resumen de costos -->
-            <div>
-              <div class="mb-2 font-bold text-gray-700">Resumen de costos</div>
-              <div class="flex items-center mt-2">
-                <span class="text-base font-bold">Total</span>
-                <span class="flex-1"></span>
-                <span class="text-base font-extrabold text-black">${{ totalCostNoDecimals }}</span>
+              <!-- Extras -->
+              <div class="relative">
+                <div class="flex justify-between items-center mb-2 font-bold text-gray-700">
+                  <span>Servicios extra</span>
+                  <button @click="goToStep(3)" class="ml-2 px-2 py-0.5 rounded-full bg-[#e0f2fe] text-[#0369a1] text-[11px] font-semibold shadow-sm hover:bg-[#bae6fd] transition">Editar</button>
+                </div>
+                <div v-if="selectedExtrasDetails.length" class="flex flex-col gap-1">
+                  <div v-for="extra in selectedExtrasDetails" :key="extra.id" class="flex justify-between items-center px-3 py-1 text-sm bg-white rounded-lg border">
+                    <span class="flex gap-2 items-center text-base font-semibold">
+                      <span v-if="extra.icon"><Icon :icon="extra.icon" class="text-lg" /></span>
+                      {{ extra.name || extra.title }}
+                    </span>
+                    <span class="text-base font-bold text-gray-500">${{ Math.round(extra.price) }}</span>
+                  </div>
+                </div>
+                <div v-else class="text-xs text-gray-500">Ninguno</div>
+              </div>
+              <!-- Descripción -->
+              <div>
+                <div class="mb-2 font-bold text-gray-700">Descripción del evento</div>
+                <div class="px-3 py-2 text-sm bg-white rounded-lg border">{{ description }}</div>
+              </div>
+              <!-- Checkboxes -->
+              <div class="flex flex-col gap-2 mt-2">
+                <label class="flex gap-2 items-center text-sm">
+                  <input type="checkbox" v-model="isOver18" />
+                  Soy mayor de 18 años
+                </label>
+                <label class="flex gap-2 items-center text-sm">
+                  <input type="checkbox" v-model="acceptTerms" />
+                  Acepto los <a href="#" class="text-blue-500 underline" @click.prevent="showTermsModal = true">términos y condiciones</a>
+                </label>
+              </div>
+              <!-- Resumen de costos -->
+              <div>
+                <div class="mb-2 font-bold text-gray-700">Resumen de costos</div>
+                <div class="flex items-center mt-2">
+                  <span class="text-base font-bold">Total</span>
+                  <span class="flex-1"></span>
+                  <span class="text-base font-extrabold text-black">${{ totalCostNoDecimals }}</span>
+                </div>
               </div>
             </div>
+            <!-- Nota -->
+            <div class="p-3 mx-auto mt-4 w-full max-w-md text-xs text-yellow-800 bg-yellow-50 rounded border-l-4 border-yellow-400 md:p-4 md:text-sm">
+              <strong>Nota:</strong> Esta es solo una solicitud de reservación. La fecha y servicios seleccionados están sujetos a disponibilidad y aprobación. Serás notificado si tu solicitud es aceptada. Después de la aceptación, tendrás 3 días para realizar el pago de anticipo de $1000 MXN y asegurar tu evento.
+            </div>
+            <button @click="onSubmitClick" :disabled="!isOver18 || !acceptTerms" class="w-full mt-4 py-3 rounded-xl font-bold text-lg text-white bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] shadow-lg hover:opacity-90 transition disabled:opacity-50">Mandar solicitud</button>
           </div>
-          <!-- Notes Section -->
-          <div class="p-3 mx-auto mt-4 w-full max-w-md text-xs text-yellow-800 bg-yellow-50 rounded border-l-4 border-yellow-400 md:p-4 md:text-sm">
-            <strong>Nota:</strong> Esta es solo una solicitud de reservación. La fecha y servicios seleccionados están sujetos a disponibilidad y aprobación. Serás notificado si tu solicitud es aceptada. Después de la aceptación, tendrás 3 días para realizar el pago de anticipo de $1000 MXN y asegurar tu evento.
-          </div>
-          <button @click="onSubmitClick" :disabled="!isOver18 || !acceptTerms" class="w-full mt-4 py-3 rounded-xl font-bold text-lg text-white bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] shadow-lg hover:opacity-90 transition disabled:opacity-50">Mandar solicitud</button>
+
         </div>
-      </div>
-      <!-- Navigation Buttons -->
-      <div class="mt-2 w-full max-w-xl">
-        <button
-          v-if="currentStep < 5"
-          @click="nextStep"
-          :disabled="!canContinue"
-          class="w-full flex items-center justify-center gap-2 px-6 py-3 text-lg font-bold rounded-xl text-white bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] shadow-lg hover:opacity-90 transition disabled:opacity-50 mb-2"
-        >
-          Continuar <span class="text-xl">&#8594;</span>
-        </button>
-        <button
-          v-if="currentStep > 1"
-          @click="prevStep"
-          class="w-full flex items-center justify-center gap-2 px-6 py-3 text-lg font-bold rounded-xl border-2 border-[#22d3ee] text-[#22d3ee] bg-white hover:bg-[#f0f9fa] transition"
-        >
-          <span class="text-xl">&#8592;</span> Regresar
-        </button>
+
+        <!-- Navigation Buttons -->
+        <div class="mt-2 w-full max-w-xl">
+          <button
+            v-if="currentStep < 5"
+            @click="nextStep"
+            :disabled="!canContinue"
+            class="w-full flex items-center justify-center gap-2 px-6 py-3 text-lg font-bold rounded-xl text-white bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] shadow-lg hover:opacity-90 transition disabled:opacity-50 mb-2"
+          >
+            Continuar <span class="text-xl">&#8594;</span>
+          </button>
+          <button
+            v-if="currentStep > 1"
+            @click="prevStep"
+            class="w-full flex items-center justify-center gap-2 px-6 py-3 text-lg font-bold rounded-xl border-2 border-[#22d3ee] text-[#22d3ee] bg-white hover:bg-[#f0f9fa] transition"
+          >
+            <span class="text-xl">&#8592;</span> Regresar
+          </button>
+        </div>
+
       </div>
     </div>
 
-    <!-- Terms Modal -->
+    <!-- ── Terms Modal ── -->
     <div v-if="showTermsModal" class="flex fixed inset-0 z-50 justify-center items-center bg-black/40" @click.self="closeTermsModal">
       <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6 relative overflow-y-auto max-h-[90vh]" @click.stop>
         <div class="flex sticky top-0 z-10 justify-between items-center pb-2 mb-2 bg-white">
@@ -184,7 +248,8 @@
         </div>
       </div>
     </div>
-    <!-- Auth Modal -->
+
+    <!-- ── Auth Modal ── -->
     <div v-if="showAuthModal" class="flex fixed inset-0 z-50 justify-center items-center bg-black/40">
       <div class="flex relative flex-col items-center p-6 w-full max-w-xs bg-white rounded-2xl shadow-2xl">
         <button @click="showAuthModal = false" class="absolute top-3 right-3 text-2xl text-gray-400 hover:text-gray-700">&times;</button>
@@ -202,14 +267,10 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import CalendarPicker from '@/ReservarForm/CalendarPicker.vue'
-import MultiSelect from 'primevue/multiselect';
-import Textarea from 'primevue/textarea';
 import DescriptionInput from '@/ReservarForm/DescriptionInput.vue';
 import SplitText from '@/components/SplitText.vue'
 import SliderPersonas from '@/ReservarForm/SliderPersonas.vue'
 import ExtrasSlider from '@/ReservarForm/ExtrasSlider.vue'
-import { useQuery } from '@tanstack/vue-query'
-import { useRoute } from 'vue-router'
 import 'v-calendar/style.css'
 import { Icon } from '@iconify/vue';
 import { useRouter } from 'vue-router'
@@ -229,7 +290,7 @@ watch(date, (newDate, oldDate) => {
     const dateObj = d instanceof Date ? d : new Date(d);
     return dateObj.toDateString();
   }
-  
+
   console.log('[Reserve] Date changed:', {
     old: formatDateStr(oldDate),
     new: formatDateStr(newDate)
@@ -237,12 +298,6 @@ watch(date, (newDate, oldDate) => {
   splitTextKey.value++;
 })
 const selectedExtras = ref([]);
-const extrasOptions = [
-  { label: 'DJ', value: 'dj' },
-  { label: 'Fotografía', value: 'photo' },
-  { label: 'Decoración', value: 'deco' },
-  { label: 'Catering', value: 'catering' },
-];
 const description = ref('');
 const currentStep = ref(1);
 const steps = [
@@ -269,11 +324,7 @@ function prevStep() {
   window.scrollTo({ top: 0, behavior: 'smooth' });
   if (currentStep.value > 1) currentStep.value--;
 }
-const advancePaid = ref('8.40');
-const coupon = ref('');
-
 const extrasTotal = computed(() => {
-  // Sum the prices of selected extras
   return selectedExtrasDetails.value.reduce((sum, extra) => sum + (Number(extra.price) || 0), 0);
 });
 const totalCost = computed(() => {
@@ -284,12 +335,7 @@ const totalCostNoDecimals = computed(() => {
   return Math.round(totalCost.value);
 });
 
-function applyCoupon() {
-  // Placeholder for coupon logic
-}
-
 async function sendRequest() {
-  // Example data structure
   const data = {
     package_id: selectedPackage.value?.id || 0,
     extra_service_ids: selectedExtras.value,
@@ -323,11 +369,6 @@ const formatDate = (date) => {
   })
 }
 
-const handleDateChange = (val) => {
-  date.value = val;
-  splitTextKey.value++;
-}
-
 function goToStep(step) {
   currentStep.value = step;
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -339,7 +380,6 @@ const showTermsModal = ref(false);
 
 const allExtras = ref([]);
 
-// Reglamento rules (copied and adapted from Reglamento.vue)
 const rules = [
   { text: 'Cambios de fecha se tendrán que hacer con 3 semanas de anticipación, cancelaciones se pierde el apartado, SIN EXCEPCIÓN.', icon: 'mdi:calendar-alert' },
   { text: 'Se aparta fecha únicamente con su apartado $1000, tiene que quedar liquidado a más tardar en la entrega del lugar. Al dar el apartado se acepta este reglamento como obligaciones de quién contrata.', icon: 'mdi:calendar-alert' },
@@ -379,7 +419,6 @@ onMounted(async () => {
   }
 });
 
-// For displaying selected extras with price
 const selectedExtrasDetails = computed(() => {
   return allExtras.value.filter(e => selectedExtras.value.includes(e.id));
 });
@@ -391,7 +430,6 @@ function closeTermsModal() {
 function acceptTermsAndClose() {
   showTermsModal.value = false;
   acceptTerms.value = true;
-  // If not already on overview, go to overview (step 5)
   if (currentStep.value !== 5) {
     currentStep.value = 5;
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -403,7 +441,7 @@ const authStore = useAuthStore()
 const showAuthModal = ref(false)
 const toast = useToast()
 
-// Watch for changes and persist to localStorage
+// Persist to localStorage
 watch([date, selectedPackage, selectedExtras, description, currentStep], () => {
   const data = {
     date: date.value,
@@ -415,7 +453,7 @@ watch([date, selectedPackage, selectedExtras, description, currentStep], () => {
   localStorage.setItem('reserveCart', JSON.stringify(data))
 })
 
-// On mount, load from localStorage if present
+// Restore from localStorage on mount
 onMounted(() => {
   const saved = localStorage.getItem('reserveCart')
   if (saved) {
@@ -431,7 +469,6 @@ onMounted(() => {
 })
 
 function goToAuth(type) {
-  // Save current step and data
   localStorage.setItem('reserveCart', JSON.stringify({
     date: date.value,
     selectedPackage: selectedPackage.value,
@@ -439,17 +476,7 @@ function goToAuth(type) {
     description: description.value,
     currentStep: currentStep.value
   }))
-  // Redirect to login or register with ?next=/reserve
   router.push({ path: `/${type}`, query: { next: '/reservar' } })
-}
-
-// Check auth before overview/submit
-function requireAuthOrShowModal(action) {
-  if (!authStore.isAuthenticated) {
-    showAuthModal.value = true
-    return false
-  }
-  return true
 }
 
 function onSubmitClick() {
@@ -500,4 +527,4 @@ function onSubmitClick() {
   letter-spacing: 0.05em;
   text-align: center;
 }
-</style> 
+</style>

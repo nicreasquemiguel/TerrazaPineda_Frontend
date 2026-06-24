@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col min-h-screen bg-gray-50">
     <Navbar />
-    <main class="flex-1" style="padding-top: 4rem !important;">
+    <main class="flex-1 pt-16">
       <router-view />
     </main>
     <Footer v-if="!isDashboard" />
