@@ -2,8 +2,8 @@
   <div class="min-h-screen bg-gray-50">
     <div class="px-4 py-8 mx-auto max-w-5xl sm:px-6 lg:px-8">
 
-      <!-- Header centrado -->
-      <div class="mb-6 text-center">
+      <!-- Header centrado — solo móvil -->
+      <div class="mb-6 text-center lg:hidden">
         <img src="/tp.svg" alt="Terraza Pineda Logo" class="mx-auto mb-3 w-12 h-12" />
         <h1 class="mb-1 text-3xl font-extrabold reserve-gradient-text">Solicitud</h1>
         <p class="mx-auto max-w-sm text-sm text-gray-500">
@@ -48,8 +48,19 @@
       <!-- Two-column grid: left=stepper, right=content -->
       <div class="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
 
-        <!-- ── Left: Vertical stepper (desktop) ── -->
+        <!-- ── Left: Header + Vertical stepper (desktop) ── -->
         <aside class="hidden lg:block lg:sticky lg:top-24">
+
+          <!-- Header solo desktop -->
+          <div class="flex gap-4 items-start mb-5">
+            <img src="/tp.svg" alt="Terraza Pineda Logo" class="flex-shrink-2 w-32 h-16 pt-8" />
+            <div>
+              <h1 class="mb-1 text-3xl font-extrabold reserve-gradient-text">Solicitud</h1>
+              <p class="max-w-xs text-sm text-gray-500">
+                Se aprobará según los detalles de tu evento, tales como fecha, paquete, descripción, seguir pasos...
+              </p>
+            </div>
+          </div>
           <div class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
             <nav class="flex flex-col gap-0.5">
               <div

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="calendar-wrapper">
     <v-date-picker
       class="my-calendar"
       v-model="internalDate"
@@ -10,6 +10,21 @@
       is-inline
       locale="es"
     />
+    <!-- Leyenda -->
+    <div class="flex gap-4 justify-center mt-3 text-xs text-gray-500">
+      <span class="flex gap-1.5 items-center">
+        <span class="inline-block w-3 h-3 rounded-full bg-gradient-to-br from-[#22d3ee] to-[#06b6d4]"></span>
+        Seleccionada
+      </span>
+      <span class="flex gap-1.5 items-center">
+        <span class="inline-block w-3 h-3 rounded-full bg-red-300"></span>
+        Ocupada
+      </span>
+      <span class="flex gap-1.5 items-center">
+        <span class="inline-block w-3 h-3 rounded-full bg-gray-200"></span>
+        No disponible
+      </span>
+    </div>
   </div>
 </template>
 
@@ -87,33 +102,31 @@ const fetchOccupiedEvents = async () => {
 
 const calendarAttributes = computed(() => {
   const attributes = []
-  // Create a separate attribute for each occupied date with its initials
+
   occupiedDates.value.forEach(item => {
     attributes.push({
       key: `occupied-${item.date.toDateString()}`,
       dates: item.date,
       highlight: {
+        color: 'red',
         fillMode: 'solid',
-        contentClass: 'text-white font-bold',
       },
       popover: {
-        label: `Ocupado por ${item.user_initials}`,
+        label: `Ocupado — ${item.user_initials}`,
+        visibility: 'hover',
       },
-      customData: { isOccupied: true },
-      // Mark the date as disabled so it can't be selected
-      order: 0
+      order: 0,
     })
   })
-  
-  // Add disabled dates attribute to prevent selection
+
   if (occupiedDates.value.length > 0) {
     attributes.push({
       key: 'disabled-dates',
       dates: occupiedDates.value.map(item => item.date),
-      order: 1
+      order: 1,
     })
   }
-  
+
   return attributes
 })
 
@@ -189,55 +202,140 @@ onMounted(fetchOccupiedEvents)
 </script>
 
 <style scoped>
-/* Disabled dates (past dates, etc.) */
-:deep(.my-calendar .vc-day.vc-disabled) {
-  background: #f1f5f9 !important;
-  color: #cbd5e1 !important;
-  opacity: 1 !important;
-  cursor: not-allowed !important;
+/* ── Wrapper ── */
+.calendar-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-/* Reserved/Occupied dates - RED color */
-:deep(.my-calendar .vc-day.vc-highlight[data-highlight-key^="occupied"]) {
-  background: #fecaca !important; /* Light red background */
-  color: #991b1b !important; /* Dark red text */
+/* ── Container card ── */
+:deep(.my-calendar.vc-container) {
+  border: 1px solid #e0f2fe !important;
+  border-radius: 1.5rem !important;
+  box-shadow: 0 8px 32px rgba(6,182,212,0.10), 0 2px 8px rgba(0,0,0,0.06) !important;
+  padding: 1.25rem 1.5rem 1.1rem !important;
+  background: #fff !important;
+  font-family: inherit !important;
+  min-width: 300px;
+}
+
+/* ── Header ── */
+:deep(.my-calendar .vc-header) {
+  padding: 0 0 0.8rem 0 !important;
+  border-bottom: 1.5px solid #e0f2fe !important;
+  margin-bottom: 0.6rem !important;
+}
+
+:deep(.my-calendar .vc-title) {
+  font-size: 1.05rem !important;
+  font-weight: 800 !important;
+  color: #0e7490 !important;
+  background: none !important;
+  text-transform: capitalize !important;
+}
+:deep(.my-calendar .vc-title:hover) { color: #06b6d4 !important; }
+
+/* ── Nav arrows ── */
+:deep(.my-calendar .vc-arrow) {
+  border-radius: 0.55rem !important;
+  color: #06b6d4 !important;
+  background: #f0fdff !important;
+  border: 1.5px solid #a5f3fc !important;
+  width: 28px !important;
+  height: 28px !important;
+  transition: background 0.15s !important;
+}
+:deep(.my-calendar .vc-arrow:hover) { background: #cffafe !important; }
+
+/* ── Weekday labels ── */
+:deep(.my-calendar .vc-weekday) {
+  font-size: 0.68rem !important;
   font-weight: 700 !important;
+  color: #94a3b8 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.07em !important;
+  padding-bottom: 0.4rem !important;
+}
+
+/* ── All day cells base ── */
+:deep(.my-calendar .vc-day-content) {
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  width: 36px !important;
+  height: 36px !important;
+  border-radius: 0.65rem !important;
+  transition: background 0.15s, color 0.15s, transform 0.1s !important;
+  color: #1e293b !important;
+}
+
+/* Hover on available days */
+:deep(.my-calendar .vc-day-content:hover:not([disabled])) {
+  background: #e0f9ff !important;
+  color: #0891b2 !important;
+  font-weight: 700 !important;
+  transform: scale(1.08) !important;
+}
+
+/* ── Today ── */
+:deep(.my-calendar .vc-day.is-today .vc-day-content) {
+  border: 2px solid #22d3ee !important;
+  color: #0891b2 !important;
+  font-weight: 800 !important;
+  background: #f0fdff !important;
+}
+
+/* ── Disabled / past dates ── */
+:deep(.my-calendar .vc-day-content[disabled]),
+:deep(.my-calendar .vc-day.vc-disabled .vc-day-content) {
+  background: #f8fafc !important;
+  color: #d1d5db !important;
+  cursor: not-allowed !important;
   opacity: 1 !important;
-  cursor: not-allowed !important;
-  pointer-events: none !important; /* Prevent any click events */
-}
-
-/* Hover state for reserved dates - keep red */
-:deep(.my-calendar .vc-day.vc-highlight[data-highlight-key^="occupied"]:hover) {
-  background: #fca5a5 !important; /* Slightly darker red on hover */
-  color: #7f1d1d !important;
-  cursor: not-allowed !important;
-}
-
-/* Selected date (non-reserved) */
-:deep(.my-calendar .vc-day.vc-selected) {
-  background: #0ea5e9 !important;
-  color: #fff !important;
-  border-radius: 0.75rem !important;
-  font-weight: 800;
-  box-shadow: 0 2px 8px #0ea5e933;
-}
-
-/* If somehow a reserved date gets selected (shouldn't happen), keep it red */
-:deep(.my-calendar .vc-day.vc-highlight[data-highlight-key^="occupied"].vc-selected) {
-  background: #dc2626 !important; /* Solid red */
-  color: #fff !important;
-  opacity: 1 !important;
-  cursor: not-allowed !important;
   pointer-events: none !important;
 }
 
-/* Additional styling for disabled reserved dates */
-:deep(.my-calendar .vc-day.vc-disabled.vc-highlight[data-highlight-key^="occupied"]) {
+/* ── Days outside current month (blank cells) ── */
+:deep(.my-calendar .vc-day:not(.in-month) .vc-day-content),
+:deep(.my-calendar .vc-day.is-not-in-month .vc-day-content) {
+  background: transparent !important;
+  color: #e2e8f0 !important;
+  pointer-events: none !important;
+}
+
+/* ── Selected date highlight (cyan gradient) ── */
+:deep(.my-calendar .vc-highlight) {
+  border-radius: 0.65rem !important;
+}
+:deep(.my-calendar .vc-highlight.vc-cyan),
+:deep(.my-calendar .vc-highlight.vc-blue) {
+  background: linear-gradient(135deg, #22d3ee, #06b6d4) !important;
+  border-radius: 0.65rem !important;
+}
+
+/* Text color inside selected (cyan) highlight */
+:deep(.my-calendar .vc-day .vc-highlight ~ .vc-day-content),
+:deep(.my-calendar .vc-day .vc-highlights + .vc-day-content) {
+  color: #fff !important;
+  font-weight: 800 !important;
+}
+
+/* ── Occupied (reserved) — red ── */
+:deep(.my-calendar .vc-highlight.vc-red) {
   background: #fca5a5 !important;
+  border-radius: 0.65rem !important;
+}
+/* Text on red highlight */
+:deep(.my-calendar .vc-day:has(.vc-highlight.vc-red) .vc-day-content) {
   color: #7f1d1d !important;
   cursor: not-allowed !important;
   pointer-events: none !important;
+  font-weight: 700 !important;
 }
 
+/* ── Row spacing ── */
+:deep(.my-calendar .vc-week) { margin-bottom: 1px !important; }
+
+/* ── Focus ring off ── */
+:deep(.my-calendar .vc-day-content:focus) { box-shadow: none !important; outline: none !important; }
 </style> 

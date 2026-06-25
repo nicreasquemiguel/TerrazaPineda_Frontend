@@ -77,8 +77,8 @@
       </div>
 
       <!-- Desktop Main Content -->
-      <div class="ml-64 p-6 bg-white min-h-[calc(100vh-4rem)]">
-        <div class="mx-auto max-w-6xl">
+      <div class="p-6 bg-white min-h-[calc(100vh-4rem)]" style="margin-left: 16rem;">
+        <div class="max-w-6xl" style="margin-left: max(0px, calc((100vw - 72rem) / 2 - 16rem)); margin-right: auto;">
           <!-- Header -->
           <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-gray-800">Panel de Administración de Reservas</h1>
