@@ -76,8 +76,8 @@
               :style="`background: ${cardGradients[i % cardGradients.length]}`"
             ></div>
             <div class="relative bg-white backdrop-blur-md rounded-xl border border-gray-200 p-6 z-10 h-full min-h-[220px] flex flex-col transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-2xl">
-              <div class="flex justify-center items-center mb-4 w-12 h-12 rounded-lg bg-primary-100">
-                <Icon :icon="feature.icon" :class="feature.icon === 'carbon:request-quote' ? 'w-8 h-8 text-primary-600' : 'w-12 h-12 text-primary-600'" />
+              <div class="flex justify-center items-center mb-4 w-12 h-12">
+                <Icon :icon="feature.icon" :class="feature.icon === 'carbon:request-quote' ? 'w-8 h-8 text-black -600' : 'w-12 h-12 text-black -600'" />
               </div>
               <h3 class="mb-2 text-xl font-semibold text-gray-900">
                 {{ feature.title }}

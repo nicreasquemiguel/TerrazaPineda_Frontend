@@ -80,61 +80,59 @@
               class="absolute inset-0 z-0 rounded-2xl translate-x-2 translate-y-2 pointer-events-none"
               :style="`background: ${cardGradients[i % cardGradients.length]}`"
             ></div>
-            <div class="flex relative z-10 flex-col gap-4 p-5 bg-white rounded-2xl border border-cyan-100 shadow-lg transition-shadow transition-transform duration-300 md:flex-row md:items-center md:justify-between group-hover:-translate-y-2 group-hover:shadow-2xl">
-              <div class="flex-1">
-                <!-- Staff: Show user info -->
-                <div v-if="isStaff && reservation.user_name" class="p-2 mb-3 bg-gray-50 rounded-lg">
-                  <div class="text-sm text-gray-600">
-                    <i class="mr-1 fa-solid fa-user"></i>
-                    <strong>Cliente:</strong> {{ reservation.user_name }}
-                  </div>
-                  <div v-if="reservation.user_email" class="text-sm text-gray-600">
-                    <i class="mr-1 fa-solid fa-envelope"></i>
-                    {{ reservation.user_email }}
-                  </div>
+            <div class="flex relative z-10 flex-col p-4 bg-white rounded-2xl border border-cyan-100 shadow-lg transition-all duration-300 group-hover:-translate-y-2 group-hover:shadow-2xl sm:p-5">
+              <!-- Staff: Show user info -->
+              <div v-if="isStaff && reservation.user_name" class="p-2 mb-3 bg-gray-50 rounded-lg">
+                <div class="text-sm text-gray-600">
+                  <i class="mr-1 fa-solid fa-user"></i>
+                  <strong>Cliente:</strong> {{ reservation.user_name }}
                 </div>
-                
-                <div class="flex gap-2 items-center mb-2">
-                  <span class="text-lg font-bold text-primary-700">{{ formatDate(reservation.start_datetime) }}</span>
-                  <span class="text-xs text-gray-500">({{ getDayOfWeek(reservation.start_datetime) }})</span>
-                </div>
-                <div class="flex flex-wrap gap-4 mb-2">
-                  <div>
-                    <span class="block text-xs text-gray-500">Hora inicio</span>
-                    <span class="font-semibold text-gray-800">{{ formatTime(reservation.start_datetime) }}</span>
-                  </div>
-                  <div>
-                    <span class="block text-xs text-gray-500">Hora fin</span>
-                    <span class="font-semibold text-gray-800">{{ formatTime(reservation.end_datetime) }}</span>
-                  </div>
-                  <div>
-                    <span class="block text-xs text-gray-500">Paquete</span>
-                    <span class="font-semibold text-primary-700">{{ reservation.package }}</span>
-                  </div>
-                  <div>
-                    <span class="block text-xs text-gray-500">Total</span>
-                    <span class="font-semibold text-green-700">${{ reservation.total }}</span>
-                  </div>
-                  <div>
-                    <span class="block text-xs text-gray-500">Anticipo</span>
-                    <span class="font-semibold text-emerald-600">${{ reservation.advancedPayment }}</span>
-                  </div>
-                </div>
-                <div class="flex gap-2 items-center mb-2">
-                  <span :class="getStatusClasses(reservation.status)" class="px-2 py-1 text-xs font-bold rounded">
-                    {{ reservation.status }}
-                  </span>
+                <div v-if="reservation.user_email" class="text-sm text-gray-600">
+                  <i class="mr-1 fa-solid fa-envelope"></i>
+                  {{ reservation.user_email }}
                 </div>
               </div>
-              <div class="flex flex-col gap-2 items-end">
-                <router-link
-                  :to="`/detalle-reserva/${reservation.id}`"
-                  class="px-4 py-2 font-bold text-white rounded shadow transition-all duration-200"
-                  :style="`background: ${cardGradients[i % cardGradients.length]}`"
-                >
-                  {{ isStaff ? 'Ver Detalles' : 'Ver detalles' }}
-                </router-link>
+
+              <!-- Header: date + status badge -->
+              <div class="flex justify-between items-start mb-3 gap-2">
+                <span class="text-base font-bold leading-tight text-primary-700 sm:text-lg">{{ formatDate(reservation.start_datetime) }}</span>
+                <span :class="getStatusClasses(reservation.status)" class="px-2 py-1 text-xs font-bold rounded shrink-0">
+                  {{ reservation.status }}
+                </span>
               </div>
+
+              <!-- Info grid: 2 cols mobile, 4 cols desktop -->
+              <div class="grid grid-cols-2 gap-x-4 gap-y-3 mb-4 sm:grid-cols-4">
+                <div>
+                  <span class="block text-xs text-gray-500">Hora inicio</span>
+                  <span class="font-semibold text-gray-800">{{ formatTime(reservation.start_datetime) }}</span>
+                </div>
+                <div>
+                  <span class="block text-xs text-gray-500">Hora fin</span>
+                  <span class="font-semibold text-gray-800">{{ formatTime(reservation.end_datetime) }}</span>
+                </div>
+                <div>
+                  <span class="block text-xs text-gray-500">Paquete</span>
+                  <span class="font-semibold text-primary-700">{{ reservation.package }}</span>
+                </div>
+                <div>
+                  <span class="block text-xs text-gray-500">Total</span>
+                  <span class="font-semibold text-green-700">${{ reservation.total }}</span>
+                </div>
+                <div>
+                  <span class="block text-xs text-gray-500">Anticipo</span>
+                  <span class="font-semibold text-emerald-600">${{ reservation.advancedPayment }}</span>
+                </div>
+              </div>
+
+              <!-- Button: full width on mobile -->
+              <router-link
+                :to="`/detalle-reserva/${reservation.id}`"
+                class="block w-full py-2.5 text-sm font-bold text-center text-white rounded-xl shadow transition-all duration-200 sm:w-auto sm:px-5 sm:py-2 sm:self-end"
+                :style="`background: ${cardGradients[i % cardGradients.length]}`"
+              >
+                Ver detalles
+              </router-link>
             </div>
           </div>
           <div class="flex justify-between mt-6">

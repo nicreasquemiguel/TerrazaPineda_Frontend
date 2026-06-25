@@ -1,88 +1,86 @@
 <template>
   <div class="min-h-screen bg-white" style="padding-top: 4rem !important;">
     <!-- Desktop Layout (md and larger) -->
-    <div class="hidden min-h-screen md:flex">
-      <!-- Desktop Sidebar - Same style as Navbar mobile sidebar -->
-      <div class="overflow-hidden flex-shrink-0 w-80 h-screen bg-black border-r border-gray-800">
-        <!-- Sidebar Content -->
-        <div class="flex flex-col h-full">
+    <div class="hidden md:block">
+      <!-- Fixed Desktop Sidebar -->
+      <div class="fixed top-16 left-0 bottom-0 z-30 flex flex-col w-64 bg-black border-r border-gray-800">
         <!-- User Profile -->
-          <div class="p-6 border-b border-gray-700">
-            <div class="flex items-center space-x-3">
-              <div class="relative">
-                <div class="flex justify-center items-center w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full">
-                  <span class="text-lg font-bold text-white">{{ userInitials }}</span>
+        <div class="p-5 border-b border-gray-800">
+          <div class="flex items-center space-x-3">
+            <div class="relative flex-shrink-0">
+              <div class="flex justify-center items-center w-11 h-11 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full">
+                <span class="text-base font-bold text-white">{{ userInitials }}</span>
               </div>
-                <div v-if="unreadCount > 0" class="flex absolute -top-1 -right-1 justify-center items-center w-4 h-4 bg-red-500 rounded-full">
-                  <span class="text-xs font-bold text-white">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+              <div v-if="unreadCount > 0" class="flex absolute -top-1 -right-1 justify-center items-center w-4 h-4 bg-red-500 rounded-full">
+                <span class="text-xs font-bold text-white">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+              </div>
             </div>
-          </div>
-              <div class="flex-1">
-                <router-link 
-                  to="/perfil" 
-                  class="block text-lg font-bold text-white transition-colors cursor-pointer hover:text-blue-400"
-                >
-                  {{ userName }}
-                </router-link>
-                <div class="text-sm text-gray-400">{{ userRole }}</div>
-              </div>
-              <div class="flex flex-col space-y-2">
-                <!-- Notification icon -->
-                <button 
-                  @click="router.push('/perfil?notifications=true')"
-                  class="relative p-2 text-gray-400 transition-colors hover:text-white"
-                  title="Ver Notificaciones"
-                >
-                  <i class="text-lg fa-solid fa-bell"></i>
-                  <div v-if="unreadCount > 0" class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
-                </button>
-                <!-- Logout button -->
-                <button 
-                  @click="handleLogout"
-                  class="p-2 text-gray-400 transition-colors hover:text-red-400"
-                  title="Cerrar Sesión"
-                >
-                  <i class="text-lg fa-solid fa-sign-out-alt"></i>
+            <div class="flex-1 min-w-0">
+              <router-link to="/perfil" class="block text-sm font-bold text-white truncate transition-colors hover:text-blue-400">
+                {{ userName }}
+              </router-link>
+              <div class="text-xs text-gray-400">{{ userRole }}</div>
+            </div>
+            <div class="flex flex-col flex-shrink-0 space-y-1">
+              <button
+                @click="router.push('/perfil?notifications=true')"
+                class="relative p-1.5 text-gray-400 transition-colors hover:text-white"
+                title="Ver Notificaciones"
+              >
+                <i class="fa-solid fa-bell"></i>
+                <div v-if="unreadCount > 0" class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full"></div>
               </button>
-              </div>
+              <button
+                @click="handleLogout"
+                class="p-1.5 text-gray-400 transition-colors hover:text-red-400"
+                title="Cerrar Sesión"
+              >
+                <i class="fa-solid fa-sign-out-alt"></i>
+              </button>
             </div>
           </div>
-          
-          <!-- Navigation Menu -->
-          <div class="overflow-y-auto flex-1">
-            <nav class="p-4 space-y-2">
-              <!-- Public Navigation Items -->
-              <div 
-                v-for="item in publicNavigationItems" 
-                :key="item.name"
-                @click="goToPage(item.path)"
-                class="flex items-center px-4 py-3 text-gray-300 rounded-lg transition-colors cursor-pointer hover:bg-gray-800 hover:text-white"
-              >
-                <i :class="getNavigationIcon(item.name) + ' mr-3 text-lg'"></i>
-                <span class="text-base">{{ item.name }}</span>
-          </div>
-          
-              <!-- Authenticated Navigation Items -->
-              <div class="my-2 border-t border-gray-700"></div>
-              <div 
-                v-for="item in filteredAuthenticatedItems" 
-                :key="item.name"
-                @click="goToPage(item.path)"
-                class="flex items-center px-4 py-3 text-gray-300 rounded-lg transition-colors cursor-pointer hover:bg-gray-800 hover:text-white"
-              >
-                <i :class="getNavigationIcon(item.name) + ' mr-3 text-lg'"></i>
-                <span class="text-base">{{ item.name }}</span>
-              </div>
-            </nav>
-          </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <div class="overflow-y-auto flex-1 py-3">
+          <nav class="px-3 space-y-0.5">
+            <!-- Public Navigation -->
+            <div
+              v-for="item in publicNavigationItems"
+              :key="item.name"
+              @click="goToPage(item.path)"
+              class="flex items-center px-3 py-2.5 rounded-lg transition-colors cursor-pointer"
+              :class="isActivePath(item.path) ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'"
+            >
+              <i :class="getNavigationIcon(item.name) + ' w-5 text-center mr-3 text-sm'"></i>
+              <span class="text-sm font-medium">{{ item.name }}</span>
+            </div>
+
+            <!-- Section divider -->
+            <div class="pt-3 pb-1.5">
+              <div class="px-3 text-xs font-semibold tracking-wider text-gray-600 uppercase">Mi cuenta</div>
+            </div>
+
+            <!-- Authenticated Navigation -->
+            <div
+              v-for="item in filteredAuthenticatedItems"
+              :key="item.name"
+              @click="goToPage(item.path)"
+              class="flex items-center px-3 py-2.5 rounded-lg transition-colors cursor-pointer"
+              :class="isActivePath(item.path) ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'"
+            >
+              <i :class="getNavigationIcon(item.name) + ' w-5 text-center mr-3 text-sm'"></i>
+              <span class="text-sm font-medium">{{ item.name }}</span>
+            </div>
+          </nav>
         </div>
       </div>
 
       <!-- Desktop Main Content -->
-      <div class="flex-1 p-8 min-h-screen bg-white">
+      <div class="ml-64 p-6 bg-white min-h-[calc(100vh-4rem)]">
         <div class="mx-auto max-w-6xl">
           <!-- Header -->
-          <div class="flex justify-between items-center mb-8">
+          <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-gray-800">Panel de Administración de Reservas</h1>
             <div class="relative">
               <input 
@@ -111,7 +109,7 @@
           <!-- Dashboard content -->
           <div v-else-if="dashboardData">
             <!-- Stats Cards -->
-            <div class="grid grid-cols-1 gap-6 mb-8 md:grid-cols-4">
+            <div class="grid grid-cols-2 gap-4 mb-6 xl:grid-cols-4">
               <div 
                 v-for="(card, index) in statsCards" 
                 :key="index"
@@ -319,48 +317,198 @@
               </div>
             </div>
 
-            <!-- Recent Bookings Table -->
+            <!-- Bookings & Payments Tabbed Section -->
             <div class="overflow-hidden bg-white rounded-xl border border-gray-100 shadow-sm">
-              <div class="px-6 py-4 border-b border-gray-100">
-                <h3 class="text-lg font-bold text-gray-800">Reservas Recientes</h3>
+              <!-- Tab Bar -->
+              <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                <div class="flex p-1 space-x-1 bg-gray-100 rounded-lg">
+                  <button
+                    @click="activeTab = 'bookings'"
+                    class="px-4 py-2 text-sm font-semibold rounded-md transition-all duration-200"
+                    :class="activeTab === 'bookings' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'"
+                  >
+                    Reservas
+                    <span v-if="eventsData?.total_requests" class="ml-1.5 px-1.5 py-0.5 text-xs bg-blue-100 text-blue-700 rounded-full">
+                      {{ eventsData.total_requests }}
+                    </span>
+                  </button>
+                  <button
+                    @click="activeTab = 'payments'"
+                    class="px-4 py-2 text-sm font-semibold rounded-md transition-all duration-200"
+                    :class="activeTab === 'payments' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'"
+                  >
+                    Pagos Pendientes
+                    <span v-if="paymentsData?.payments?.length" class="ml-1.5 px-1.5 py-0.5 text-xs bg-yellow-100 text-yellow-700 rounded-full">
+                      {{ paymentsData.payments.length }}
+                    </span>
+                  </button>
+                </div>
               </div>
-              <div class="overflow-x-auto">
-                <table class="w-full">
-                  <thead class="bg-gray-50">
-                    <tr>
-                      <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                        Cliente <i class="ml-1 fa-solid fa-chevron-down"></i>
-                      </th>
-                      <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                        Paquete <i class="ml-1 fa-solid fa-chevron-down"></i>
-                      </th>
-                      <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                        Personas <i class="ml-1 fa-solid fa-chevron-down"></i>
-                      </th>
-                      <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">
-                        Estado <i class="ml-1 fa-solid fa-chevron-down"></i>
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody class="bg-white divide-y divide-gray-100">
-                    <template v-for="day in dashboardData?.daily_cards || []" :key="day.date">
-                      <tr v-for="booking in day.bookings || []" :key="booking.booking_id">
+
+              <!-- Bookings Tab -->
+              <div v-if="activeTab === 'bookings'">
+                <div v-if="eventsLoading" class="py-12 text-center">
+                  <div class="inline-block w-6 h-6 rounded-full border-b-2 border-blue-500 animate-spin"></div>
+                  <p class="mt-2 text-sm text-gray-500">Cargando reservas...</p>
+                </div>
+                <div v-else-if="!eventsData?.events?.length" class="py-12 text-center">
+                  <i class="mb-3 text-4xl text-gray-300 fa-solid fa-calendar-xmark"></i>
+                  <p class="text-gray-500">No hay reservas disponibles</p>
+                </div>
+                <div v-else class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Cliente</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Fecha</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Paquete</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Personas</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Estado</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-100">
+                      <tr
+                        v-for="event in eventsData.events"
+                        :key="event.booking_id"
+                        class="transition-colors hover:bg-gray-50 cursor-pointer select-none"
+                        @dblclick="navigateToBookingDetail(event.booking_id)"
+                      >
                         <td class="px-6 py-4 whitespace-nowrap">
-                          <div class="text-sm font-medium text-gray-900">{{ booking.client_first_name }} {{ booking.client_last_name }}</div>
-                          <div class="text-xs text-gray-500">{{ formatPhone(booking.client_phone) }}</div>
+                          <div class="flex items-center space-x-3">
+                            <div class="flex flex-shrink-0 justify-center items-center w-9 h-9 text-sm font-bold text-white bg-gradient-to-br from-blue-500 to-purple-600 rounded-full">
+                              {{ (event.client_name || '?').charAt(0).toUpperCase() }}
+                            </div>
+                            <div>
+                              <div class="text-sm font-medium text-gray-900">{{ event.client_name }}</div>
+                              <div class="text-xs text-gray-500">{{ event.client_phone }}</div>
+                            </div>
+                          </div>
                         </td>
-                        <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">{{ booking.package_name }}</td>
-                        <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">{{ booking.people_count }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                          <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full"
-                            :class="getStatusColor(booking.status)">
-                            {{ getStatusText(booking.status) }}
+                          <div class="text-sm text-gray-900">{{ formatEventDate(event.start_datetime) }}</div>
+                          <div class="text-xs text-gray-500">{{ formatEventTime(event.start_datetime) }}</div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">{{ event.package_name }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="flex items-center space-x-1 text-sm text-gray-900">
+                            <i class="text-xs text-gray-400 fa-solid fa-users"></i>
+                            <span>{{ event.people_count }}</span>
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full" :class="getStatusColor(event.status)">
+                            {{ getStatusText(event.status) }}
                           </span>
                         </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="flex justify-end items-center space-x-2">
+                            <button
+                              @click="openAcceptModal(event)"
+                              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-green-500 rounded-lg transition-colors hover:bg-green-600"
+                              title="Aceptar reserva"
+                            >
+                              <i class="mr-1 fa-solid fa-check"></i> Aceptar
+                            </button>
+                            <button
+                              @click="openRejectModal(event)"
+                              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-red-500 rounded-lg transition-colors hover:bg-red-600"
+                              title="Rechazar reserva"
+                            >
+                              <i class="mr-1 fa-solid fa-times"></i> Rechazar
+                            </button>
+                            <button
+                              @click="navigateToBookingDetail(event.booking_id)"
+                              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-blue-500 rounded-lg transition-colors hover:bg-blue-600"
+                              title="Ver detalles"
+                            >
+                              <i class="fa-solid fa-eye"></i>
+                            </button>
+                          </div>
+                        </td>
                       </tr>
-                    </template>
-                  </tbody>
-                </table>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- Payments Tab -->
+              <div v-else-if="activeTab === 'payments'">
+                <div v-if="paymentsLoading" class="py-12 text-center">
+                  <div class="inline-block w-6 h-6 rounded-full border-b-2 border-blue-500 animate-spin"></div>
+                  <p class="mt-2 text-sm text-gray-500">Cargando pagos...</p>
+                </div>
+                <div v-else-if="!paymentsData?.payments?.length" class="py-12 text-center">
+                  <i class="mb-3 text-4xl text-gray-300 fa-solid fa-check-circle"></i>
+                  <p class="font-medium text-gray-500">No hay pagos pendientes</p>
+                  <p class="mt-1 text-sm text-gray-400">Todos los pagos han sido procesados</p>
+                </div>
+                <div v-else class="overflow-x-auto">
+                  <table class="w-full">
+                    <thead class="bg-gray-50">
+                      <tr>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Cliente</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Fecha Evento</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Monto Pago</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Por Pagar</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-left text-gray-500 uppercase">Estado</th>
+                        <th class="px-6 py-3 text-xs font-medium tracking-wider text-right text-gray-500 uppercase">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-100">
+                      <tr
+                        v-for="payment in paymentsData.payments"
+                        :key="payment.payment_id"
+                        class="transition-colors hover:bg-gray-50"
+                      >
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="flex items-center space-x-3">
+                            <div class="flex flex-shrink-0 justify-center items-center w-9 h-9 text-sm font-bold text-white bg-gradient-to-br from-green-500 to-blue-600 rounded-full">
+                              {{ (payment.user_name || '?').charAt(0).toUpperCase() }}
+                            </div>
+                            <div class="text-sm font-medium text-gray-900">{{ payment.user_name }}</div>
+                          </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-900 whitespace-nowrap">{{ formatPaymentDate(payment.booking_date) }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class="text-sm font-semibold text-green-700">${{ parseFloat(payment.amount || 0).toLocaleString() }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class="text-sm font-semibold text-red-600">${{ parseFloat(payment.amount_due || 0).toLocaleString() }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class="inline-flex px-2 py-1 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full">Pendiente</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <div class="flex justify-end items-center space-x-2">
+                            <button
+                              @click="approvePayment(payment.payment_id)"
+                              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-green-500 rounded-lg transition-colors hover:bg-green-600"
+                              title="Aprobar pago"
+                            >
+                              <i class="mr-1 fa-solid fa-check"></i> Aprobar
+                            </button>
+                            <button
+                              @click="openPaymentRejectModal(payment)"
+                              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-red-500 rounded-lg transition-colors hover:bg-red-600"
+                              title="Rechazar pago"
+                            >
+                              <i class="mr-1 fa-solid fa-times"></i> Rechazar
+                            </button>
+                            <button
+                              v-if="payment.payment_photo_base64"
+                              @click="openPaymentPhotoModal(payment.payment_photo_base64)"
+                              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-white bg-blue-500 rounded-lg transition-colors hover:bg-blue-600"
+                              title="Ver comprobante"
+                            >
+                              <i class="fa-solid fa-image"></i>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           </div>
@@ -369,467 +517,195 @@
     </div>
 
     <!-- Mobile Layout (sm and smaller) -->
-    <div class="min-h-screen bg-white md:hidden">
-      <!-- Mobile uses Navbar component (no custom sidebar) -->
-      
-        <!-- Mobile Week Calendar Section -->
-        <div class="px-3 bg-white">
+    <div class="pb-20 bg-white md:hidden">
 
-
-          <!-- Loading State -->
-          <div v-if="weekCalendarLoading" class="py-8 text-center">
-            <div class="text-gray-500">Cargando calendario...</div>
-      </div>
-      
-          <!-- Week Calendar Content -->
-          <div 
-            v-else
-            class="relative px-6"
-          >
-            <!-- Navigation Arrows -->
-            <button 
-              @click="goToPreviousWeek"
-              class="absolute left-0 top-1/2 z-10 p-1 text-gray-600 bg-white rounded-full shadow-sm transform -translate-y-1/2 hover:text-gray-800 hover:bg-gray-100"
-            >
-              <i class="text-sm fa-solid fa-chevron-left"></i>
-            </button>
-            
-            <button 
-              @click="goToNextWeek"
-              class="absolute right-0 top-1/2 z-10 p-1 text-gray-600 bg-white rounded-full shadow-sm transform -translate-y-1/2 hover:text-gray-800 hover:bg-gray-100"
-            >
-              <i class="text-sm fa-solid fa-chevron-right"></i>
-            </button>
-            
-            <!-- Week Header -->
-            <div class="grid grid-cols-7 gap-6 px-4 mb-4 sm:gap-8 md:gap-10 sm:px-6 md:px-8">
-              <div 
-                v-for="date in getWeekDates" 
-                :key="date.toISOString()"
-                class="text-center calendar-day"
-                :data-date="date.toISOString()"
-              >
-                <div 
-                  class="mb-1 text-xs font-medium text-center text-gray-500"
-                  :class="isToday(date) ? 'text-blue-600' : ''"
+      <!-- Week Calendar -->
+      <div class="px-4 pt-2 pb-2">
+        <div v-if="weekCalendarLoading" class="py-4 text-sm text-center text-gray-500">Cargando calendario...</div>
+        <div v-else class="relative px-6">
+          <button @click="goToPreviousWeek" class="absolute left-0 top-1/2 z-10 p-1 text-gray-600 bg-white rounded-full shadow-sm -translate-y-1/2">
+            <i class="text-sm fa-solid fa-chevron-left"></i>
+          </button>
+          <button @click="goToNextWeek" class="absolute right-0 top-1/2 z-10 p-1 text-gray-600 bg-white rounded-full shadow-sm -translate-y-1/2">
+            <i class="text-sm fa-solid fa-chevron-right"></i>
+          </button>
+          <div class="grid grid-cols-7 gap-1 px-2 mb-2">
+            <div v-for="date in getWeekDates" :key="date.toISOString()" class="text-center calendar-day" :data-date="date.toISOString()">
+              <div class="mb-1 text-xs font-medium text-gray-500" :class="isToday(date) ? 'text-blue-600' : ''">
+                {{ formatWeekDate(date).charAt(0).toUpperCase() }}
+              </div>
+              <div class="flex justify-center">
+                <button
+                  class="flex justify-center items-center w-9 h-9 text-sm font-medium rounded-full transition-transform cursor-pointer calendar-day touch-manipulation active:scale-95"
+                  :class="[getDayStatusClasses(date), getDayStatus(date) ? '' : '']"
+                  @click="handleDayClick(date)"
+                  type="button"
+                  style="min-width:36px;min-height:36px;max-width:36px;max-height:36px;"
                 >
-                  {{ formatWeekDate(date).charAt(0).toUpperCase() }}
-              </div>
-                <div class="flex justify-center">
-                  <button 
-                    class="flex justify-center items-center w-10 h-10 text-sm font-medium rounded-full transition-transform cursor-pointer calendar-day touch-manipulation active:scale-95"
-                    :class="[getDayStatusClasses(date), getDayStatus(date) ? 'hover:scale-110' : '']"
-                    @click="handleDayClick(date)"
-                    type="button"
-                    style="min-width: 40px; min-height: 40px; max-width: 40px; max-height: 40px;"
-                  >
-                    {{ date.getDate() }}
-                  </button>
-            </div>
+                  {{ date.getDate() }}
+                </button>
               </div>
             </div>
-            
-
           </div>
         </div>
 
-
-      <!-- Mobile Stats Cards -->
-      <div class="px-6 pb-2">
-        <div class="overflow-hidden relative">
-          <div 
-            ref="mobileCardsContainer"
-            class="flex transition-transform duration-300 ease-out"
-            :style="{ transform: `translateX(-${currentCardIndex * 100}%)` }"
-            @touchstart="handleTouchStart"
-            @touchmove="handleTouchMove"
-            @touchend="handleTouchEnd"
-          >
-            <div 
-              v-for="(card, index) in statsCards" 
-              :key="index"
-              class="flex-shrink-0 p-4 w-full rounded-xl border-2 border-gray-100 shadow-sm"
-              :style="{
-                background: card.gradient
-              }"
-            >
-              <!-- Stats Card Content -->
-              <div v-if="card.type === 'stats'" class="flex justify-between items-center">
-                <div class="text-white">
-                  <div class="text-sm opacity-90">{{ card.title }}</div>
-                  <div class="text-2xl font-bold">{{ card.value }}</div>
-                  <div class="flex items-center mt-1 space-x-2">
-                    <i class="text-xs fa-solid fa-arrow-up"></i>
-                    <span class="text-xs font-medium opacity-90">{{ card.percentage }}</span>
-                  </div>
-                </div>
-                <div class="text-white opacity-80">
-                  <i :class="card.icon + ' text-2xl'"></i>
-                </div>
+        <!-- Calendar Event Inline Panel -->
+        <div v-if="showCalendarEventCard && selectedCalendarEvent" class="mt-2">
+          <div class="p-4 rounded-xl text-white" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%)">
+            <div class="flex justify-between items-center mb-2">
+              <div class="flex items-center gap-2">
+                <span class="text-sm font-semibold">{{ selectedCalendarEvent.dayData?.day_name }} {{ selectedCalendarEvent.dayData?.day_number }}</span>
+                <span class="px-2 py-0.5 text-xs bg-white bg-opacity-30 rounded-full">
+                  {{ getStatusText(selectedCalendarEvent.bookings?.[0]?.status || 'pendiente') }}
+                </span>
               </div>
-
-              <!-- Event Card Content -->
-              <div v-else-if="card.type === 'event'" class="text-white">
-                <div class="flex justify-between items-start mb-2">
-                    <div class="flex items-center space-x-2">
-                      <span class="text-sm opacity-90">{{ card.title }}</span>
-                      <span 
-                        class="px-2 py-1 text-xs font-medium text-white bg-white bg-opacity-30 rounded-full"
-                      >
-                        {{ getStatusText(card.eventData.bookings?.[0]?.status || 'pendiente') }}
-                      </span>
-                  </div>
-                  <button 
-                    @click="closeCalendarEventCard"
-                    class="text-white opacity-80 hover:opacity-100"
-                  >
-                    <i class="text-lg fa-solid fa-times"></i>
-                  </button>
-                </div>
-                
-                <div class="mb-2">
-                  <div class="text-lg font-bold truncate">{{ card.eventData.bookings?.[0]?.package_name || 'Package' }}</div>
-                  <div class="flex items-center mt-1 space-x-2">
-                    <span class="px-2 py-1 text-xs font-medium text-white truncate bg-white bg-opacity-30 rounded-full">
-                      {{ card.eventData.bookings?.[0]?.people_count || 0 }} personas  
-                    </span>
-                    <span class="px-2 py-1 text-xs font-medium text-white bg-white bg-opacity-30 rounded-full">
-                      ${{ parseFloat(card.eventData.bookings?.[0]?.amount_due || 0).toLocaleString() }}
-                    </span>
-                  </div>
-                </div>
-                
-                <div class="space-y-1">
-                  <div 
-                    v-for="booking in card.eventData.bookings || []" 
-                    :key="booking.booking_id"
-                    class="p-1.5 bg-white bg-opacity-20 rounded-lg"
-                  >
-                    <div class="text-xs opacity-90">
-                      <span class="flex items-center mb-0.5">
-                        <i class="mr-1 fa-solid fa-dollar-sign"></i>
-                        ${{ parseFloat(booking.amount_due || 0).toLocaleString() }}
-                      </span>
-                      <span class="flex items-center mb-0.5">
-                        <i class="mr-1 fa-solid fa-user"></i>
-                        {{ booking.client_first_name }} {{ booking.client_last_name }}
-                      </span>
-                      <a 
-                        :href="`tel:${booking.client_phone}`"
-                        class="flex items-center text-sm text-white opacity-90 cursor-pointer hover:text-white"
-                        @click="makeCall(booking.client_phone)"
-                      >
-                        <i class="mr-1 fa-solid fa-phone"></i>
-                        <span class="underline">{{ booking.client_phone }}</span>
-                      </a>
-                    </div>
-                  </div>
-                </div>
+              <button @click="closeCalendarEventCard" class="text-white opacity-80">
+                <i class="fa-solid fa-times"></i>
+              </button>
+            </div>
+            <div class="text-sm font-bold truncate mb-2">{{ selectedCalendarEvent.bookings?.[0]?.package_name }}</div>
+            <div class="flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2 py-1 bg-white bg-opacity-20 rounded-full">{{ selectedCalendarEvent.bookings?.[0]?.people_count }}p</span>
+                <span class="px-2 py-1 bg-white bg-opacity-20 rounded-full">${{ parseFloat(selectedCalendarEvent.bookings?.[0]?.amount_due || 0).toLocaleString() }}</span>
+                <span class="px-2 py-1 bg-white bg-opacity-20 rounded-full truncate max-w-[120px]">
+                  {{ selectedCalendarEvent.bookings?.[0]?.client_first_name }} {{ selectedCalendarEvent.bookings?.[0]?.client_last_name }}
+                </span>
               </div>
-
-              <!-- Calendar Event Card Content -->
-              <div v-else-if="card.type === 'calendar-event'" class="text-white">
-                <div class="flex justify-between items-center mb-2">
-                  <div class="flex items-center space-x-2">
-                    <span class="text-sm font-medium opacity-90">{{ card.title }}</span>
-                    <span 
-                      class="px-1.5 py-0.5 text-xs font-medium text-white bg-white bg-opacity-30 rounded-full"
-                    >
-                      {{ getStatusText(card.eventData.bookings?.[0]?.status || 'pendiente') }}
-                    </span>
-                  </div>
-                  <button 
-                    @click="closeCalendarEventCard"
-                    class="text-white opacity-80 hover:opacity-100"
-                  >
-                    <i class="text-sm fa-solid fa-times"></i>
-                  </button>
-                </div>
-                
-                <!-- Ultra compact info -->
-                <div class="mb-2">
-                  <div class="text-xs font-semibold truncate mb-1">{{ card.eventData.bookings?.[0]?.package_name || 'Package' }}</div>
-                  <div class="flex items-center justify-between text-xs">
-                    <div class="flex items-center space-x-1">
-                      <span class="px-1.5 py-0.5 text-white bg-white bg-opacity-20 rounded text-xs">
-                        {{ card.eventData.bookings?.[0]?.people_count || 0 }}p
-                      </span>
-                      <span class="px-1.5 py-0.5 text-white bg-white bg-opacity-20 rounded text-xs">
-                        ${{ parseFloat(card.eventData.bookings?.[0]?.amount_due || 0).toLocaleString() }}
-                      </span>
-                    </div>
-                    <a 
-                      :href="`tel:${card.eventData.bookings?.[0]?.client_phone}`"
-                      class="text-white opacity-75 hover:opacity-100 text-xs"
-                    >
-                      <i class="fa-solid fa-phone mr-1"></i>{{ card.eventData.bookings?.[0]?.client_phone }}
-                    </a>
-                  </div>
-                </div>
-                
-                <!-- Client name and link in one line -->
-                <div class="flex items-center justify-between text-xs">
-                  <div class="flex items-center space-x-1">
-                    <i class="fa-solid fa-user"></i>
-                    <span class="truncate">{{ card.eventData.bookings?.[0]?.client_first_name }} {{ card.eventData.bookings?.[0]?.client_last_name }}</span>
-                  </div>
-                  <a 
-                    :href="`/detalle-reserva/${card.eventData.bookings?.[0]?.booking_id}`"
-                    class="px-2 py-1 text-xs font-medium text-white bg-white bg-opacity-20 rounded hover:bg-opacity-30 transition-all duration-200"
-                  >
-                    <i class="fa-solid fa-eye mr-1"></i>Ver
-                  </a>
-                </div>
-          </div>
+              <a :href="`/detalle-reserva/${selectedCalendarEvent.bookings?.[0]?.booking_id}`" class="px-2 py-1 bg-white bg-opacity-20 rounded text-white">
+                <i class="fa-solid fa-eye mr-1"></i>Ver
+              </a>
             </div>
           </div>
-          
-
         </div>
       </div>
 
-      <!-- Mobile Bookings/Payments List Section -->
-      <div class="px-6 mb-6">
-        <div v-if="activeTab === 'bookings'" class="space-y-3">
-          <h3 class="mb-4 text-lg font-semibold text-gray-800">Reservas ({{ eventsData?.total_requests || 0 }})</h3>
-          
-          <!-- Loading State -->
-          <div v-if="eventsLoading" class="py-4 text-center">
-            <div class="text-gray-500">Cargando reservas...</div>
+      <!-- Stats Grid (2×2) -->
+      <div class="grid grid-cols-2 gap-3 px-4 mb-4">
+        <div
+          v-for="(card, index) in statsCards.filter(c => c.type === 'stats')"
+          :key="index"
+          class="p-4 rounded-xl shadow-sm"
+          :style="{ background: card.gradient }"
+        >
+          <div class="flex justify-between items-start">
+            <div class="text-white">
+              <div class="text-xs opacity-80 mb-1">{{ card.title }}</div>
+              <div class="text-2xl font-bold">{{ card.value }}</div>
+              <div class="flex items-center mt-1">
+                <i class="text-xs fa-solid fa-arrow-up mr-1 opacity-80"></i>
+                <span class="text-xs opacity-80">{{ card.percentage }}</span>
+              </div>
+            </div>
+            <i :class="card.icon + ' text-xl text-white opacity-70 mt-1'"></i>
           </div>
-          
-          <!-- Bookings List -->
-          <div v-else-if="eventsData?.events && eventsData.events.length > 0" class="space-y-3">
-            <div 
-              v-for="event in eventsData.events" 
+        </div>
+      </div>
+
+      <!-- Bookings / Payments List -->
+      <div class="px-4">
+        <!-- Bookings Tab -->
+        <div v-if="activeTab === 'bookings'">
+          <h3 class="mb-3 text-base font-semibold text-gray-800">Reservas ({{ eventsData?.total_requests || 0 }})</h3>
+          <div v-if="eventsLoading" class="py-6 text-sm text-center text-gray-500">Cargando reservas...</div>
+          <div v-else-if="eventsData?.events?.length" class="space-y-3">
+            <div
+              v-for="event in eventsData.events"
               :key="event?.booking_id"
-              class="overflow-hidden relative py-2 mb-4"
+              class="p-4 bg-white rounded-xl border border-gray-100 shadow-sm"
             >
-              <!-- Swipe Action Backgrounds (All actions always on the right) -->
-              <div class="absolute inset-0">
-                <!-- Right Side Actions (Always visible when swiping left) -->
-                <div class="flex absolute top-0 right-0 bottom-0 items-center pr-2">
-                  <div class="flex space-x-2">
-                    <!-- Approve Action (Green) -->
-                    <div 
-                      class="flex flex-col justify-center items-center w-16 h-16 bg-green-500 rounded-lg transition-colors cursor-pointer hover:bg-green-600"
-                      @click="openAcceptModal(event)"
-                    >
-                      <i class="text-xl text-white fa-solid fa-check-circle"></i>
-                      <span class="text-xs font-medium text-white">Aceptar</span>
-                  </div>
-                
-                    <!-- Reject Action (Red) -->
-                    <div 
-                      class="flex flex-col justify-center items-center w-16 h-16 bg-red-500 rounded-lg transition-colors cursor-pointer hover:bg-red-600"
-                      @click="openRejectModal(event)"
-                    >
-                      <i class="text-xl text-white fa-solid fa-times-circle"></i>
-                      <span class="text-xs font-medium text-white">Rechazar</span>
+              <div class="flex items-center gap-3">
+                <div class="flex flex-shrink-0 justify-center items-center w-11 h-11 text-sm font-bold text-white bg-gradient-to-br from-blue-500 to-purple-600 rounded-full">
+                  {{ event?.people_count || 0 }}
                 </div>
-                
-                    <!-- View Event Details Action (Blue) -->
-                    <div 
-                      class="flex flex-col justify-center items-center w-4 h-16 bg-gray-500 rounded-md transition-colors cursor-pointer hover:bg-blue-600"
-                      @click="openEventDetailsModal(event)"
-                    >
-                      <i class="text-xl text-white fa-solid fa-ellipsis-vertical"></i>
-                      <!-- <span class="text-xs font-medium text-white">Ver</span> -->
-                    </div>
-                  </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-semibold text-gray-900 truncate">{{ event?.client_name }}</div>
+                  <div class="text-xs text-gray-500 truncate">{{ event?.package_name }} · {{ formatEventDate(event?.start_datetime) }}</div>
                 </div>
+                <span class="flex-shrink-0 px-2 py-1 text-xs font-medium rounded-full" :class="getStatusColor(event?.status || 'pendiente')">
+                  {{ getStatusText(event?.status || 'pendiente') }}
+                </span>
               </div>
-              
-              <!-- Booking Card Content (slides over the action backgrounds) -->
-              <div 
-                class="relative z-10 p-4 bg-white rounded-lg border border-gray-100 shadow-sm transition-all duration-300 cursor-pointer hover:shadow-md"
-                :style="{
-                  transform: swipingBooking === event?.booking_id ? `translateX(${swipeOffset}px)` : 'translateX(0px)',
-                  transition: swipingBooking === event?.booking_id ? 'none' : 'transform 0.3s ease-out'
-                }"
-                @touchstart="(e) => handleBookingTouchStart(e, event)"
-                @touchmove="handleBookingTouchMove"
-                @touchend="(e) => handleBookingTouchEnd(e, event)"
-                @click="(e) => {
-                  console.log('Booking card clicked, event:', event);
-                  console.log('Booking ID:', event?.booking_id);
-                  navigateToBookingDetail(event?.booking_id);
-                }"
-              >
-                <div class="flex justify-between items-center">
-                <div class="flex flex-1 items-center space-x-3 min-w-0">
-                  <!-- People Count Circle -->
-                  <div class="flex flex-shrink-0 justify-center items-center w-12 h-12 text-sm font-bold text-white bg-gradient-to-br from-blue-500 to-purple-600 rounded-full">
-                    {{ event?.people_count || 0 }}
-                  </div>
-                  
-                  <!-- Booking Details -->
-                  <div class="flex-1 min-w-0">
-                    <div class="font-semibold text-gray-900 truncate">
-                      {{ event?.client_name || '' }}
-                    </div>
-                    <div class="text-sm text-gray-600 truncate">
-                      {{ event?.package_name || '' }}
-                    </div>
-                  </div>
-                </div>
-                
-                <!-- Status and Date -->
-                <div class="flex flex-shrink-0 text-right">
-                  <span 
-                    class="px-3 py-1 text-xs font-medium rounded-full"
-                    :class="getStatusColor(event?.status || 'pendiente')"
-                  >
-                    {{ getStatusText(event?.status || 'pendiente') }}
-                  </span>
-                  <div class="mt-1 text-sm text-gray-500">{{ formatEventDate(event?.start_datetime) }}</div>
-                  <!-- Click indicator for staff -->
-                  <div class="flex justify-end items-center mt-1 text-xs text-blue-600">
-                    <i class="mr-1 fa-solid fa-external-link-alt"></i>
-                    Ver detalles
-                  </div>
-                </div>
-              </div>
-              </div>
-                </div>
-              </div>
-              
-          <!-- No Bookings Message -->
-          <div v-else-if="!eventsData?.events || eventsData.events.length === 0" class="py-8 text-center text-gray-500">
-            <div class="text-lg font-medium">No hay reservas disponibles</div>
-          </div>
-        </div>
-
-        <div v-else-if="activeTab === 'payments'" class="space-y-3">
-          <h3 class="mb-4 text-lg font-semibold text-gray-800">Pagos Pendientes ({{ paymentsData?.payments?.length || 0 }})</h3>
-          
-          <!-- Loading State -->
-          <div v-if="paymentsLoading" class="py-4 text-center">
-            <div class="text-gray-500">Cargando pagos...</div>
-          </div>
-          
-          <!-- Payments List -->
-          <div v-else-if="paymentsData && paymentsData.payments && paymentsData.payments.length > 0" class="space-y-3">
-            <div 
-              v-for="payment in paymentsData.payments" 
-              :key="payment?.payment_id"
-              class="overflow-hidden relative py-2 mb-4"
-            >
-              <!-- Swipe Action Backgrounds (All actions always on the right) -->
-              <div class="absolute inset-0">
-                <!-- Right Side Actions (Always visible when swiping left) -->
-                <div class="flex absolute top-0 right-0 bottom-0 items-center pr-2">
-                  <div class="flex space-x-2">
-                    <!-- Approve Payment Action (Green) -->
-                    <div 
-                      class="flex flex-col justify-center items-center w-16 h-16 bg-green-500 rounded-lg transition-colors cursor-pointer hover:bg-green-600"
-                      @click="approvePayment(payment?.payment_id)"
-                    >
-                      <i class="text-xl text-white fa-solid fa-check-circle"></i>
-                      <span class="text-xs font-medium text-white">Aprobar</span>
-                    </div>
-                    
-                    <!-- Reject Payment Action (Red) -->
-                    <div 
-                      class="flex flex-col justify-center items-center w-16 h-16 bg-red-500 rounded-lg transition-colors cursor-pointer hover:bg-red-600"
-                      @click="openPaymentRejectModal(payment)"
-                    >
-                      <i class="text-xl text-white fa-solid fa-times-circle"></i>
-                      <span class="text-xs font-medium text-white">Rechazar</span>
-                    </div>
-                    
-                    <!-- View Image Action (Blue) -->
-                    <div 
-                      class="flex flex-col justify-center items-center w-4 h-16 bg-gray-500 rounded-md transition-colors cursor-pointer hover:bg-blue-600"
-                      @click="openPaymentPhotoModal(payment.payment_photo_base64)"
-                    >
-                      <i class="text-xl text-white fa-solid fa-ellipsis-vertical"></i>
-                      <!-- <span class="text-xs font-medium text-white">Ver</span> -->
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              <!-- Payment Card Content (slides over the action backgrounds) -->
-              <div 
-                class="relative z-10 p-4 bg-white rounded-lg border border-gray-100 shadow-sm transition-all duration-300 cursor-pointer hover:shadow-md"
-                   :style="{
-                  transform: swipingPayment === payment?.payment_id ? `translateX(${swipeOffset}px)` : 'translateX(0px)',
-                  transition: swipingPayment === payment?.payment_id ? 'none' : 'transform 0.3s ease-out'
-                }"
-                @touchstart="(e) => handlePaymentTouchStart(e, payment)"
-                @touchmove="handlePaymentTouchMove"
-                @touchend="(e) => handlePaymentTouchEnd(e, payment)"
-                @click="closeSwipe"
-              >
-                <div class="flex justify-between items-center">
-                  <div class="flex flex-1 items-center space-x-3 min-w-0">
-                    <!-- Payment Amount Circle -->
-                    <div class="flex flex-shrink-0 justify-center items-center w-12 h-12 text-sm font-bold text-white bg-gradient-to-br from-green-500 to-blue-600 rounded-full">
-                      ${{ parseFloat(payment?.amount || 0).toLocaleString() }}
-                </div>
-                
-                    <!-- Payment Details -->
-                    <div class="flex-1 min-w-0">
-                      <div class="font-semibold text-gray-900 truncate">
-                        {{ payment?.user_name || '' }}
-                </div>
-                      <div class="text-sm text-gray-600 truncate">
-                        {{ formatPaymentDate(payment?.booking_date) }}
+              <div class="flex gap-2 mt-3 pt-3 border-t border-gray-50">
+                <button @click.stop="openAcceptModal(event)" class="flex-1 py-2 text-xs font-semibold text-white bg-green-500 rounded-lg active:bg-green-600">
+                  <i class="fa-solid fa-check mr-1"></i>Aceptar
+                </button>
+                <button @click.stop="openRejectModal(event)" class="flex-1 py-2 text-xs font-semibold text-white bg-red-500 rounded-lg active:bg-red-600">
+                  <i class="fa-solid fa-times mr-1"></i>Rechazar
+                </button>
+                <button @click.stop="navigateToBookingDetail(event?.booking_id)" class="px-4 py-2 text-xs font-semibold text-white bg-blue-500 rounded-lg active:bg-blue-600">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
               </div>
             </div>
           </div>
-          
-                  <!-- Status and Amount Due -->
-                  <div class="flex-shrink-0 text-right">
-                    <span 
-                      class="px-3 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 rounded-full"
-                    >
-                      Pendiente
-                    </span>
-                    <div class="mt-1 text-sm text-gray-500">Debe: ${{ parseFloat(payment?.amount_due || 0).toLocaleString() }}</div>
-          </div>
-        </div>
-
-
-            </div>
-          </div>
-        </div>
-          
-          <!-- No Payments Message -->
           <div v-else class="py-8 text-center text-gray-500">
-            <div class="text-lg font-medium">No hay pagos pendientes</div>
-            <div class="text-sm">Todos los pagos han sido procesados</div>
+            <div class="text-base font-medium">No hay reservas disponibles</div>
           </div>
         </div>
 
-
+        <!-- Payments Tab -->
+        <div v-else-if="activeTab === 'payments'">
+          <h3 class="mb-3 text-base font-semibold text-gray-800">Pagos Pendientes ({{ paymentsData?.payments?.length || 0 }})</h3>
+          <div v-if="paymentsLoading" class="py-6 text-sm text-center text-gray-500">Cargando pagos...</div>
+          <div v-else-if="paymentsData?.payments?.length" class="space-y-3">
+            <div
+              v-for="payment in paymentsData.payments"
+              :key="payment?.payment_id"
+              class="p-4 bg-white rounded-xl border border-gray-100 shadow-sm"
+            >
+              <div class="flex items-center gap-3">
+                <div class="flex flex-shrink-0 justify-center items-center w-11 h-11 text-xs font-bold text-white bg-gradient-to-br from-green-500 to-blue-600 rounded-full">
+                  ${{ parseFloat(payment?.amount || 0).toLocaleString() }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-semibold text-gray-900 truncate">{{ payment?.user_name }}</div>
+                  <div class="text-xs text-gray-500">{{ formatPaymentDate(payment?.booking_date) }} · Debe: ${{ parseFloat(payment?.amount_due || 0).toLocaleString() }}</div>
+                </div>
+                <span class="flex-shrink-0 px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 rounded-full">Pendiente</span>
+              </div>
+              <div class="flex gap-2 mt-3 pt-3 border-t border-gray-50">
+                <button @click.stop="approvePayment(payment?.payment_id)" class="flex-1 py-2 text-xs font-semibold text-white bg-green-500 rounded-lg active:bg-green-600">
+                  <i class="fa-solid fa-check mr-1"></i>Aprobar
+                </button>
+                <button @click.stop="openPaymentRejectModal(payment)" class="flex-1 py-2 text-xs font-semibold text-white bg-red-500 rounded-lg active:bg-red-600">
+                  <i class="fa-solid fa-times mr-1"></i>Rechazar
+                </button>
+                <button v-if="payment?.payment_photo_base64" @click.stop="openPaymentPhotoModal(payment.payment_photo_base64)" class="px-4 py-2 text-xs font-semibold text-white bg-blue-500 rounded-lg active:bg-blue-600">
+                  <i class="fa-solid fa-image"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div v-else class="py-8 text-center text-gray-500">
+            <div class="text-base font-medium">No hay pagos pendientes</div>
+            <div class="mt-1 text-sm">Todos los pagos han sido procesados</div>
+          </div>
+        </div>
       </div>
 
-      <!-- Bottom Action Buttons -->
-      <div class="p-6 pt-0">
+      <!-- Bottom Tab Toggle (sticky) -->
+      <div class="fixed bottom-0 left-0 right-0 px-4 pb-4 pt-2 bg-white border-t border-gray-100 z-20">
         <div class="relative p-1 bg-gray-200 rounded-2xl">
-          <div 
+          <div
             class="absolute top-1 left-1 w-1/2 h-[calc(100%-8px)] bg-blue-600 rounded-xl transition-transform duration-300 ease-in-out"
             :class="activeTab === 'bookings' ? 'translate-x-0' : 'translate-x-full'"
           ></div>
-          
           <div class="flex relative">
-            <button 
+            <button
               @click="activeTab = 'bookings'"
-              class="relative z-10 flex-1 py-4 text-lg font-bold rounded-xl transition-colors duration-300"
+              class="relative z-10 flex-1 py-3 text-base font-bold rounded-xl transition-colors duration-300"
               :class="activeTab === 'bookings' ? 'text-white' : 'text-black'"
             >
               Reservas
             </button>
-            <button 
+            <button
               @click="activeTab = 'payments'"
-              class="relative z-10 flex-1 py-4 text-lg font-bold rounded-xl transition-colors duration-300"
+              class="relative z-10 flex-1 py-3 text-base font-bold rounded-xl transition-colors duration-300"
               :class="activeTab === 'payments' ? 'text-white' : 'text-black'"
             >
               Pagos
             </button>
-
           </div>
         </div>
       </div>
@@ -1102,6 +978,8 @@ import api from '@/services/api'
 
 const router = useRouter()
 const authStore = useAuthStore()
+
+const isActivePath = (path) => router.currentRoute.value.path === path
 const toast = inject('$toast')
 
 // Dashboard data state

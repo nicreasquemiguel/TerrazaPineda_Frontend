@@ -1,0 +1,17 @@
+{
+  "packages": [
+    { "name": "Básicos 30 personas", "price": 3500, "n_people": 30, "hours": "10:30am a 10:00pm", "icon": "mdi:party-popper" },
+    { "name": "Básicos 40 personas", "price": 3900, "n_people": 40, "hours": "10:30am a 10:00pm", "icon": "mdi:party-popper" },
+    { "name": "Básicos 50 personas", "price": 4300, "n_people": 50, "hours": "10:30am a 10:00pm", "icon": "mdi:party-popper" },
+    { "name": "Estandar 60 personas", "price": 4700, "n_people": 60, "hours": "10:30am a 10:00pm", "icon": "mdi:party-popper" },
+    { "name": "Estandar 70 personas", "price": 5100, "n_people": 70, "hours": "10:30am a 10:00pm", "icon": "mdi:party-popper" },
+    { "name": "Estandar 80 personas", "price": 5500, "n_people": 80, "hours": "10:30am a 10:00pm", "icon": "mdi:party-popper" },
+    { "name": "Premium 90 personas", "price": 5900, "n_people": 90, "hours": "10:30am a 10:00pm", "icon": "mdi:party-popper" },
+    { "name": "Premium 100 personas", "price": 6300, "n_people": 100, "hours": "10:30am a 10:00pm", "icon": "mdi:party-popper" }
+  ],
+  "extras": [
+    { "name": "Bocina BT 15", "price": 250, "description": "Bocina bluetooth 15 pulgadas", "icon": "mdi:speaker" },
+    { "name": "Brincolin", "price": 400, "description": "Brincolín inflable para eventos", "icon": "mdi:castle" },
+    { "name": "Limpieza", "price": 500, "description": "Servicio adicional de limpieza", "icon": "mdi:broom" }
+  ]
+}
