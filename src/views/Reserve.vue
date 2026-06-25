@@ -203,7 +203,9 @@
             <div class="p-3 mx-auto mt-4 w-full max-w-md text-xs text-yellow-800 bg-yellow-50 rounded border-l-4 border-yellow-400 md:p-4 md:text-sm">
               <strong>Nota:</strong> Esta es solo una solicitud de reservación. La fecha y servicios seleccionados están sujetos a disponibilidad y aprobación. Serás notificado si tu solicitud es aceptada. Después de la aceptación, tendrás 3 días para realizar el pago de anticipo de $1000 MXN y asegurar tu evento.
             </div>
-            <button @click="onSubmitClick" :disabled="!isOver18 || !acceptTerms" class="w-full mt-4 py-3 rounded-xl font-bold text-lg text-white bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] shadow-lg hover:opacity-90 transition disabled:opacity-50">Mandar solicitud</button>
+            <button @click="onSubmitClick" :disabled="!isOver18 || !acceptTerms || isSending" class="w-full mt-4 py-3 rounded-xl font-bold text-lg text-white bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] shadow-lg hover:opacity-90 transition disabled:opacity-50">
+  {{ isSending ? 'Enviando...' : 'Mandar solicitud' }}
+</button>
           </div>
 
         </div>
@@ -336,6 +338,8 @@ const totalCostNoDecimals = computed(() => {
 });
 
 async function sendRequest() {
+  if (isSending.value) return;
+  isSending.value = true;
   const data = {
     package_id: selectedPackage.value?.id || 0,
     extra_service_ids: selectedExtras.value,
@@ -355,11 +359,22 @@ async function sendRequest() {
       router.push('/mis-reservas')
     }
   } catch (e) {
-    if (e.response && e.response.status === 409 && e.response.data?.detail?.includes('already exists')) {
+    const status = e.response?.status;
+    const data = e.response?.data;
+    if (status === 400 && data?.start_datetime) {
+      const msg = Array.isArray(data.start_datetime) ? data.start_datetime[0] : data.start_datetime;
+      if (msg.toLowerCase().includes('not available')) {
+        toast.error('Esta fecha ya está ocupada. Por favor elige otra fecha.');
+      } else {
+        toast.error(msg);
+      }
+    } else if (status === 409 && data?.detail?.includes('already exists')) {
       toast.error('La fecha o el evento ya está ocupado. Por favor elige otra fecha o paquete.');
     } else {
-      alert('Error al enviar la solicitud.');
+      toast.error('Error al enviar la solicitud. Intenta de nuevo.');
     }
+  } finally {
+    isSending.value = false;
   }
 }
 
@@ -377,6 +392,7 @@ function goToStep(step) {
 const isOver18 = ref(false);
 const acceptTerms = ref(false);
 const showTermsModal = ref(false);
+const isSending = ref(false);
 
 const allExtras = ref([]);
 
