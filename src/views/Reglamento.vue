@@ -1,6 +1,6 @@
 <template>
   <div class="min-h-screen bg-gray-50">
-    <div class="px-4 py-10 mx-auto max-w-2xl">
+    <div class="px-4 pt-8 pb-10 mx-auto max-w-2xl">
       <!-- Logo -->
       <div class="flex justify-center mb-4">
         <img src="/tp.svg" alt="Logo Terraza Pineda" class="w-auto h-16" />

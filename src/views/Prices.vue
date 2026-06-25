@@ -4,7 +4,7 @@
     <section class="relative bg-white text-gray-900 overflow-hidden bg-cover bg-center min-h-[60vh]"
       style="background-image: url('/hero.jpg')">
       <div class="absolute inset-0 bg-black opacity-50"></div>
-      <div class="relative max-w-4xl px-4 pt-16 pb-12 mx-auto text-center sm:px-6 lg:px-8">
+      <div class="relative max-w-4xl px-4 pt-8 pb-12 mx-auto text-center sm:px-6 lg:px-8">
         <img src="/tp-white.svg" alt="Terraza Pineda Logo" class="w-16 h-16 mx-auto mb-4" />
         <h1 class="mb-4 text-4xl font-bold text-white md:text-5xl">Precios y Paquetes</h1>
         <p class="max-w-2xl mx-auto text-xl text-white/80">

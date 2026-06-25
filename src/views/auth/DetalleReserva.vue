@@ -401,7 +401,7 @@
     </div>
     
     <!-- Event content when loaded -->
-    <div v-else-if="event" class="flex flex-col gap-0 px-4 mx-auto max-w-3xl">
+    <div v-else-if="event" class="px-4 mx-auto max-w-5xl sm:px-6 lg:px-8">
       <!-- Breadcrumb -->
       <nav class="mb-2 text-xs text-gray-500">
         <router-link to="/dashboard" class="hover:underline">Dashboard</router-link>
@@ -412,6 +412,11 @@
         <span class="mx-2">/</span>
         <span class="font-semibold text-gray-700">Detalle</span>
       </nav>
+
+      <!-- Two-column layout: left=steps, right=summary+payment -->
+      <div class="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
+        <!-- RIGHT COLUMN (summary+payment) — rendered second in HTML, placed right by grid -->
+        <div class="flex flex-col gap-4 min-w-0 lg:order-2">
 
       <!-- Staff Info Banner -->
       <div v-if="isStaff" class="overflow-hidden relative p-1 mb-6 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-xl">
@@ -654,71 +659,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Steps Progress -->
-        <div class="py-6">
-          <h2 class="mb-4 text-lg font-bold text-primary-700">Pasos a seguir</h2>
-          <div class="flex flex-col gap-4">
-            <div v-for="(step, i) in steps" :key="step.key"
-              :class="[
-                'relative flex flex-col rounded-2xl border bg-white px-5 py-4 shadow-sm transition',
-                'hover:scale-[1.03] hover:shadow-lg hover:z-10',
-                step.key === 'rechazado' && event.status === 'rechazado' ? 'border-red-400 bg-red-50' :
-                i < getCurrentStepIndex(event.status) ? 'border-green-400 bg-green-50' :
-                i === getCurrentStepIndex(event.status) ? 'border-blue-400 bg-blue-50' :
-                'border-gray-200 bg-white',
-                'group'
-              ]"
-              style="transition: box-shadow 0.2s, transform 0.2s;"
-            >
-              <!-- Icon/Number -->
-              <div
-                class="flex justify-center items-center mb-2 w-8 h-8 rounded-full border-2 md:mb-0 md:absolute md:-left-6 md:top-6"
-                :class="[
-                  step.key === 'rechazado' && event.status === 'rechazado' ? 'bg-red-400 border-red-400 text-white' :
-                  i < getCurrentStepIndex(event.status) ? 'bg-green-400 border-green-400 text-white' :
-                  i === getCurrentStepIndex(event.status) ? 'bg-white border-blue-400 text-blue-600 font-bold' :
-                  'bg-white border-gray-300 text-gray-400',
-                  'relative md:static'
-                ]"
-                style="z-index:2;"
-              >
-                <template v-if="step.key === 'rechazado' && event.status === 'rechazado'">
-                  <i class="fa-solid fa-exclamation-triangle"></i>
-                </template>
-                <template v-else-if="i < getCurrentStepIndex(event.status)">
-                  <i class="fa-solid fa-check"></i>
-                </template>
-                <template v-else>
-                  <span>{{ i + 1 }}</span>
-                </template>
-              </div>
-              <!-- Step header -->
-              <div class="flex justify-between items-center">
-                <div class="text-base font-bold text-gray-900">{{ step.label }}</div>
-                <div class="text-xs font-semibold"
-                  :class="[
-                    step.key === 'rechazado' && event.status === 'rechazado' ? 'text-red-600' :
-                    i < getCurrentStepIndex(event.status) ? 'text-green-600' :
-                    i === getCurrentStepIndex(event.status) ? 'text-blue-600' :
-                    'text-gray-400'
-                  ]"
-                >
-                  {{ step.key === 'rechazado' && event.status === 'rechazado' ? 'Rechazado' : i < getCurrentStepIndex(event.status) ? 'Completo' : i === getCurrentStepIndex(event.status) ? 'Actual' : '' }}
-                </div>
-              </div>
-              <!-- Step description -->
-              <div class="mt-1 text-sm text-gray-600">{{ step.description }}</div>
-              
-              <!-- Rejection reason when status is rejected -->
-              <div v-if="step.key === 'rechazado' && event.status === 'rechazado' && event.rejection_reason" 
-                   class="p-3 mt-3 bg-red-100 rounded-lg border border-red-200">
-                <div class="mb-1 text-sm font-semibold text-red-800">Razón del rechazo:</div>
-                <div class="text-sm text-red-700">{{ event.rejection_reason }}</div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- Payment Methods Section (shown when reservation is accepted) -->
         <div v-if="event && (event.status === 'aceptacion' || event.status === 'apartado' || event.status === 'liquidado' || event.status === 'entregado' || event.status === 'finalizado')" class="mt-6">
@@ -1215,7 +1155,62 @@
               <div class="text-gray-700 whitespace-pre-line">{{ myReview.review }}</div>
             </div>
           </div>
-        </div>
+        </div><!-- /Review -->
+        </div><!-- /LEFT COLUMN -->
+
+        <!-- LEFT COLUMN (steps — sticky on desktop) -->
+        <div class="flex flex-col gap-4 lg:order-1 lg:sticky lg:top-24">
+          <!-- Steps Progress -->
+          <div class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <h2 class="mb-3 text-base font-bold text-primary-700 sm:text-lg">Pasos a seguir</h2>
+            <div class="flex flex-col gap-2">
+              <div v-for="(step, i) in steps" :key="step.key"
+                :class="[
+                  'flex gap-3 items-start rounded-xl border px-3 py-3 transition',
+                  step.key === 'rechazado' && event.status === 'rechazado' ? 'border-red-300 bg-red-50' :
+                  i < getCurrentStepIndex(event.status) ? 'border-green-300 bg-green-50' :
+                  i === getCurrentStepIndex(event.status) ? 'border-blue-300 bg-blue-50' :
+                  'border-gray-200 bg-white'
+                ]"
+              >
+                <div class="flex flex-shrink-0 justify-center items-center mt-0.5 w-6 h-6 text-xs font-bold rounded-full border-2"
+                  :class="[
+                    step.key === 'rechazado' && event.status === 'rechazado' ? 'bg-red-400 border-red-400 text-white' :
+                    i < getCurrentStepIndex(event.status) ? 'bg-green-400 border-green-400 text-white' :
+                    i === getCurrentStepIndex(event.status) ? 'bg-white border-blue-400 text-blue-600' :
+                    'bg-white border-gray-300 text-gray-400'
+                  ]"
+                >
+                  <i v-if="step.key === 'rechazado' && event.status === 'rechazado'" class="fa-solid fa-exclamation-triangle"></i>
+                  <i v-else-if="i < getCurrentStepIndex(event.status)" class="fa-solid fa-check"></i>
+                  <span v-else>{{ i + 1 }}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="flex justify-between items-center gap-1">
+                    <span class="text-sm font-semibold text-gray-900">{{ step.label }}</span>
+                    <span class="flex-shrink-0 text-xs font-medium"
+                      :class="[
+                        step.key === 'rechazado' && event.status === 'rechazado' ? 'text-red-600' :
+                        i < getCurrentStepIndex(event.status) ? 'text-green-600' :
+                        i === getCurrentStepIndex(event.status) ? 'text-blue-600' :
+                        'text-gray-400'
+                      ]"
+                    >
+                      {{ step.key === 'rechazado' && event.status === 'rechazado' ? 'Rechazado' : i < getCurrentStepIndex(event.status) ? 'Listo' : i === getCurrentStepIndex(event.status) ? 'Actual' : '' }}
+                    </span>
+                  </div>
+                  <p class="mt-0.5 text-xs leading-relaxed text-gray-500">{{ step.description }}</p>
+                  <div v-if="step.key === 'rechazado' && event.status === 'rechazado' && event.rejection_reason"
+                    class="p-2 mt-1.5 text-xs bg-red-100 rounded border border-red-200">
+                    <span class="font-semibold text-red-800">Razón: </span>
+                    <span class="text-red-700">{{ event.rejection_reason }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /RIGHT COLUMN -->
+      </div><!-- /grid -->
 
         <!-- Staff Card -->
         <div v-if="event.staff" class="flex flex-col gap-4 items-center p-5 mt-2 mb-8 bg-white rounded-2xl border border-blue-100 shadow md:flex-row">

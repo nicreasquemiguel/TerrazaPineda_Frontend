@@ -1,6 +1,6 @@
 <template>
   <div class="py-10 min-h-screen bg-gray-50">
-    <div class="px-4 mx-auto max-w-3xl">
+    <div class="px-4 mx-auto max-w-5xl sm:px-6 lg:px-8">
       <!-- Breadcrumb for Staff -->
       <nav v-if="isStaffView" class="mb-4 text-xs text-gray-500">
         <router-link to="/dashboard" class="hover:underline">Dashboard</router-link>

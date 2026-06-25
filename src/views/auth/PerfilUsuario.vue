@@ -1,310 +1,323 @@
 <template>
-   <div class="pb-4 min-h-screen bg-gray-50 sm:py-8">
-    <div class="px-4 mx-auto max-w-lg sm:px-6 lg:px-8">
-      <!-- Header Section -->
-      <div class="p-4 mb-4 bg-white rounded-lg shadow-sm sm:p-6 sm:mb-6">
-        <div class="flex flex-col items-center text-center sm:flex-row sm:items-start sm:text-left">
-          <div class="relative flex-shrink-0 mb-3 sm:mb-0 sm:mr-4">
-            <div v-if="user && user.profile && user.profile.image && user.profile.image.trim() !== ''" class="overflow-hidden w-20 h-20 rounded-full">
-              <img 
-                :src="user.profile.image" 
-                :alt="`${userName} Profile`" 
-                class="object-cover w-full h-full"
-                @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'"
-              />
+  <div class="min-h-screen bg-gray-100 sm:py-8">
+    <div class="px-4 mx-auto max-w-5xl sm:px-6 lg:px-8">
+
+      <!-- ─── PAGE TITLE (desktop) ─── -->
+      <h1 class="hidden mb-6 text-2xl font-bold text-gray-800 sm:block">Mi Perfil</h1>
+
+      <!-- ─── MOBILE HERO HEADER ─── -->
+      <div class="relative mb-0 sm:hidden">
+        <div class="h-28 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-xl"></div>
+        <div class="flex flex-col items-center px-4">
+          <div class="-mt-12 mb-2">
+            <div v-if="user?.profile?.image && user.profile.image.trim() !== ''" class="overflow-hidden w-24 h-24 rounded-full border-4 border-white shadow-md">
+              <img :src="user.profile.image" :alt="`${userName}`" class="object-cover w-full h-full"
+                @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'" />
               <div class="hidden justify-center items-center w-full h-full bg-gradient-to-br from-blue-600 to-purple-600 rounded-full">
-                <span class="text-2xl font-bold text-white">{{ userInitials }}</span>
+                <span class="text-3xl font-bold text-white">{{ userInitials }}</span>
               </div>
             </div>
-            <div v-else class="flex justify-center items-center w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full">
-              <span class="text-2xl font-bold text-white">{{ userInitials }}</span>
+            <div v-else class="flex justify-center items-center w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full border-4 border-white shadow-md">
+              <span class="text-3xl font-bold text-white">{{ userInitials }}</span>
             </div>
           </div>
-          <div class="flex-1">
-            <h1 class="text-xl font-bold text-gray-900 sm:text-2xl">{{ userName }}</h1>
-            <p class="text-sm text-gray-600 sm:text-base">{{ userRole }}</p>
-            <p class="text-xs text-gray-500 break-all sm:text-sm">{{ user && user.email ? user.email : '' }}</p>
-          </div>
+          <h2 class="text-xl font-bold text-gray-900">{{ userName }}</h2>
+          <p class="text-sm text-gray-500">{{ userRole }}</p>
+          <p class="mb-4 text-xs text-gray-400 break-all">{{ user?.email }}</p>
         </div>
       </div>
 
-      <!-- Tabs Navigation -->
-      <div class="bg-white rounded-lg shadow-sm">
-        <div class="border-b border-gray-200">
-          <nav class="flex overflow-x-auto px-4 -mb-px space-x-2 sm:px-6 sm:space-x-8">
-            <button
-              @click="activeTab = 'profile'"
-              :class="[
-                activeTab === 'profile'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                'whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0'
-              ]"
-            >
-              <i class="mr-2 fa-solid fa-user"></i>
-              Perfil
-            </button>
-            <button
-              @click="activeTab = 'notifications'"
-              :class="[
-                activeTab === 'notifications'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                'whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0'
-              ]"
-            >
-              <i class="mr-2 fa-solid fa-bell"></i>
-              Notificaciones
-              <span v-if="unreadCount > 0" class="inline-flex items-center px-2 py-1 ml-2 text-xs font-medium text-red-800 bg-red-100 rounded-full">
-                {{ unreadCount }}
-              </span>
-            </button>
-            <button
-              @click="activeTab = 'security'"
-              :class="[
-                activeTab === 'security'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-                'whitespace-nowrap py-3 sm:py-4 px-2 sm:px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0'
-              ]"
-            >
-              <i class="mr-2 fa-solid fa-shield-alt"></i>
-              Seguridad
-            </button>
-          </nav>
+      <!-- ─── DESKTOP PROFILE CARD ─── -->
+      <div class="hidden p-6 mb-6 bg-white rounded-xl border border-gray-200 shadow-sm sm:flex sm:items-center sm:gap-5">
+        <div class="flex-shrink-0">
+          <div v-if="user?.profile?.image && user.profile.image.trim() !== ''" class="overflow-hidden w-20 h-20 rounded-full">
+            <img :src="user.profile.image" :alt="`${userName}`" class="object-cover w-full h-full"
+              @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'" />
+            <div class="hidden justify-center items-center w-full h-full bg-gradient-to-br from-blue-600 to-purple-600 rounded-full">
+              <span class="text-2xl font-bold text-white">{{ userInitials }}</span>
+            </div>
+          </div>
+          <div v-else class="flex justify-center items-center w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full">
+            <span class="text-2xl font-bold text-white">{{ userInitials }}</span>
+          </div>
         </div>
+        <div>
+          <h2 class="text-xl font-bold text-gray-900">{{ userName }}</h2>
+          <p class="text-sm text-gray-500">{{ userRole }}</p>
+          <p class="text-sm text-gray-400 break-all">{{ user?.email }}</p>
+        </div>
+      </div>
 
-        <!-- Tab Content -->
-        <div class="p-4 sm:p-6">
-          <!-- Profile Tab -->
-          <div v-if="activeTab === 'profile'" class="space-y-6">
-            <h3 class="text-lg font-medium text-gray-900">Información Personal</h3>
-            
-            <div class="space-y-4 sm:space-y-6">
-              <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Nombre</label>
-                <div v-if="!isEditing" class="py-2 text-gray-900">{{ user?.first_name || 'No especificado' }}</div>
-                <input v-else v-model="formData.first_name" class="px-3 py-2 w-full text-base rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+      <!-- ─── TABS ─── -->
+      <div class="bg-white rounded-none border-b border-gray-200 sm:rounded-t-xl sm:border sm:border-b-0">
+        <nav class="flex overflow-x-auto px-4 -mb-px space-x-1 sm:px-6 sm:space-x-6">
+          <button
+            @click="activeTab = 'profile'"
+            :class="[
+              activeTab === 'profile' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+              'whitespace-nowrap py-3.5 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0'
+            ]"
+          >
+            <i class="mr-1.5 fa-solid fa-user"></i>Perfil
+          </button>
+          <button
+            @click="activeTab = 'notifications'"
+            :class="[
+              activeTab === 'notifications' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+              'whitespace-nowrap py-3.5 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0'
+            ]"
+          >
+            <i class="mr-1.5 fa-solid fa-bell"></i>Notificaciones
+            <span v-if="unreadCount > 0" class="inline-flex items-center px-1.5 py-0.5 ml-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">{{ unreadCount }}</span>
+          </button>
+          <button
+            @click="activeTab = 'security'"
+            :class="[
+              activeTab === 'security' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
+              'whitespace-nowrap py-3.5 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0'
+            ]"
+          >
+            <i class="mr-1.5 fa-solid fa-shield-alt"></i>Seguridad
+          </button>
+        </nav>
+      </div>
+
+      <!-- ─── TAB PANELS ─── -->
+      <div class="bg-white rounded-none border border-t-0 border-gray-200 shadow-sm sm:rounded-b-xl">
+
+        <!-- ══ PERFIL ══ -->
+        <div v-if="activeTab === 'profile'">
+
+          <!-- VIEW MODE -->
+          <template v-if="!isEditing">
+            <!-- Personal Information -->
+            <div class="p-4 sm:p-6">
+              <div class="flex justify-between items-center mb-5">
+                <h3 class="text-base font-semibold text-gray-800 sm:text-lg">Información Personal</h3>
+                <button
+                  @click="toggleEdit"
+                  class="inline-flex gap-1.5 items-center px-3.5 py-1.5 text-xs font-semibold text-white bg-orange-500 rounded-lg transition-colors hover:bg-orange-600 sm:px-4 sm:py-2 sm:text-sm"
+                >
+                  <i class="fa-solid fa-pen"></i> Editar
+                </button>
               </div>
-              <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Apellido</label>
-                <div v-if="!isEditing" class="py-2 text-gray-900">{{ user?.last_name || 'No especificado' }}</div>
-                <input v-else v-model="formData.last_name" class="px-3 py-2 w-full text-base rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Email</label>
-                <div class="py-2 text-gray-900">{{ user?.email || 'No especificado' }}</div>
-              </div>
-              <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Teléfono</label>
-                <div v-if="!isEditing" class="py-2 text-gray-900">{{ user?.phone || 'No especificado' }}</div>
-                <input v-else v-model="formData.phone" class="px-3 py-2 w-full text-base rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Género</label>
-                <div v-if="!isEditing" class="py-2 text-gray-900">{{ getGenderLabel(user?.profile?.gender) || 'No especificado' }}</div>
-                <select v-else v-model="formData.profile.gender" class="px-3 py-2 w-full text-base rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option value="">Seleccionar</option>
-                  <option value="M">Masculino</option>
-                  <option value="F">Femenino</option>
-                  <option value="O">Otro</option>
-                </select>
-              </div>
-              <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">País</label>
-                <div v-if="!isEditing" class="py-2 text-gray-900">{{ user?.profile?.country || 'No especificado' }}</div>
-                <input v-else v-model="formData.profile.country" class="px-3 py-2 w-full text-base rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Estado</label>
-                <div v-if="!isEditing" class="py-2 text-gray-900">{{ user?.profile?.state || 'No especificado' }}</div>
-                <input v-else v-model="formData.profile.state" class="px-3 py-2 w-full text-base rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Imagen de perfil</label>
-                <div v-if="!isEditing" class="py-2 text-gray-900">{{ user?.profile?.image || 'No especificado' }}</div>
-                <input v-else v-model="formData.profile.image" class="px-3 py-2 w-full text-base rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-              </div>
-              <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Dirección</label>
-                <div v-if="!isEditing" class="py-2 text-gray-900">{{ user?.profile?.address || 'No especificado' }}</div>
-                <textarea v-else v-model="formData.profile.address" rows="3" class="px-3 py-2 w-full text-base rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+              <!-- Grid 1-col mobile, 3-col desktop -->
+              <div class="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-3">
+                <div>
+                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Nombre</p>
+                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ user?.first_name || '—' }}</p>
+                </div>
+                <div>
+                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Apellido</p>
+                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ user?.last_name || '—' }}</p>
+                </div>
+                <div>
+                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Género</p>
+                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ getGenderLabel(user?.profile?.gender) || '—' }}</p>
+                </div>
+                <div>
+                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Email</p>
+                  <p class="text-sm font-semibold text-gray-800 break-all sm:text-base">{{ user?.email || '—' }}</p>
+                </div>
+                <div>
+                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Teléfono</p>
+                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ user?.phone || '—' }}</p>
+                </div>
+                <div>
+                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Rol</p>
+                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ userRole }}</p>
+                </div>
               </div>
             </div>
 
-            <div class="flex flex-col gap-2 justify-end sm:flex-row sm:gap-0">
-              <button 
-                v-if="!isEditing"
-                @click="toggleEdit"
-                class="px-4 py-2 w-full text-white bg-blue-600 rounded-md transition-colors sm:w-auto hover:bg-blue-700"
-              >
-                Editar perfil
-              </button>
-              <div v-else class="flex flex-col gap-2 w-full sm:flex-row sm:w-auto">
-                <button 
-                  @click="saveProfile"
-                  :disabled="isSaving"
-                  class="px-4 py-2 w-full text-white bg-green-600 rounded-md transition-colors sm:w-auto hover:bg-green-700 disabled:opacity-50"
-                >
-                  {{ isSaving ? 'Guardando...' : 'Guardar' }}
-                </button>
-                <button 
-                  @click="toggleEdit"
-                  class="px-4 py-2 w-full text-white bg-gray-400 rounded-md transition-colors sm:w-auto hover:bg-gray-500"
-                > 
+            <!-- Divider -->
+            <div class="mx-4 border-t border-gray-100 sm:mx-6"></div>
+
+            <!-- Address -->
+            <div class="p-4 sm:p-6">
+              <div class="flex justify-between items-center mb-5">
+                <h3 class="text-base font-semibold text-gray-800 sm:text-lg">Dirección</h3>
+              </div>
+              <div class="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-3">
+                <div>
+                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">País</p>
+                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ user?.profile?.country || '—' }}</p>
+                </div>
+                <div>
+                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Estado / Ciudad</p>
+                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ user?.profile?.state || '—' }}</p>
+                </div>
+                <div>
+                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Dirección completa</p>
+                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ user?.profile?.address || '—' }}</p>
+                </div>
+              </div>
+            </div>
+          </template>
+
+          <!-- EDIT MODE -->
+          <template v-else>
+            <div class="p-4 sm:p-6">
+              <h3 class="mb-5 text-base font-semibold text-gray-800 sm:text-lg">Editar Perfil</h3>
+
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div>
+                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Nombre</label>
+                  <input v-model="formData.first_name" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Apellido</label>
+                  <input v-model="formData.last_name" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Teléfono</label>
+                  <input v-model="formData.phone" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Género</label>
+                  <select v-model="formData.profile.gender" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Seleccionar</option>
+                    <option value="M">Masculino</option>
+                    <option value="F">Femenino</option>
+                    <option value="O">Otro</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">País</label>
+                  <input v-model="formData.profile.country" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div>
+                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Estado</label>
+                  <input v-model="formData.profile.state" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div class="sm:col-span-2 lg:col-span-3">
+                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Imagen de perfil (URL)</label>
+                  <input v-model="formData.profile.image" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                </div>
+                <div class="sm:col-span-2 lg:col-span-3">
+                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Dirección</label>
+                  <textarea v-model="formData.profile.address" rows="3" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-2 justify-end mt-6 sm:flex-row">
+                <button @click="toggleEdit" class="order-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg transition-colors sm:order-1 hover:bg-gray-200">
                   Cancelar
                 </button>
+                <button @click="saveProfile" :disabled="isSaving"
+                  class="order-1 px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg transition-colors sm:order-2 hover:bg-blue-700 disabled:opacity-50">
+                  <i v-if="isSaving" class="mr-1 fa-solid fa-spinner fa-spin"></i>
+                  {{ isSaving ? 'Guardando...' : 'Guardar cambios' }}
+                </button>
               </div>
             </div>
+          </template>
+        </div>
+
+        <!-- ══ NOTIFICACIONES ══ -->
+        <div v-if="activeTab === 'notifications'" class="p-4 sm:p-6">
+          <div class="flex justify-between items-center mb-5">
+            <div>
+              <h3 class="text-base font-semibold text-gray-800 sm:text-lg">Notificaciones</h3>
+              <p class="text-xs text-gray-400">{{ notifications.length }} total · {{ unreadCount }} no leídas</p>
+            </div>
+            <button @click="markAllAsRead" :disabled="isMarkingAllRead"
+              class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg transition-colors hover:bg-gray-200 disabled:opacity-50 sm:text-sm">
+              <i v-if="isMarkingAllRead" class="fa-solid fa-spinner fa-spin"></i>
+              <i v-else class="fa-solid fa-check-double"></i>
+              Leer todas
+            </button>
           </div>
 
-          <!-- Notifications Tab -->
-          <div v-if="activeTab === 'notifications'" class="space-y-6">
-            <div class="flex flex-col gap-4 justify-between items-start sm:flex-row sm:items-center">
-              <div>
-                <h3 class="text-lg font-medium text-gray-900">Notificaciones</h3>
-                <p class="text-xs text-gray-500">Total: {{ notifications.length }} | No leídas: {{ unreadCount }}</p>
-              </div>
-              <button
-                @click="markAllAsRead"
-                :disabled="isMarkingAllRead"
-                class="px-3 py-1 w-full text-sm text-gray-700 bg-gray-100 rounded-md transition-colors sm:w-auto hover:bg-gray-200 disabled:opacity-50"
-              >
-                <i v-if="isMarkingAllRead" class="mr-1 fa-solid fa-spinner fa-spin"></i>
-                Marcar todas como leídas
-              </button>
-            </div>
+          <div v-if="notificationsLoading" class="py-12 text-center">
+            <i class="text-2xl text-gray-300 fa-solid fa-spinner fa-spin"></i>
+            <p class="mt-2 text-sm text-gray-400">Cargando...</p>
+          </div>
 
-            <div v-if="notificationsLoading" class="py-8 text-center">
-              <i class="text-2xl text-gray-400 fa-solid fa-spinner fa-spin"></i>
-              <p class="mt-2 text-gray-500">Cargando notificaciones...</p>
-            </div>
+          <div v-else-if="notifications.length === 0" class="py-12 text-center">
+            <i class="text-4xl text-gray-200 fa-solid fa-bell-slash"></i>
+            <p class="mt-3 text-sm text-gray-400">No tienes notificaciones</p>
+          </div>
 
-            <div v-else-if="notifications.length === 0" class="py-8 text-center">
-              <i class="text-4xl text-gray-300 fa-solid fa-bell-slash"></i>
-              <p class="mt-2 text-gray-500">No tienes notificaciones</p>
-            </div>
-
-            <div v-else class="space-y-3">
-              <div
-                v-for="notification in notifications"
-                :key="notification.id"
-                :class="[
-                  'p-4 rounded-lg border transition-colors',
-                  notification.read ? 'bg-gray-50 border-gray-200' : 'bg-blue-50 border-blue-200'
-                ]"
-              >
-                <div class="flex justify-between items-start">
-                  <div class="flex-1">
-                    <h4 class="font-medium text-gray-900">{{ getNotificationTitle(notification) }}</h4>
-                    <p class="mt-1 text-sm text-gray-600">{{ notification.message || 'Notificación' }}</p>
-                    <div class="flex justify-between items-center mt-3">
-                      <div class="flex gap-2">
-                        <button
-                          v-if="notification.booking"
-                          @click.stop="viewBooking(notification.booking)"
-                          class="px-3 py-1 text-xs text-white bg-blue-600 rounded-md transition-colors hover:bg-blue-700"
-                        >
-                          <i class="mr-1 fa-solid fa-eye"></i>
-                          Ver Reserva
-                        </button>
-                        <button
-                          v-if="!notification.read"
-                          @click.stop="markAsRead(notification.id)"
-                          class="px-3 py-1 text-xs text-blue-600 bg-blue-50 rounded-md transition-colors hover:bg-blue-100"
-                        >
-                          <i class="mr-1 fa-solid fa-check"></i>
-                          Marcar como leída
-                        </button>
-                      </div>
-                    </div>
-                    <div class="mt-2">
-                      <p class="text-xs text-gray-500">{{ formatDate(notification.created_at) }}</p>
-                    </div>
-                  </div>
-                  <div class="flex items-center space-x-2">
-                    <span v-if="!notification.read" class="w-2 h-2 bg-blue-500 rounded-full"></span>
+          <div v-else class="space-y-2">
+            <div
+              v-for="notification in notifications" :key="notification.id"
+              :class="['p-4 rounded-xl border transition-colors', notification.read ? 'bg-gray-50 border-gray-100' : 'bg-blue-50 border-blue-100']"
+            >
+              <div class="flex gap-3 items-start">
+                <span :class="['mt-1.5 flex-shrink-0 w-2 h-2 rounded-full', !notification.read ? 'bg-blue-500' : '']"></span>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-semibold text-gray-900">{{ getNotificationTitle(notification) }}</p>
+                  <p class="mt-0.5 text-xs leading-relaxed text-gray-500">{{ notification.message || 'Notificación' }}</p>
+                  <div class="flex flex-wrap gap-2 items-center mt-2.5">
+                    <button v-if="notification.booking" @click.stop="viewBooking(notification.booking)"
+                      class="inline-flex gap-1 items-center px-2.5 py-1 text-xs font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700">
+                      <i class="fa-solid fa-eye"></i> Ver Reserva
+                    </button>
+                    <button v-if="!notification.read" @click.stop="markAsRead(notification.id)"
+                      class="inline-flex gap-1 items-center px-2.5 py-1 text-xs font-medium text-blue-600 bg-white rounded-full border border-blue-200 hover:bg-blue-50">
+                      <i class="fa-solid fa-check"></i> Leída
+                    </button>
+                    <span class="ml-auto text-xs text-gray-400">{{ formatDate(notification.created_at) }}</span>
                   </div>
                 </div>
               </div>
-              
-              <!-- Pagination Controls -->
-              <div v-if="notificationsPagination.count > notifications.length" class="pt-4 border-t border-gray-200">
-                <div class="flex justify-between items-center mb-3">
-                  <span class="text-sm text-gray-600">
-                    Mostrando {{ notifications.length }} de {{ notificationsPagination.count }} notificaciones
-                  </span>
-                </div>
-                <div class="flex gap-4 justify-center items-center">
-                  <button
-                    @click="loadNotifications(notificationsPagination.previous)"
-                    :disabled="!notificationsPagination.previous || notificationsLoading"
-                    class="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-md transition-colors hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Back
-                  </button>
-                  <span class="px-3 py-2 text-sm font-medium text-gray-600 bg-gray-50 rounded-md">
-                    Page {{ getCurrentPage() }}
-                  </span>
-                  <button
-                    @click="loadNotifications(notificationsPagination.next)"
-                    :disabled="!notificationsPagination.next || notificationsLoading"
-                    class="px-6 py-2 text-sm font-medium text-white bg-gray-800 rounded-md transition-colors hover:bg-gray-900 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    Next
-                  </button>
-                </div>
+            </div>
+
+            <div v-if="notificationsPagination.count > notifications.length" class="pt-4 border-t border-gray-100">
+              <p class="mb-2 text-xs text-center text-gray-400">{{ notifications.length }} de {{ notificationsPagination.count }}</p>
+              <div class="flex gap-3 justify-center">
+                <button @click="loadNotifications(notificationsPagination.previous)"
+                  :disabled="!notificationsPagination.previous || notificationsLoading"
+                  class="px-5 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed">
+                  Anterior
+                </button>
+                <span class="px-3 py-2 text-sm font-medium text-gray-500">Pág. {{ getCurrentPage() }}</span>
+                <button @click="loadNotifications(notificationsPagination.next)"
+                  :disabled="!notificationsPagination.next || notificationsLoading"
+                  class="px-5 py-2 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-900 disabled:opacity-40 disabled:cursor-not-allowed">
+                  Siguiente
+                </button>
               </div>
             </div>
           </div>
+        </div>
 
-          <!-- Security Tab -->
-          <div v-if="activeTab === 'security'" class="space-y-6">
-            <h3 class="text-lg font-medium text-gray-900">Cambiar Contraseña</h3>
-            
-            <div class="space-y-4">
-              <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Contraseña Actual</label>
-                <input
-                  v-model="passwordData.current_password"
-                  type="password"
-                  class="px-3 py-2 w-full text-base rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Ingresa tu contraseña actual"
-                />
-              </div>
-              <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Nueva Contraseña</label>
-                <input
-                  v-model="passwordData.new_password"
-                  type="password"
-                  class="px-3 py-2 w-full text-base rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Ingresa tu nueva contraseña"
-                />
-              </div>
-              <div>
-                <label class="block mb-2 text-sm font-medium text-gray-700">Confirmar Nueva Contraseña</label>
-                <input
-                  v-model="passwordData.re_new_password"
-                  type="password"
-                  class="px-3 py-2 w-full text-base rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Confirma tu nueva contraseña"
-                />
-              </div>
+        <!-- ══ SEGURIDAD ══ -->
+        <div v-if="activeTab === 'security'" class="p-4 sm:p-6">
+          <h3 class="mb-5 text-base font-semibold text-gray-800 sm:text-lg">Cambiar Contraseña</h3>
+          <div class="grid grid-cols-1 gap-4 max-w-lg sm:grid-cols-1">
+            <div>
+              <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Contraseña Actual</label>
+              <input v-model="passwordData.current_password" type="password"
+                class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Tu contraseña actual" />
             </div>
-
-            <div class="flex justify-end">
-              <button
-                @click="changePassword"
-                :disabled="isChangingPassword || !isPasswordFormValid"
-                class="px-4 py-2 w-full text-white bg-red-600 rounded-md transition-colors sm:w-auto hover:bg-red-700 disabled:opacity-50"
-              >
+            <div>
+              <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Nueva Contraseña</label>
+              <input v-model="passwordData.new_password" type="password"
+                class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Mínimo 8 caracteres" />
+            </div>
+            <div>
+              <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Confirmar Nueva Contraseña</label>
+              <input v-model="passwordData.re_new_password" type="password"
+                class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Repite tu nueva contraseña" />
+            </div>
+            <div>
+              <button @click="changePassword" :disabled="isChangingPassword || !isPasswordFormValid"
+                class="py-2.5 w-full text-sm font-medium text-white bg-red-600 rounded-lg transition-colors hover:bg-red-700 disabled:opacity-50">
                 <i v-if="isChangingPassword" class="mr-2 fa-solid fa-spinner fa-spin"></i>
                 {{ isChangingPassword ? 'Cambiando...' : 'Cambiar Contraseña' }}
               </button>
             </div>
           </div>
         </div>
+
       </div>
+
+      <div class="pb-6 sm:pb-0"></div>
     </div>
   </div>
 </template>

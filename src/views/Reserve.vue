@@ -1,58 +1,28 @@
 <template>
-  <div class="flex flex-col min-h-screen bg-white">
-    <!-- Two-panel: stacked on mobile, side-by-side on lg+ -->
-    <div class="flex flex-col flex-1 lg:flex-row">
+  <div class="min-h-screen bg-gray-50">
+    <div class="px-4 py-8 mx-auto max-w-5xl sm:px-6 lg:px-8">
 
-      <!-- ── Left Sidebar ── -->
-      <aside class="flex flex-col items-center px-6 pt-8 pb-4 bg-gray-50 border-b border-gray-200
-                    lg:w-72 xl:w-80 lg:border-b-0 lg:border-r lg:py-10 lg:shrink-0">
-        <img src="/tp.svg" alt="Terraza Pineda Logo" class="mb-3 w-12 h-12" />
-        <h1 class="mb-1 text-3xl font-extrabold text-center reserve-gradient-text">Solicitud</h1>
-        <p class="mb-5 max-w-xs text-sm text-center text-gray-500 lg:mb-8">
+      <!-- Header centrado -->
+      <div class="mb-6 text-center">
+        <img src="/tp.svg" alt="Terraza Pineda Logo" class="mx-auto mb-3 w-12 h-12" />
+        <h1 class="mb-1 text-3xl font-extrabold reserve-gradient-text">Solicitud</h1>
+        <p class="mx-auto max-w-sm text-sm text-gray-500">
           Se aprobará según los detalles de tu evento, tales como fecha, paquete, descripción, seguir pasos...
         </p>
+      </div>
 
-        <!-- Mobile: compact horizontal stepper -->
-        <div class="w-full lg:hidden">
-          <div class="flex justify-between items-center">
-            <div
-              v-for="(step, idx) in steps"
-              :key="step"
-              @click="goToStep(idx + 1)"
-              class="flex flex-col flex-1 items-center cursor-pointer"
-            >
-              <div
-                :class="[
-                  'w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm mb-1 border-2 transition',
-                  currentStep === idx + 1
-                    ? 'bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] text-white border-[#22d3ee] shadow'
-                    : 'bg-gray-100 text-[#22d3ee] border-gray-300'
-                ]"
-              >{{ idx + 1 }}</div>
-              <span
-                :class="[
-                  'text-[10px] font-semibold text-center leading-tight',
-                  currentStep === idx + 1 ? 'text-[#22d3ee]' : 'text-gray-400'
-                ]"
-              >{{ step }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Desktop: vertical stepper -->
-        <nav class="hidden lg:flex flex-col w-full gap-0.5">
+      <!-- Mobile: stepper horizontal -->
+      <div class="mb-6 lg:hidden">
+        <div class="flex justify-between items-center p-3 bg-white rounded-xl border border-gray-200 shadow-sm">
           <div
             v-for="(step, idx) in steps"
             :key="step"
             @click="goToStep(idx + 1)"
-            :class="[
-              'flex items-center gap-3 px-3 py-3 rounded-xl cursor-pointer transition-all',
-              currentStep === idx + 1 ? 'bg-cyan-50' : 'hover:bg-gray-100'
-            ]"
+            class="flex flex-col flex-1 items-center cursor-pointer"
           >
             <div
               :class="[
-                'w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm border-2 transition flex-shrink-0',
+                'w-8 h-8 flex items-center justify-center rounded-full font-bold text-sm mb-1 border-2 transition',
                 currentStep === idx + 1
                   ? 'bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] text-white border-[#22d3ee] shadow'
                   : currentStep > idx + 1
@@ -67,16 +37,58 @@
             </div>
             <span
               :class="[
-                'text-sm font-semibold',
-                currentStep === idx + 1 ? 'text-cyan-600' : currentStep > idx + 1 ? 'text-gray-700' : 'text-gray-400'
+                'text-[10px] font-semibold text-center leading-tight',
+                currentStep === idx + 1 ? 'text-[#22d3ee]' : 'text-gray-400'
               ]"
             >{{ step }}</span>
           </div>
-        </nav>
-      </aside>
+        </div>
+      </div>
 
-      <!-- ── Right Content Panel ── -->
-      <div class="flex flex-col flex-1 items-center px-4 pb-8 pt-6 lg:pt-10 lg:px-12 lg:pr-72 xl:pr-80">
+      <!-- Two-column grid: left=stepper, right=content -->
+      <div class="flex flex-col gap-6 lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
+
+        <!-- ── Left: Vertical stepper (desktop) ── -->
+        <aside class="hidden lg:block lg:sticky lg:top-24">
+          <div class="p-4 bg-white rounded-xl border border-gray-200 shadow-sm">
+            <nav class="flex flex-col gap-0.5">
+              <div
+                v-for="(step, idx) in steps"
+                :key="step"
+                @click="goToStep(idx + 1)"
+                :class="[
+                  'flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer transition-all',
+                  currentStep === idx + 1 ? 'bg-cyan-50' : 'hover:bg-gray-50'
+                ]"
+              >
+                <div
+                  :class="[
+                    'w-7 h-7 flex items-center justify-center rounded-full font-bold text-sm border-2 transition flex-shrink-0',
+                    currentStep === idx + 1
+                      ? 'bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] text-white border-[#22d3ee] shadow'
+                      : currentStep > idx + 1
+                        ? 'bg-cyan-100 text-cyan-600 border-cyan-300'
+                        : 'bg-gray-100 text-gray-400 border-gray-300'
+                  ]"
+                >
+                  <svg v-if="currentStep > idx + 1" class="w-3.5 h-3.5" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                  </svg>
+                  <span v-else>{{ idx + 1 }}</span>
+                </div>
+                <span
+                  :class="[
+                    'text-sm font-semibold',
+                    currentStep === idx + 1 ? 'text-cyan-600' : currentStep > idx + 1 ? 'text-gray-700' : 'text-gray-400'
+                  ]"
+                >{{ step }}</span>
+              </div>
+            </nav>
+          </div>
+        </aside>
+
+        <!-- ── Right: Step content ── -->
+        <div class="flex flex-col items-center w-full">
 
         <!-- Step Content -->
         <div class="flex flex-col gap-6 items-center mb-8 w-full max-w-xl">
@@ -230,7 +242,8 @@
         </div>
 
       </div>
-    </div>
+      </div><!-- /grid -->
+    </div><!-- /max-w-5xl container -->
 
     <!-- ── Terms Modal ── -->
     <div v-if="showTermsModal" class="flex fixed inset-0 z-50 justify-center items-center bg-black/40" @click.self="closeTermsModal">
@@ -370,6 +383,8 @@ async function sendRequest() {
       }
     } else if (status === 409 && data?.detail?.includes('already exists')) {
       toast.error('La fecha o el evento ya está ocupado. Por favor elige otra fecha o paquete.');
+    } else if (!e.response || status === 502 || status === 503) {
+      toast.error('El servidor está iniciando, espera unos segundos e intenta de nuevo.');
     } else {
       toast.error('Error al enviar la solicitud. Intenta de nuevo.');
     }

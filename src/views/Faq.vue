@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-start py-8 px-0 md:py-12 md:px-2 bg-gray-50">
-    <div class="overflow-hidden relative p-8 w-full max-w-3xl rounded-3xl shadow-2xl bg-white/80">
+  <div class="min-h-screen flex flex-col items-center justify-start pt-0 pb-8 px-0 md:pb-12 md:px-2 bg-gray-50">
+    <div class="overflow-hidden relative p-8 w-full max-w-3xl rounded-3xl  bg-gray">
       <!-- Logo -->
       <div class="flex justify-center mb-4">
         <img src="/tp.svg" alt="Terraza Pineda Logo" class="w-16 h-16" />
