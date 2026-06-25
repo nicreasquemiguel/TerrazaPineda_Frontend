@@ -5,7 +5,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://terrazapineda-bac
 // API Configuration
 const API_CONFIG = {
   baseURL: `${API_BASE}/`,
-  timeout: 10000,
+  timeout: 20000,
   headers: {
     'Content-Type': 'application/json',
   },
