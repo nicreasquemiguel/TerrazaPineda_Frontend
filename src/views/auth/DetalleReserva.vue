@@ -817,67 +817,84 @@
                       </div>
                     </div>
                   </div>
-                  
-                  <!-- Amount Input -->
-                  <div class="mb-4">
-                    <label class="block mb-2 text-sm font-semibold text-gray-700">Cantidad a pagar:</label>
-                    <div class="relative">
-                      <span class="absolute left-3 top-1/2 text-gray-500 transform -translate-y-1/2">$</span>
-                      <input 
-                        v-model="paymentAmount" 
-                        type="number" 
-                        step="0.01" 
-                        :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
-                        :max="remainingAmount"
-                        :disabled="remainingAmount <= 0 || parseFloat(paymentAmount) >= remainingAmount"
-                        class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                        placeholder="0.00"
-                      />
-                    </div>
-                    <div class="mt-2 text-xs text-gray-500">
-                      <span v-if="(parseFloat(event?.advance_paid) || 0) === 0">
-                        Mínimo: $1,000 | Máximo: ${{ remainingAmount.toLocaleString() }}
-                      </span>
-                      <span v-else>
-                        Máximo: ${{ remainingAmount.toLocaleString() }}
-                      </span>
-                    </div>
-                    
-                    <!-- Quick Amount Buttons -->
-                    <div class="flex flex-wrap gap-2 mt-3">
-                      <button 
-                        @click="paymentAmount = remainingAmount"
-                        class="px-3 py-1 text-xs font-semibold text-purple-700 bg-purple-50 rounded border border-purple-200 hover:bg-purple-100"
-                      >
-                        Pagar todo
-                      </button>
-                      <button 
-                        @click="paymentAmount = Math.min(1000, remainingAmount)"
-                        class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
-                      >
-                        $1,000
-                      </button>
-                      <button 
-                        @click="paymentAmount = Math.min(500, remainingAmount)"
-                        class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
-                      >
-                        $500
-                      </button>
-                    </div>
-                  </div>
 
+                  <!-- Amount selection (hidden once preference is ready) -->
+                  <template v-if="!mpPreferenceId">
+                    <!-- Amount Input -->
+                    <div class="mb-4">
+                      <label class="block mb-2 text-sm font-semibold text-gray-700">Cantidad a pagar:</label>
+                      <div class="relative">
+                        <span class="absolute left-3 top-1/2 text-gray-500 transform -translate-y-1/2">$</span>
+                        <input
+                          v-model="paymentAmount"
+                          type="number"
+                          step="0.01"
+                          :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
+                          :max="remainingAmount"
+                          :disabled="remainingAmount <= 0 || parseFloat(paymentAmount) >= remainingAmount"
+                          class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div class="mt-2 text-xs text-gray-500">
+                        <span v-if="(parseFloat(event?.advance_paid) || 0) === 0">
+                          Mínimo: $1,000 | Máximo: ${{ remainingAmount.toLocaleString() }}
+                        </span>
+                        <span v-else>
+                          Máximo: ${{ remainingAmount.toLocaleString() }}
+                        </span>
+                      </div>
 
-                  <div class="flex gap-3">
-                    <button 
-                      @click="pagarMercadoPago()"
-                      :disabled="!paymentAmount || paymentAmount <= 0 || isPaying || ((parseFloat(event?.advance_paid) || 0) === 0 && paymentAmount < 1000)"
-                      class="flex-1 px-6 py-3 text-sm font-semibold text-white bg-purple-600 rounded-lg transition-colors hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      <!-- Quick Amount Buttons -->
+                      <div class="flex flex-wrap gap-2 mt-3">
+                        <button
+                          @click="paymentAmount = remainingAmount"
+                          class="px-3 py-1 text-xs font-semibold text-purple-700 bg-purple-50 rounded border border-purple-200 hover:bg-purple-100"
+                        >
+                          Pagar todo
+                        </button>
+                        <button
+                          @click="paymentAmount = Math.min(1000, remainingAmount)"
+                          class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
+                        >
+                          $1,000
+                        </button>
+                        <button
+                          @click="paymentAmount = Math.min(500, remainingAmount)"
+                          class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
+                        >
+                          $500
+                        </button>
+                      </div>
+                    </div>
+
+                    <div class="flex gap-3">
+                      <button
+                        @click="pagarMercadoPago()"
+                        :disabled="!paymentAmount || paymentAmount <= 0 || isPaying || ((parseFloat(event?.advance_paid) || 0) === 0 && paymentAmount < 1000)"
+                        class="flex-1 px-6 py-3 text-sm font-semibold text-white bg-purple-600 rounded-lg transition-colors hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <i class="mr-2 fa-brands fa-mercadopago"></i>
+                        <span v-if="isPaying">Procesando...</span>
+                        <span v-else>Continuar con MercadoPago</span>
+                      </button>
+                    </div>
+                  </template>
+
+                  <!-- Wallet Brick rendered after preference_id is obtained -->
+                  <template v-else>
+                    <p class="mb-3 text-sm text-center text-gray-600">
+                      Haz clic en el botón para completar tu pago de
+                      <strong>${{ parseFloat(paymentAmount).toLocaleString() }}</strong> en MercadoPago
+                    </p>
+                    <MercadoPagoWallet :preferenceId="mpPreferenceId" :publicKey="mpPublicKey" />
+                    <button
+                      @click="mpPreferenceId = null"
+                      class="mt-3 text-xs text-gray-400 underline hover:text-gray-600"
                     >
-                      <i class="mr-2 fa-solid fa-credit-card"></i>
-                      <span v-if="isPaying">Procesando...</span>
-                      <span v-else>Pagar con MercadoPago</span>
+                      ← Cambiar monto
                     </button>
-                  </div>
+                  </template>
                 </div>
               </div>
 
@@ -1408,6 +1425,7 @@ import { useQuery } from '@tanstack/vue-query'
 import { Icon } from '@iconify/vue'
 import { useToast } from 'vue-toastification'
 import { useAuthStore } from '@/stores/auth'
+import MercadoPagoWallet from '@/components/MercadoPagoWallet.vue'
 
 const route = useRoute()
 const toast = useToast()
@@ -1986,11 +2004,15 @@ const isPaying = ref(false)
 
 const paymentAmount = ref('')
 
-// Watch paymentAmount to limit it to remainingAmount
+const mpPreferenceId = ref(null)
+const mpPublicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY
+
+// Watch paymentAmount to limit it to remainingAmount and reset MP prewecvq `ference
 watch(paymentAmount, (newValue) => {
   if (newValue && parseFloat(newValue) > remainingAmount.value) {
     paymentAmount.value = remainingAmount.value.toString()
   }
+  mpPreferenceId.value = null
 })
 
 // Add computed for remaining amount
@@ -2041,9 +2063,7 @@ async function pagar(amount = paymentAmount.value) {
 async function pagarMercadoPago(amount = paymentAmount.value) {
   isPaying.value = true
   try {
-    const maxAmount = remainingAmount.value
-    // Use the passed amount, but clamp to max
-    const amountToPay = Math.min(parseFloat(amount) || 0, maxAmount)
+    const amountToPay = Math.min(parseFloat(amount) || 0, remainingAmount.value)
 
     if (amountToPay <= 0) {
       toast.error('No hay monto pendiente por pagar')
@@ -2055,15 +2075,18 @@ async function pagarMercadoPago(amount = paymentAmount.value) {
       amount: amountToPay,
       gateway: 'mercadopago'
     })
-    
-    if (res.data.payment_url) {
+
+    if (res.data.preference_id) {
+      mpPreferenceId.value = res.data.preference_id
+    } else if (res.data.payment_url) {
       window.location.href = res.data.payment_url
     } else {
       toast.error('No se pudo iniciar el pago con MercadoPago')
     }
   } catch (e) {
     console.error('Error al iniciar pago con MercadoPago:', e)
-    toast.error('Error al iniciar el pago con MercadoPago')
+    const msg = e.response?.data?.error || e.response?.data?.detail
+    toast.error(msg || 'Error al iniciar el pago con MercadoPago')
   } finally {
     isPaying.value = false
   }

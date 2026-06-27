@@ -4,7 +4,6 @@
 
       <!-- Header centrado — solo móvil -->
       <div class="mb-6 text-center lg:hidden">
-        <img src="/tp.svg" alt="Terraza Pineda Logo" class="mx-auto mb-3 w-12 h-12" />
         <h1 class="mb-1 text-3xl font-extrabold reserve-gradient-text">Solicitud</h1>
         <p class="mx-auto max-w-sm text-sm text-gray-500">
           Se aprobará según los detalles de tu evento, tales como fecha, paquete, descripción, seguir pasos...
@@ -317,10 +316,6 @@ watch(date, (newDate, oldDate) => {
     return dateObj.toDateString();
   }
 
-  console.log('[Reserve] Date changed:', {
-    old: formatDateStr(oldDate),
-    new: formatDateStr(newDate)
-  })
   splitTextKey.value++;
 })
 const selectedExtras = ref([]);
@@ -372,9 +367,7 @@ async function sendRequest() {
     description: description.value || '',
   };
   try {
-    console.log('[Booking] Sending data:', data);
     const response = await api.post('/api/bookings/bookings/', data);
-    console.log('[Booking] Success response:', response.data);
     localStorage.removeItem('reserveCart')
     toast.success('¡Solicitud enviada con éxito!')
     if (response.data && response.data.id) {
