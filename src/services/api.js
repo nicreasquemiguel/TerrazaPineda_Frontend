@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getActivePinia } from 'pinia'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://terrazapineda-backend.onrender.com'
 
@@ -36,6 +37,13 @@ export const authApi = createApiInstance(API_ENDPOINTS.auth)
 export const bookingsApi = createApiInstance(API_ENDPOINTS.bookings)
 export const userApi = createApiInstance(API_ENDPOINTS.user)
 export const terrazaApi = createApiInstance(API_ENDPOINTS.terraza)
+
+// Bare instance used only for token refresh — no interceptors to avoid recursive loops
+const refreshApi = axios.create({
+  baseURL: `${API_BASE}/auth/`,
+  timeout: 10000,
+  headers: { 'Content-Type': 'application/json' },
+})
 
 // Global refresh state to prevent infinite loops
 let isRefreshing = false
@@ -104,8 +112,7 @@ const addResponseInterceptor = (apiInstance) => {
       if (refreshToken) {
         try {
             console.log('[API] Attempting token refresh...');
-            // Use authApi for refresh, not the main api instance
-            const res = await authApi.post('jwt/refresh/', { refresh: refreshToken });
+            const res = await refreshApi.post('jwt/refresh/', { refresh: refreshToken });
           const newAccess = res.data.access;
             
           localStorage.setItem('accessToken', newAccess);
@@ -155,33 +162,35 @@ const clearAuthData = () => {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('user');
-  
-  // Reset global state
+
+  // Reset global refresh state
   isRefreshing = false;
   failedQueue = [];
-  
-  // Clear Pinia store if available
-  if (window.__PINIA__) {
-    try {
-      const { useAuthStore } = require('@/stores/auth');
-      const authStore = useAuthStore();
-      authStore.logout();
-    } catch (error) {
-      console.log('[API] Could not clear Pinia store:', error);
+
+  // Sync Pinia reactive state so isAuthenticated updates immediately
+  try {
+    const pinia = getActivePinia();
+    if (pinia?.state.value.auth) {
+      pinia.state.value.auth.accessToken = null;
+      pinia.state.value.auth.refreshToken = null;
+      pinia.state.value.auth.user = null;
     }
+  } catch (e) {
+    console.log('[API] Could not clear Pinia store:', e);
   }
-  
+
   // Redirect to login (only once)
   if (window.location.pathname !== '/login' && window.location.pathname !== '/') {
     window.location.href = '/login';
   }
 }
 
-// Add interceptors to all API instances
+// Add interceptors to authenticated API instances
+// authApi is intentionally excluded — it handles public auth endpoints (login, register,
+// password reset) and is also used internally for the refresh call, so adding the response
+// interceptor would cause a recursive refresh loop on refresh failures.
 addAuthInterceptor(api)
 addResponseInterceptor(api)
-addAuthInterceptor(authApi)
-addResponseInterceptor(authApi)
 addAuthInterceptor(bookingsApi)
 addResponseInterceptor(bookingsApi)
 addAuthInterceptor(userApi)

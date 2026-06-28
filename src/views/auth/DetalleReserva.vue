@@ -887,9 +887,9 @@
                       Haz clic en el botón para completar tu pago de
                       <strong>${{ parseFloat(paymentAmount).toLocaleString() }}</strong> en MercadoPago
                     </p>
-                    <MercadoPagoWallet :preferenceId="mpPreferenceId" :publicKey="mpPublicKey" />
+                    <div id="walletBrick_container" style="min-height: 52px; width: 100%;"></div>
                     <button
-                      @click="mpPreferenceId = null"
+                      @click="resetMpBrick"
                       class="mt-3 text-xs text-gray-400 underline hover:text-gray-600"
                     >
                       ← Cambiar monto
@@ -1425,7 +1425,6 @@ import { useQuery } from '@tanstack/vue-query'
 import { Icon } from '@iconify/vue'
 import { useToast } from 'vue-toastification'
 import { useAuthStore } from '@/stores/auth'
-import MercadoPagoWallet from '@/components/MercadoPagoWallet.vue'
 
 const route = useRoute()
 const toast = useToast()
@@ -2006,13 +2005,67 @@ const paymentAmount = ref('')
 
 const mpPreferenceId = ref(null)
 const mpPublicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY
+let walletBrickController = null
 
-// Watch paymentAmount to limit it to remainingAmount and reset MP prewecvq `ference
+function mpWait(ms) {
+  return new Promise(r => setTimeout(r, ms))
+}
+
+async function waitForMpSDK(maxMs = 8000) {
+  let elapsed = 0
+  while (!window.MercadoPago && elapsed < maxMs) {
+    await mpWait(200)
+    elapsed += 200
+  }
+  return !!window.MercadoPago
+}
+
+watch(mpPreferenceId, async (newId) => {
+  if (walletBrickController) {
+    try { walletBrickController.unmount() } catch {}
+    walletBrickController = null
+  }
+  if (!newId) return
+
+  const ready = await waitForMpSDK()
+  if (!ready) { console.error('[MP] SDK not loaded'); return }
+
+  // Poll until the container div is in the real DOM
+  let container = null
+  for (let i = 0; i < 60; i++) {
+    container = document.getElementById('walletBrick_container')
+    if (container) break
+    await mpWait(50)
+  }
+  if (!container) { console.error('[MP] container not found'); return }
+
+  await mpWait(150)
+
+  try {
+    const mp = new window.MercadoPago(mpPublicKey)
+    const bricksBuilder = mp.bricks()
+    walletBrickController = await bricksBuilder.create('wallet', 'walletBrick_container', {
+      initialization: { preferenceId: newId }
+    })
+  } catch (err) {
+    console.error('[MP] brick creation failed:', err)
+  }
+})
+
+function resetMpBrick() {
+  if (walletBrickController) {
+    try { walletBrickController.unmount() } catch {}
+    walletBrickController = null
+  }
+  mpPreferenceId.value = null
+}
+
+// Watch paymentAmount to limit it to remainingAmount and reset MP preference
 watch(paymentAmount, (newValue) => {
   if (newValue && parseFloat(newValue) > remainingAmount.value) {
     paymentAmount.value = remainingAmount.value.toString()
   }
-  mpPreferenceId.value = null
+  resetMpBrick()
 })
 
 // Add computed for remaining amount
