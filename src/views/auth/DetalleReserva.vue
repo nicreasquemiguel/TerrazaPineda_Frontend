@@ -556,7 +556,7 @@
                   <div class="mt-1 text-sm text-gray-500">{{ event.package ? event.package.description : '' }}</div>
             </div>
                 <div class="ml-2 text-base font-bold text-right text-gray-900">
-                  ${{ (event.package ? event.package.price : 0).toLocaleString() }}
+                  ${{ packageBookedPrice.toLocaleString() }}
             </div>
             </div>
           </div>
@@ -609,7 +609,7 @@
                   <i class="mr-2 text-cyan-500 fa-solid fa-gift"></i>
                   <div class="flex-1 font-semibold text-gray-900">{{ typeof extra.data === 'string' ? extra.data : extra.data.name }}</div>
                   <div class="w-24 text-base font-semibold text-right text-gray-900">
-                    ${{ (typeof extra.data === 'object' && extra.data.price) ? extra.data.price.toLocaleString() : '500' }}
+                    ${{ parseFloat(extra.bookedPrice ?? (typeof extra.data === 'object' ? extra.data.price : 0) ?? 0).toLocaleString() }}
                   </div>
                   <!-- Small X button -->
                   <button v-if="!extra.showDelete" @click.prevent="triggerShowDelete(i)" class="flex absolute top-0.5 right-1 z-20 justify-center items-center p-0 m-0 w-4 h-4 text-xs leading-none text-red-500 bg-transparent hover:text-red-600 focus:outline-none">
@@ -1435,6 +1435,13 @@ const isStaff = computed(() => {
   return authStore.user?.is_staff
 })
 
+// Package price locked at booking time; falls back to live price for legacy bookings
+const packageBookedPrice = computed(() => {
+  if (!event.value) return 0
+  const lineItem = (event.value.line_items || []).find(i => i.item_type === 'package')
+  return parseFloat(lineItem?.unit_price ?? event.value.package?.price ?? 0)
+})
+
 // Local extras for deletion/swipe, each with swipe state
 const localExtras = ref([])
 
@@ -1452,10 +1459,17 @@ const { data: event, isLoading: loading, error, refetch } = useQuery({
       end_datetime: response.data.end_datetime
     })
     
+    // Build a name→unit_price map from locked line items
+    const lineItemPriceByName = Object.fromEntries(
+      (response.data.line_items || [])
+        .filter(i => i.item_type === 'extra_service')
+        .map(i => [i.description, i.unit_price])
+    )
     // Copy extras to localExtras for manipulation, add swipe state
     localExtras.value = Array.isArray(response.data.extra_services)
       ? response.data.extra_services.map(e => ({
           data: e,
+          bookedPrice: lineItemPriceByName[e.name] ?? e.price,
           translateX: 0,
           showDelete: false,
           deleting: false,
@@ -1987,8 +2001,14 @@ watch(showExtrasModal, (val) => {
 // Watch for changes in event.extra_services and sync localExtras
 watch(() => event.value?.extra_services, (newExtras) => {
   if (newExtras && Array.isArray(newExtras)) {
+    const lineItemPriceByName = Object.fromEntries(
+      (event.value?.line_items || [])
+        .filter(i => i.item_type === 'extra_service')
+        .map(i => [i.description, i.unit_price])
+    )
     localExtras.value = newExtras.map(e => ({
       data: e,
+      bookedPrice: lineItemPriceByName[e.name] ?? e.price,
       translateX: 0,
       showDelete: false,
       deleting: false,
