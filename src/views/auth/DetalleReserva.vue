@@ -2326,7 +2326,7 @@ async function submitTransferPayment() {
     
     const orderData = {
       booking_id: event.value.id,
-      amount: parseFloat(paymentAmount.value) || 0,
+      amount: parseFloat(transferAmount.value) || 0,
       gateway: 'transfer',
       payment_photo_base64: base64String // Send the base64 encoded image
     }
