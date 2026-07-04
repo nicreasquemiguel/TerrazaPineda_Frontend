@@ -1123,6 +1123,96 @@
           </div>
         </div>
 
+        <!-- Payment History / Orders Section -->
+        <div v-if="ordersLoading" class="mt-6 p-4 text-sm text-center text-gray-400 bg-white rounded-2xl border border-gray-100 shadow-sm">
+          <div class="inline-block mr-2 w-4 h-4 rounded-full border-2 border-gray-400 animate-spin border-t-transparent"></div>
+          Cargando historial de pagos...
+        </div>
+        <div v-else-if="ordersData && ordersData.length > 0" class="mt-6">
+          <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-lg">
+            <h2 class="mb-4 text-lg font-bold text-gray-900">Historial de Pagos</h2>
+            <div class="space-y-4">
+              <div v-for="order in ordersData" :key="order.id" class="overflow-hidden rounded-xl border border-gray-200">
+                <!-- Order header -->
+                <div class="flex items-center justify-between p-4 bg-gray-50">
+                  <div class="flex gap-3 items-center">
+                    <div class="flex flex-shrink-0 justify-center items-center w-9 h-9 bg-blue-100 rounded-full">
+                      <i class="text-sm text-blue-600 fa-solid fa-receipt"></i>
+                    </div>
+                    <div>
+                      <div class="text-sm font-semibold text-gray-900">Orden de pago</div>
+                      <div class="text-xs text-gray-400">{{ formatDate(order.created_at) }}</div>
+                    </div>
+                  </div>
+                  <div class="flex flex-col gap-1 items-end">
+                    <span :class="['px-2 py-0.5 rounded-full text-xs font-bold', getPaymentStatusClass(order.status)]">
+                      {{ getPaymentStatusText(order.status) }}
+                    </span>
+                    <span class="font-bold text-gray-900">${{ parseFloat(order.amount_due || 0).toLocaleString() }}</span>
+                  </div>
+                </div>
+
+                <!-- Payments list -->
+                <div v-if="order.payments && order.payments.length > 0" class="divide-y divide-gray-100">
+                  <div v-for="payment in order.payments" :key="payment.id" class="p-4">
+                    <div class="flex gap-3 items-start">
+                      <div :class="['flex flex-shrink-0 justify-center items-center w-9 h-9 rounded-full', getPaymentIconClass(payment.gateway, payment.status)]">
+                        <i :class="['text-sm', getPaymentIcon(payment.gateway)]"></i>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <div class="flex gap-2 justify-between items-start">
+                          <div>
+                            <div class="text-sm font-semibold text-gray-900">{{ getPaymentMethodText(payment.method) }}</div>
+                            <div class="text-xs text-gray-400">{{ getGatewayText(payment.gateway) }}</div>
+                          </div>
+                          <div class="flex flex-col flex-shrink-0 gap-1 items-end">
+                            <span :class="['px-2 py-0.5 rounded-full text-xs font-bold', getPaymentStatusClass(payment.status)]">
+                              {{ getPaymentStatusText(payment.status) }}
+                            </span>
+                            <span class="text-sm font-bold text-gray-900">${{ parseFloat(payment.amount || 0).toLocaleString() }}</span>
+                          </div>
+                        </div>
+                        <div v-if="payment.paid_at" class="flex gap-1 items-center mt-1 text-xs text-gray-400">
+                          <i class="fa-regular fa-clock"></i>
+                          Pagado el {{ formatDate(payment.paid_at) }}
+                        </div>
+                        <div v-if="payment.card_last4" class="mt-1 text-xs text-gray-500">
+                          Tarjeta terminada en {{ payment.card_last4 }}
+                        </div>
+                        <!-- Payment photo -->
+                        <div v-if="getPaymentPhotoUrl(payment)" class="mt-3">
+                          <div class="flex gap-1 items-center mb-1.5 text-xs font-semibold text-gray-600">
+                            <i class="text-gray-400 fa-solid fa-image"></i>
+                            Comprobante de pago
+                          </div>
+                          <img
+                            :src="getPaymentPhotoUrl(payment)"
+                            alt="Comprobante de pago"
+                            class="object-cover w-full max-w-xs h-40 rounded-lg border border-gray-200 transition-opacity cursor-pointer hover:opacity-90"
+                            @click="openPhotoModal(getPaymentPhotoUrl(payment))"
+                            @error="handleImageError"
+                            @load="handleImageLoad"
+                          />
+                          <button
+                            @click="openPhotoModal(getPaymentPhotoUrl(payment))"
+                            class="flex gap-1 items-center mt-1.5 text-xs text-blue-600 hover:text-blue-800"
+                          >
+                            <i class="fa-solid fa-expand-alt"></i>
+                            Ver en pantalla completa
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div v-else class="p-4 text-sm text-center text-gray-400">
+                  Sin pagos registrados en esta orden
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Review & Rating (shown after steps when finalizado) -->
         <div v-if="event && (event.status === 'finalizado' || event.status_display === 'Finalizado')" class="mt-4">
           <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-lg">
@@ -1834,6 +1924,25 @@ onMounted(() => {
     })
 
   loadExtras() // Load extras on mount
+
+  // Poll for Stripe webhook to land after returning from checkout.
+  // Stripe appends ?session_id=cs_... to the success_url; some configs use ?stripe=1.
+  if (route.query.session_id || route.query.stripe) {
+    let tries = 0
+    let prevDue = null
+    const pollStripe = setInterval(async () => {
+      const result = await refetchOrders()
+      const order = result.data?.[0] ?? null
+      const due = order ? parseFloat(order.amount_due) : null
+      if (prevDue === null) {
+        prevDue = due
+      } else if (due !== null && (due < prevDue || order?.status === 'paid')) {
+        clearInterval(pollStripe)
+        return
+      }
+      if (++tries >= 8) clearInterval(pollStripe)
+    }, 2000)
+  }
 })
 
 
