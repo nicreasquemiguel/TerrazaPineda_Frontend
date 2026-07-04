@@ -124,6 +124,12 @@ const routes = [
     name: 'ResetPassword',
     component: ResetPassword,
     meta: { title: 'Nueva Contraseña' }
+  },
+  {
+    path: '/configuracion',
+    name: 'Configuracion',
+    component: () => import('@/views/Configuracion.vue'),
+    meta: { title: 'Configuración', requiresStaff: true }
   }
 ]
 
@@ -167,6 +173,10 @@ router.beforeEach((to, from, next) => {
   }
   if (to.path === '/mis-reservas' && user && (user.is_staff || user.role === 'admin')) {
     next('/dashboard')
+    return
+  }
+  if (to.meta.requiresStaff && user && !(user.is_staff || user.role === 'admin')) {
+    next('/')
     return
   }
 

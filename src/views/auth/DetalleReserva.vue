@@ -429,30 +429,15 @@
           Solo se permite <strong>un cambio de fecha</strong> por evento. Debe solicitarse con al menos <strong>3 semanas de anticipación</strong> a la fecha actual del evento.
         </div>
 
-        <!-- Too close warning -->
-        <div v-if="daysUntilEvent <= 21" class="p-3 mb-4 text-xs text-red-700 bg-red-50 rounded-lg border border-red-200">
+        <!-- Too close warning (non-staff only) -->
+        <div v-if="!isStaff && daysUntilEvent <= 21" class="p-3 mb-4 text-xs text-red-700 bg-red-50 rounded-lg border border-red-200">
           <i class="mr-1 fa-solid fa-triangle-exclamation"></i>
           Tu evento está a <strong>{{ daysUntilEvent }} días</strong>. El cambio de fecha será rechazado por la API ya que no cumples el mínimo de 21 días de anticipación.
         </div>
 
-        <div class="flex gap-3 mb-4">
-          <div class="flex-1">
-            <label class="block mb-2 text-sm font-semibold text-gray-700">Nueva fecha:</label>
-            <input
-              v-model="newEventDate"
-              type="date"
-              :min="minRescheduleDate"
-              class="p-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-            />
-          </div>
-          <div class="w-32">
-            <label class="block mb-2 text-sm font-semibold text-gray-700">Hora:</label>
-            <input
-              v-model="newEventTime"
-              type="time"
-              class="p-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-            />
-          </div>
+        <div class="mb-4">
+          <label class="block mb-2 text-sm font-semibold text-gray-700">Nueva fecha:</label>
+          <CalendarPicker v-model="newEventDate" />
         </div>
 
         <!-- API error -->
@@ -463,7 +448,7 @@
 
         <div class="flex gap-2 justify-end">
           <button @click="showDateChangeModal = false" class="px-4 py-2 font-semibold text-gray-600 bg-gray-100 rounded hover:bg-gray-200">Cancelar</button>
-          <button @click="submitDateChange" :disabled="isRescheduling || !newEventDate || !newEventTime || daysUntilEvent <= 21"
+          <button @click="submitDateChange" :disabled="isRescheduling || !newEventDate || (!isStaff && daysUntilEvent <= 21)"
             class="px-4 py-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
             <span v-if="isRescheduling" class="flex gap-2 items-center">
               <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
@@ -611,8 +596,8 @@
                       <span v-else class="text-gray-500">Fecha no especificada</span>
                     </div>
                     <button
-                      v-if="!isLocked && event.date_changes_count === 0"
-                      @click="showDateChangeModal = true; dateChangeError = ''; newEventTime = event.start_datetime ? new Date(event.start_datetime).toTimeString().slice(0, 5) : ''"
+                      v-if="!isLocked && (isStaff || event.date_changes_count === 0)"
+                      @click="showDateChangeModal = true; dateChangeError = ''"
                       class="flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100"
                     >
                       <i class="fa-solid fa-pen text-[10px]"></i>
@@ -624,16 +609,48 @@
               <!-- Time -->
               <div class="flex gap-3 items-center mt-2">
                 <i class="text-xl text-blue-500 fa-regular fa-clock"></i>
-                <div>
-              <div class="mb-1 font-semibold text-gray-400">Horario</div>
-                  <div class="text-lg font-bold text-gray-900">
-                    <span v-if="event.start_datetime && event.end_datetime">
-                      {{ formatTime(event.start_datetime) }} - {{ formatTime(event.end_datetime) }}
-                    </span>
-                    <span v-else-if="event.package && event.package.hours">
-                      {{ event.package.hours }}
-                    </span>
-                    <span v-else class="text-gray-500">Horario no especificado</span>
+                <div class="flex-1">
+                  <div class="mb-1 font-semibold text-gray-400">Horario</div>
+                  <div v-if="!editingTimes" class="flex gap-2 items-center">
+                    <div class="text-lg font-bold text-gray-900">
+                      <span v-if="event.start_datetime && event.end_datetime">
+                        {{ formatTime(event.start_datetime) }} - {{ formatTime(event.end_datetime) }}
+                      </span>
+                      <span v-else-if="event.package && event.package.hours">
+                        {{ event.package.hours }}
+                      </span>
+                      <span v-else class="text-gray-500">Horario no especificado</span>
+                    </div>
+                    <button v-if="isStaff"
+                      @click="openTimeEdit"
+                      class="flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100">
+                      <i class="fa-solid fa-pen text-[10px]"></i>
+                      Editar
+                    </button>
+                  </div>
+                  <!-- Staff inline time editor -->
+                  <div v-else class="flex flex-wrap gap-2 items-center mt-1">
+                    <div>
+                      <label class="block mb-0.5 text-xs text-gray-500">Inicio</label>
+                      <input v-model="editStartTime" type="time"
+                        class="p-1.5 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                    </div>
+                    <div>
+                      <label class="block mb-0.5 text-xs text-gray-500">Fin</label>
+                      <input v-model="editEndTime" type="time"
+                        class="p-1.5 text-sm rounded border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                    </div>
+                    <div class="flex gap-1 mt-4">
+                      <button @click="saveTimeEdit" :disabled="savingTimes"
+                        class="px-2.5 py-1.5 text-xs font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50">
+                        <span v-if="savingTimes"><i class="fa-solid fa-spinner fa-spin"></i></span>
+                        <span v-else>Guardar</span>
+                      </button>
+                      <button @click="editingTimes = false"
+                        class="px-2.5 py-1.5 text-xs font-semibold text-gray-600 bg-gray-100 rounded hover:bg-gray-200">
+                        Cancelar
+                      </button>
+                    </div>
                   </div>
                   
                   <!-- Description with Read More -->
@@ -1539,9 +1556,9 @@
               </div>
             </div>
             <div class="flex flex-col gap-2 mt-4">
-              <!-- Reschedule button — only if no date change has been used yet -->
-              <button v-if="event.date_changes_count === 0"
-                @click="showDateChangeModal = true; dateChangeError = ''; newEventTime = event.start_datetime ? new Date(event.start_datetime).toTimeString().slice(0, 5) : ''"
+              <!-- Reschedule button — staff bypass the 1-change limit -->
+              <button v-if="isStaff || event.date_changes_count === 0"
+                @click="showDateChangeModal = true; dateChangeError = ''"
                 class="w-full px-4 py-2.5 text-sm font-semibold text-blue-600 bg-blue-50 rounded-xl border border-blue-200 transition hover:bg-blue-100">
                 <i class="mr-2 fa-solid fa-calendar-days"></i>
                 Cambiar Fecha
@@ -1753,6 +1770,7 @@ import { useRoute } from 'vue-router'
 import Footer from '@/components/Footer.vue'
 import { TrashIcon } from '@heroicons/vue/24/solid'
 import api from '@/services/api'
+import CalendarPicker from '@/ReservarForm/CalendarPicker.vue'
 import { useQuery } from '@tanstack/vue-query'
 import { Icon } from '@iconify/vue'
 import { useToast } from 'vue-toastification'
@@ -1887,18 +1905,53 @@ const isLocked = computed(() =>
   ['cancelado', 'rechazado', 'finalizado'].includes(event.value?.status)
 )
 
+const openTimeEdit = () => {
+  editStartTime.value = event.value?.start_datetime
+    ? new Date(event.value.start_datetime).toTimeString().slice(0, 5)
+    : ''
+  editEndTime.value = event.value?.end_datetime
+    ? new Date(event.value.end_datetime).toTimeString().slice(0, 5)
+    : ''
+  editingTimes.value = true
+}
+
+const saveTimeEdit = async () => {
+  savingTimes.value = true
+  try {
+    const datePart = event.value.start_datetime
+      ? new Date(event.value.start_datetime).toISOString().split('T')[0]
+      : new Date().toISOString().split('T')[0]
+    const endDatePart = event.value.end_datetime
+      ? new Date(event.value.end_datetime).toISOString().split('T')[0]
+      : datePart
+    await api.patch(`/api/bookings/bookings/${event.value.id}/`, {
+      start_datetime: `${datePart}T${editStartTime.value}:00`,
+      end_datetime: `${endDatePart}T${editEndTime.value}:00`,
+    })
+    editingTimes.value = false
+    await refetch()
+  } catch (e) {
+    console.error('Error saving times', e)
+  } finally {
+    savingTimes.value = false
+  }
+}
+
 const submitDateChange = async () => {
   dateChangeError.value = ''
   isRescheduling.value = true
   try {
-    const time = newEventTime.value || '00:00'
-    const newStartDatetime = `${newEventDate.value}T${time}:00`
+    const dateStr = newEventDate.value instanceof Date
+      ? newEventDate.value.toISOString().split('T')[0]
+      : newEventDate.value
+    const originalTime = event.value.start_datetime
+      ? new Date(event.value.start_datetime).toTimeString().slice(0, 5)
+      : '00:00'
     await api.patch(`/api/bookings/bookings/${event.value.id}/`, {
-      start_datetime: newStartDatetime
+      start_datetime: `${dateStr}T${originalTime}:00`
     })
     showDateChangeModal.value = false
-    newEventDate.value = ''
-    newEventTime.value = ''
+    newEventDate.value = null
     await refetch()
   } catch (e) {
     const msg = e?.response?.data?.start_datetime
@@ -2792,15 +2845,14 @@ const isCancelling = ref(false)
 const cancellationReason = ref('')
 const showDateChangeModal = ref(false)
 const isRescheduling = ref(false)
-const newEventDate = ref('')
+const newEventDate = ref(null)
 const newEventTime = ref('')
 const dateChangeError = ref('')
+const editingTimes = ref(false)
+const editStartTime = ref('')
+const editEndTime = ref('')
+const savingTimes = ref(false)
 
-const minRescheduleDate = computed(() => {
-  const d = new Date()
-  d.setDate(d.getDate() + 22) // at least 21 days from today as minimum selectable
-  return d.toISOString().split('T')[0]
-})
 const transferAmount = ref('')
 
 // Watch transferAmount to limit it to remainingAmount
