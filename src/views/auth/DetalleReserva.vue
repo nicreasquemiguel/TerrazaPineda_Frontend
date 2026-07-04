@@ -360,6 +360,121 @@
     </div>
 
     <!-- Reject Modal -->
+    <!-- Cancel Reservation Modal -->
+    <div v-if="showCancelModal" class="flex fixed inset-0 z-50 justify-center items-center bg-black/40">
+      <div class="relative p-6 w-full max-w-md bg-white rounded-2xl shadow-xl">
+        <button @click="showCancelModal = false" class="absolute top-3 right-3 text-2xl text-gray-400 hover:text-gray-700">&times;</button>
+        <div class="flex gap-3 items-center mb-4">
+          <div class="flex justify-center items-center w-10 h-10 bg-red-100 rounded-full">
+            <i class="text-red-600 fa-solid fa-triangle-exclamation"></i>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900">Cancelar Reserva</h3>
+        </div>
+
+        <!-- Applicable policy based on days until event -->
+        <div class="p-4 mb-4 rounded-xl border"
+          :class="daysUntilEvent > 45 ? 'bg-yellow-50 border-yellow-300' : 'bg-red-50 border-red-300'">
+          <div class="mb-1 text-sm font-semibold"
+            :class="daysUntilEvent > 45 ? 'text-yellow-800' : 'text-red-800'">
+            <i class="mr-1 fa-solid fa-scale-balanced"></i>
+            {{ daysUntilEvent > 45 ? `Más de 45 días de anticipación (${daysUntilEvent} días)` : `45 días o menos de anticipación (${daysUntilEvent} días)` }}
+          </div>
+          <p class="text-xs" :class="daysUntilEvent > 45 ? 'text-yellow-700' : 'text-red-700'">
+            {{ daysUntilEvent > 45
+              ? 'Se devolverá el 50% del anticipo. El resto se retiene por gastos administrativos.'
+              : 'El anticipo no es reembolsable bajo ninguna circunstancia.' }}
+          </p>
+        </div>
+
+        <div class="mb-4">
+          <label class="block mb-2 text-sm font-semibold text-gray-700">Motivo de cancelación:</label>
+          <textarea
+            v-model="cancellationReason"
+            rows="3"
+            class="p-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 text-sm resize-none"
+            placeholder="Cuéntanos por qué deseas cancelar tu reserva..."
+          ></textarea>
+        </div>
+
+        <p class="mb-5 text-sm text-gray-500">Esta acción no se puede deshacer.</p>
+
+        <div class="flex gap-2 justify-end">
+          <button @click="showCancelModal = false" class="px-4 py-2 font-semibold text-gray-600 bg-gray-100 rounded hover:bg-gray-200">Volver</button>
+          <button @click="confirmCancelReservation" :disabled="isCancelling || !cancellationReason.trim()"
+            class="px-4 py-2 font-semibold text-white bg-red-600 rounded hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            <span v-if="isCancelling" class="flex gap-2 items-center">
+              <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
+              Cancelando...
+            </span>
+            <span v-else>Sí, cancelar reserva</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reschedule Modal -->
+    <div v-if="showDateChangeModal" class="flex fixed inset-0 z-50 justify-center items-center bg-black/40">
+      <div class="relative p-6 w-full max-w-md bg-white rounded-2xl shadow-xl">
+        <button @click="showDateChangeModal = false" class="absolute top-3 right-3 text-2xl text-gray-400 hover:text-gray-700">&times;</button>
+        <div class="flex gap-3 items-center mb-4">
+          <div class="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-full">
+            <i class="text-blue-600 fa-solid fa-calendar-days"></i>
+          </div>
+          <h3 class="text-lg font-bold text-gray-900">Cambiar Fecha</h3>
+        </div>
+
+        <!-- Rules reminder -->
+        <div class="p-3 mb-4 text-xs text-blue-700 bg-blue-50 rounded-lg border border-blue-200">
+          <i class="mr-1 fa-solid fa-circle-info"></i>
+          Solo se permite <strong>un cambio de fecha</strong> por evento. Debe solicitarse con al menos <strong>3 semanas de anticipación</strong> a la fecha actual del evento.
+        </div>
+
+        <!-- Too close warning -->
+        <div v-if="daysUntilEvent <= 21" class="p-3 mb-4 text-xs text-red-700 bg-red-50 rounded-lg border border-red-200">
+          <i class="mr-1 fa-solid fa-triangle-exclamation"></i>
+          Tu evento está a <strong>{{ daysUntilEvent }} días</strong>. El cambio de fecha será rechazado por la API ya que no cumples el mínimo de 21 días de anticipación.
+        </div>
+
+        <div class="flex gap-3 mb-4">
+          <div class="flex-1">
+            <label class="block mb-2 text-sm font-semibold text-gray-700">Nueva fecha:</label>
+            <input
+              v-model="newEventDate"
+              type="date"
+              :min="minRescheduleDate"
+              class="p-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            />
+          </div>
+          <div class="w-32">
+            <label class="block mb-2 text-sm font-semibold text-gray-700">Hora:</label>
+            <input
+              v-model="newEventTime"
+              type="time"
+              class="p-3 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            />
+          </div>
+        </div>
+
+        <!-- API error -->
+        <div v-if="dateChangeError" class="p-3 mb-4 text-xs text-red-700 bg-red-50 rounded-lg border border-red-200">
+          <i class="mr-1 fa-solid fa-circle-xmark"></i>
+          {{ dateChangeError }}
+        </div>
+
+        <div class="flex gap-2 justify-end">
+          <button @click="showDateChangeModal = false" class="px-4 py-2 font-semibold text-gray-600 bg-gray-100 rounded hover:bg-gray-200">Cancelar</button>
+          <button @click="submitDateChange" :disabled="isRescheduling || !newEventDate || !newEventTime || daysUntilEvent <= 21"
+            class="px-4 py-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+            <span v-if="isRescheduling" class="flex gap-2 items-center">
+              <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
+              Guardando...
+            </span>
+            <span v-else>Confirmar cambio</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div v-if="showRejectModal" class="flex fixed inset-0 z-50 justify-center items-center bg-black/40">
       <div class="relative p-6 w-full max-w-md bg-white rounded-2xl shadow-xl">
         <button @click="showRejectModal = false" class="absolute top-3 right-3 text-2xl text-gray-400 hover:text-gray-700">&times;</button>
@@ -488,16 +603,24 @@
               <!-- Date -->
               <div class="flex gap-3 items-center">
                 <i class="text-xl text-blue-500 fa-regular fa-calendar"></i>
-                <div>
-            <div class="mb-1 font-semibold text-gray-400">Fecha del Evento</div>
-                  <div class="text-lg font-bold text-gray-900">
-                    <span v-if="event.start_datetime">
-                      {{ formatDate(event.start_datetime) }}
-                    </span>
-                    <span v-else class="text-gray-500">Fecha no especificada</span>
+                <div class="flex-1">
+                  <div class="mb-1 font-semibold text-gray-400">Fecha del Evento</div>
+                  <div class="flex gap-2 items-center">
+                    <div class="text-lg font-bold text-gray-900">
+                      <span v-if="event.start_datetime">{{ formatDate(event.start_datetime) }}</span>
+                      <span v-else class="text-gray-500">Fecha no especificada</span>
+                    </div>
+                    <button
+                      v-if="!isLocked && event.date_changes_count === 0"
+                      @click="showDateChangeModal = true; dateChangeError = ''; newEventTime = event.start_datetime ? new Date(event.start_datetime).toTimeString().slice(0, 5) : ''"
+                      class="flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100"
+                    >
+                      <i class="fa-solid fa-pen text-[10px]"></i>
+                      Editar
+                    </button>
                   </div>
                 </div>
-          </div>
+              </div>
               <!-- Time -->
               <div class="flex gap-3 items-center mt-2">
                 <i class="text-xl text-blue-500 fa-regular fa-clock"></i>
@@ -542,7 +665,7 @@
             <div class="mb-4">
               <div class="flex justify-between items-center mb-2">
                 <div class="font-bold text-gray-900">Paquete</div>
-                <button @click="showPackageModal = true" class="flex gap-1 items-center px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100">
+                <button v-if="!isLocked" @click="showPackageModal = true" class="flex gap-1 items-center px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100">
                   <i class="fa-solid fa-edit"></i>
                   Cambiar
                 </button>
@@ -570,7 +693,7 @@
             <div class="font-bold text-gray-900">Extras</div>
             <!-- Add Extra Button -->
             <div class="flex gap-2">
-              <button @click="showExtrasModal = true" class="flex gap-1 items-center px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100">
+              <button v-if="!isLocked" @click="showExtrasModal = true" class="flex gap-1 items-center px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100">
                 <i class="fa-solid fa-plus"></i>
                 Agregar
               </button>
@@ -583,10 +706,10 @@
                 <div class="w-24 text-right">Precio</div>
               </div>
               <div v-for="(extra, i) in localExtras" :key="i" class="relative h-14 select-none"
-                @touchstart="e => onTouchStart(i, e)"
-                @touchmove="e => onTouchMove(i, e)"
-                @touchend="() => onTouchEnd(i)"
-                @mousedown="e => onMouseDown(i, e)"
+                @touchstart="!isLocked && onTouchStart(i, $event)"
+                @touchmove="!isLocked && onTouchMove(i, $event)"
+                @touchend="!isLocked && onTouchEnd(i)"
+                @mousedown="!isLocked && onMouseDown(i, $event)"
               >
                 <!-- Red background with trash icon -->
                 <div class="flex absolute inset-0 justify-end items-center pr-6 bg-red-500 rounded-xl transition-all duration-300"
@@ -660,8 +783,8 @@
         </div>
       </div>
 
-        <!-- Payment Methods Section (shown when reservation is accepted) -->
-        <div v-if="event && (event.status === 'aceptacion' || event.status === 'apartado' || event.status === 'liquidado' || event.status === 'entregado' || event.status === 'finalizado')" class="mt-6">
+        <!-- Payment Methods Section (shown when reservation is accepted and not locked) -->
+        <div v-if="event && !isLocked && (event.status === 'aceptacion' || event.status === 'apartado' || event.status === 'liquidado' || event.status === 'entregado' || event.status === 'finalizado')" class="mt-6">
           <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-lg">
             <div class="flex justify-between items-center mb-4">
               <h2 class="text-lg font-bold text-primary-700">Métodos de Pago</h2>
@@ -1270,50 +1393,169 @@
           <!-- Steps Progress -->
           <div class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
             <h2 class="mb-3 text-base font-bold text-primary-700 sm:text-lg">Pasos a seguir</h2>
-            <div class="flex flex-col gap-2">
-              <div v-for="(step, i) in steps" :key="step.key"
-                :class="[
-                  'flex gap-3 items-start rounded-xl border px-3 py-3 transition',
-                  step.key === 'rechazado' && event.status === 'rechazado' ? 'border-red-300 bg-red-50' :
-                  i < getCurrentStepIndex(event.status) ? 'border-green-300 bg-green-50' :
-                  i === getCurrentStepIndex(event.status) ? 'border-blue-300 bg-blue-50' :
-                  'border-gray-200 bg-white'
-                ]"
-              >
-                <div class="flex flex-shrink-0 justify-center items-center mt-0.5 w-6 h-6 text-xs font-bold rounded-full border-2"
+
+            <!-- Cancelado banner -->
+            <div v-if="event.status === 'cancelado'"
+              class="mb-3 overflow-hidden rounded-xl border border-orange-300 bg-orange-50">
+              <div class="flex gap-3 items-center px-3 pt-3 pb-2">
+                <div class="flex flex-shrink-0 justify-center items-center w-7 h-7 bg-orange-500 rounded-full">
+                  <i class="text-xs text-white fa-solid fa-xmark"></i>
+                </div>
+                <div class="text-sm font-bold text-orange-800">Reserva Cancelada</div>
+              </div>
+              <div v-if="event.cancellation_reason" class="mx-3 mb-3 px-3 py-2 bg-white rounded-lg border border-orange-200 text-xs text-orange-700">
+                <span class="font-semibold">Motivo: </span>{{ event.cancellation_reason }}
+              </div>
+              <div v-else class="px-3 pb-3 text-xs text-orange-600">Esta reserva ha sido cancelada.</div>
+            </div>
+
+            <!-- Rechazado banner -->
+            <div v-if="event.status === 'rechazado'" class="mb-3 rounded-xl border border-red-300 bg-red-50 overflow-hidden">
+              <!-- Header -->
+              <div class="flex gap-3 items-center px-3 pt-3 pb-2">
+                <div class="flex flex-shrink-0 justify-center items-center w-7 h-7 bg-red-500 rounded-full">
+                  <i class="text-xs text-white fa-solid fa-xmark"></i>
+                </div>
+                <div class="text-sm font-bold text-red-800">Reserva Rechazada</div>
+              </div>
+
+              <!-- Razón específica del staff -->
+              <div v-if="event.rejection_reason" class="mx-3 mb-3 px-3 py-2 bg-white rounded-lg border border-red-200 text-xs text-red-700">
+                <span class="font-semibold">Razón: </span>{{ event.rejection_reason }}
+              </div>
+
+              <!-- Posibles razones comunes -->
+              <div class="mx-3 mb-3">
+                <p class="mb-1.5 text-xs font-semibold text-red-700">Motivos frecuentes de rechazo:</p>
+                <ul class="space-y-1 text-xs text-red-600">
+                  <li class="flex gap-1.5 items-start">
+                    <i class="mt-0.5 fa-solid fa-circle-dot text-[10px] flex-shrink-0"></i>
+                    Fecha o aforo no disponibles en el periodo solicitado
+                  </li>
+                  <li class="flex gap-1.5 items-start">
+                    <i class="mt-0.5 fa-solid fa-circle-dot text-[10px] flex-shrink-0"></i>
+                    Información incompleta o incorrecta en la solicitud
+                  </li>
+                  <li class="flex gap-1.5 items-start">
+                    <i class="mt-0.5 fa-solid fa-circle-dot text-[10px] flex-shrink-0"></i>
+                    Incumplimiento de alguna política del reglamento
+                  </li>
+                  <li class="flex gap-1.5 items-start">
+                    <i class="mt-0.5 fa-solid fa-circle-dot text-[10px] flex-shrink-0"></i>
+                    El tipo de evento no está permitido en las instalaciones
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Link al reglamento -->
+              <div class="px-3 pb-3">
+                <router-link to="/reglamento"
+                  class="inline-flex gap-1.5 items-center text-xs font-semibold text-red-700 hover:text-red-900 underline underline-offset-2">
+                  <i class="fa-solid fa-book-open"></i>
+                  Consulta el reglamento completo
+                </router-link>
+              </div>
+            </div>
+
+            <div class="flex flex-col">
+              <div v-for="(step, i) in steps" :key="step.key" class="relative flex gap-3 pb-2">
+                <!-- Vertical connector line -->
+                <div v-if="i < steps.length - 1" class="absolute left-[11px] top-7 bottom-0 w-0.5"
                   :class="[
-                    step.key === 'rechazado' && event.status === 'rechazado' ? 'bg-red-400 border-red-400 text-white' :
-                    i < getCurrentStepIndex(event.status) ? 'bg-green-400 border-green-400 text-white' :
-                    i === getCurrentStepIndex(event.status) ? 'bg-white border-blue-400 text-blue-600' :
-                    'bg-white border-gray-300 text-gray-400'
+                    i < getCurrentStepIndex(event.status) ? 'bg-green-300' :
+                    i === getCurrentStepIndex(event.status) ? 'bg-blue-200' :
+                    'bg-gray-200'
+                  ]"
+                ></div>
+
+                <!-- Step icon -->
+                <div class="relative z-10 flex-shrink-0 mt-2.5">
+                  <div v-if="i === getCurrentStepIndex(event.status)"
+                    class="absolute inset-0 w-6 h-6 bg-green-400 rounded-full opacity-40 animate-ping">
+                  </div>
+                  <div class="relative flex justify-center items-center w-6 h-6 text-xs font-bold rounded-full"
+                    :class="[
+                      i < getCurrentStepIndex(event.status) ? 'bg-green-500 text-white shadow-sm' :
+                      i === getCurrentStepIndex(event.status) ? 'bg-green-500 text-white shadow-md' :
+                      i === getCurrentStepIndex(event.status) + 1 && getCurrentStepIndex(event.status) >= 0 ? 'bg-blue-500 text-white shadow-sm' :
+                      'bg-white border-2 border-gray-300 text-gray-400'
+                    ]"
+                  >
+                    <i v-if="i < getCurrentStepIndex(event.status)" class="text-xs fa-solid fa-check"></i>
+                    <span v-else class="text-xs">{{ i + 1 }}</span>
+                  </div>
+                </div>
+
+                <!-- Step card -->
+                <div class="flex-1 min-w-0 rounded-xl border px-3 py-2.5 transition"
+                  :class="[
+                    i < getCurrentStepIndex(event.status) ? 'border-green-200 bg-green-50' :
+                    i === getCurrentStepIndex(event.status) ? 'border-green-300 bg-green-50 shadow-sm ring-1 ring-green-200' :
+                    i === getCurrentStepIndex(event.status) + 1 && getCurrentStepIndex(event.status) >= 0 ? 'border-blue-300 bg-blue-50 shadow-sm ring-1 ring-blue-200' :
+                    'border-gray-200 bg-white'
                   ]"
                 >
-                  <i v-if="step.key === 'rechazado' && event.status === 'rechazado'" class="fa-solid fa-exclamation-triangle"></i>
-                  <i v-else-if="i < getCurrentStepIndex(event.status)" class="fa-solid fa-check"></i>
-                  <span v-else>{{ i + 1 }}</span>
-                </div>
-                <div class="flex-1 min-w-0">
                   <div class="flex justify-between items-center gap-1">
-                    <span class="text-sm font-semibold text-gray-900">{{ step.label }}</span>
-                    <span class="flex-shrink-0 text-xs font-medium"
+                    <span class="text-sm font-semibold"
                       :class="[
-                        step.key === 'rechazado' && event.status === 'rechazado' ? 'text-red-600' :
-                        i < getCurrentStepIndex(event.status) ? 'text-green-600' :
-                        i === getCurrentStepIndex(event.status) ? 'text-blue-600' :
-                        'text-gray-400'
+                        i === getCurrentStepIndex(event.status) ? 'text-green-800' :
+                        i === getCurrentStepIndex(event.status) + 1 && getCurrentStepIndex(event.status) >= 0 ? 'text-blue-800' :
+                        'text-gray-900'
                       ]"
-                    >
-                      {{ step.key === 'rechazado' && event.status === 'rechazado' ? 'Rechazado' : i < getCurrentStepIndex(event.status) ? 'Listo' : i === getCurrentStepIndex(event.status) ? 'Actual' : '' }}
-                    </span>
+                    >{{ step.label }}</span>
+                    <!-- Status badge -->
+                    <span v-if="i < getCurrentStepIndex(event.status)"
+                      class="flex-shrink-0 px-2 py-0.5 text-xs font-semibold text-green-700 bg-green-100 rounded-full">Listo</span>
+                    <span v-else-if="i === getCurrentStepIndex(event.status)"
+                      class="flex-shrink-0 px-2 py-0.5 text-xs font-bold text-white bg-green-500 rounded-full">Actual</span>
+                    <span v-else-if="i === getCurrentStepIndex(event.status) + 1 && getCurrentStepIndex(event.status) >= 0"
+                      class="flex-shrink-0 px-2 py-0.5 text-xs font-bold text-white bg-blue-500 rounded-full">Próximo</span>
                   </div>
                   <p class="mt-0.5 text-xs leading-relaxed text-gray-500">{{ step.description }}</p>
-                  <div v-if="step.key === 'rechazado' && event.status === 'rechazado' && event.rejection_reason"
-                    class="p-2 mt-1.5 text-xs bg-red-100 rounded border border-red-200">
-                    <span class="font-semibold text-red-800">Razón: </span>
-                    <span class="text-red-700">{{ event.rejection_reason }}</span>
-                  </div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          <!-- Cancellation Policy + Cancel Button -->
+          <div v-if="!isLocked"
+            class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+            <h3 class="mb-3 text-sm font-bold text-gray-700">
+              <i class="mr-1.5 text-gray-400 fa-solid fa-file-contract"></i>
+              Política de Cancelación y Cambios
+            </h3>
+            <div class="space-y-2.5 text-xs text-gray-600">
+              <div class="flex gap-2 items-start">
+                <i class="mt-0.5 flex-shrink-0 text-green-500 fa-solid fa-circle-check"></i>
+                <p><span class="font-semibold text-gray-700">Más de 45 días de anticipación:</span> se devuelve el 50% del anticipo. El resto se retiene por gastos administrativos.</p>
+              </div>
+              <div class="flex gap-2 items-start">
+                <i class="mt-0.5 flex-shrink-0 text-red-500 fa-solid fa-circle-xmark"></i>
+                <p><span class="font-semibold text-gray-700">45 días o menos:</span> el anticipo no es reembolsable bajo ninguna circunstancia.</p>
+              </div>
+              <div class="flex gap-2 items-start">
+                <i class="mt-0.5 flex-shrink-0 text-blue-400 fa-solid fa-calendar-days"></i>
+                <p><span class="font-semibold text-gray-700">Cambios de fecha:</span> con al menos 3 semanas de anticipación, sujeto a disponibilidad. Solo se permite un cambio por evento.</p>
+              </div>
+            </div>
+            <div class="flex flex-col gap-2 mt-4">
+              <!-- Reschedule button — only if no date change has been used yet -->
+              <button v-if="event.date_changes_count === 0"
+                @click="showDateChangeModal = true; dateChangeError = ''; newEventTime = event.start_datetime ? new Date(event.start_datetime).toTimeString().slice(0, 5) : ''"
+                class="w-full px-4 py-2.5 text-sm font-semibold text-blue-600 bg-blue-50 rounded-xl border border-blue-200 transition hover:bg-blue-100">
+                <i class="mr-2 fa-solid fa-calendar-days"></i>
+                Cambiar Fecha
+              </button>
+              <div v-else class="flex gap-2 items-center px-3 py-2 text-xs text-gray-500 bg-gray-50 rounded-xl border border-gray-200">
+                <i class="fa-solid fa-calendar-xmark text-gray-400"></i>
+                Ya utilizaste el cambio de fecha permitido para este evento.
+              </div>
+
+              <button @click="showCancelModal = true"
+                class="w-full px-4 py-2.5 text-sm font-semibold text-red-600 bg-red-50 rounded-xl border border-red-200 transition hover:bg-red-100">
+                <i class="mr-2 fa-solid fa-ban"></i>
+                Cancelar Reserva
+              </button>
             </div>
           </div>
         </div><!-- /RIGHT COLUMN -->
@@ -1616,59 +1858,106 @@ const getStatusClasses = (status) => {
   }
 }
 
-const cancelReservation = () => {
-  // TODO: Implement cancel reservation functionality
-  console.log('Cancel reservation clicked')
+const daysUntilEvent = computed(() => {
+  if (!event.value?.start_datetime) return 0
+  const eventDate = new Date(event.value.start_datetime)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24))
+})
+
+const confirmCancelReservation = async () => {
+  isCancelling.value = true
+  try {
+    await api.patch(`/api/bookings/bookings/${event.value.id}/`, {
+      status: 'cancelado',
+      cancellation_reason: cancellationReason.value.trim()
+    })
+    showCancelModal.value = false
+    cancellationReason.value = ''
+    await refetch()
+  } catch (e) {
+    console.error('Error cancelling reservation', e)
+  } finally {
+    isCancelling.value = false
+  }
+}
+
+const isLocked = computed(() =>
+  ['cancelado', 'rechazado', 'finalizado'].includes(event.value?.status)
+)
+
+const submitDateChange = async () => {
+  dateChangeError.value = ''
+  isRescheduling.value = true
+  try {
+    const time = newEventTime.value || '00:00'
+    const newStartDatetime = `${newEventDate.value}T${time}:00`
+    await api.patch(`/api/bookings/bookings/${event.value.id}/`, {
+      start_datetime: newStartDatetime
+    })
+    showDateChangeModal.value = false
+    newEventDate.value = ''
+    newEventTime.value = ''
+    await refetch()
+  } catch (e) {
+    const msg = e?.response?.data?.start_datetime
+    dateChangeError.value = Array.isArray(msg) ? msg[0] : (msg || 'Error al cambiar la fecha. Intenta de nuevo.')
+  } finally {
+    isRescheduling.value = false
+  }
 }
 
 const steps = [
-  { 
-    key: 'solicitud', 
-    label: 'Solicitud', 
+  {
+    key: 'solicitud',
+    label: 'Solicitud',
     icon: 'fa-regular fa-file-lines',
     description: 'Tu solicitud ha sido enviada y está siendo revisada'
   },
-  { 
-    key: 'rechazado', 
-    label: 'Paso a seguir', 
-    icon: 'fa-solid fa-exclamation-triangle',
-    description: 'Tu solicitud ha sido rechazada',
-    isRejected: true
-  },
-  { 
-    key: 'aceptacion', 
-    label: 'Aceptación', 
+  {
+    key: 'aceptacion',
+    label: 'Aceptación',
     icon: 'fa-solid fa-user-check',
     description: 'Tu reserva ha sido aceptada, puedes proceder con el apartado'
   },
-  { 
-    key: 'apartado', 
-    label: 'Apartado', 
+  {
+    key: 'apartado',
+    label: 'Apartado',
     icon: 'fa-solid fa-calendar-plus',
     description: 'Se ha realizado el apartado, faltan los pagos restantes'
   },
-  { 
-    key: 'liquidado', 
-    label: 'Liquidado', 
+  {
+    key: 'liquidado',
+    label: 'Liquidado',
     icon: 'fa-solid fa-money-bill-wave',
     description: 'Pago completo realizado, tu evento está saldado'
   },
-  { 
-    key: 'entregado', 
-    label: 'Entregado', 
+  {
+    key: 'liquidado_entregado',
+    label: 'Liquidado y Entregado',
+    icon: 'fa-solid fa-handshake',
+    description: 'Monto liquidado y lugar entregado para tu evento'
+  },
+  {
+    key: 'entregado',
+    label: 'Entregado',
     icon: 'fa-solid fa-door-open',
     description: 'El lugar ha sido entregado para tu evento'
   },
-  { 
-    key: 'finalizado', 
-    label: 'Finalizado', 
+  {
+    key: 'finalizado',
+    label: 'Finalizado',
     icon: 'fa-regular fa-star',
     description: 'Evento completado, puedes dejar tu reseña'
   }
 ]
 
-// Function to get the current step index based on status
+const terminalStatuses = ['rechazado', 'cancelado']
+
+// Returns -1 for terminal states (rechazado/cancelado) so all steps render as pending
 const getCurrentStepIndex = (status) => {
+  if (terminalStatuses.includes(status)) return -1
   const stepIndex = steps.findIndex(step => step.key === status)
   return stepIndex >= 0 ? stepIndex : 0
 }
@@ -2498,6 +2787,20 @@ watch(showTransferAccordion, (val) => {
 const showPaymentModal = ref(false)
 const showTransferModal = ref(false)
 const showRejectModal = ref(false)
+const showCancelModal = ref(false)
+const isCancelling = ref(false)
+const cancellationReason = ref('')
+const showDateChangeModal = ref(false)
+const isRescheduling = ref(false)
+const newEventDate = ref('')
+const newEventTime = ref('')
+const dateChangeError = ref('')
+
+const minRescheduleDate = computed(() => {
+  const d = new Date()
+  d.setDate(d.getDate() + 22) // at least 21 days from today as minimum selectable
+  return d.toISOString().split('T')[0]
+})
 const transferAmount = ref('')
 
 // Watch transferAmount to limit it to remainingAmount
