@@ -1919,11 +1919,15 @@ const saveTimeEdit = async () => {
   savingTimes.value = true
   try {
     const datePart = event.value.start_datetime
-      ? new Date(event.value.start_datetime).toISOString().split('T')[0]
+      ? event.value.start_datetime.slice(0, 10)
       : new Date().toISOString().split('T')[0]
-    const endDatePart = event.value.end_datetime
-      ? new Date(event.value.end_datetime).toISOString().split('T')[0]
-      : datePart
+    // End date = same day, unless end time <= start time (overnight → next day)
+    let endDatePart = datePart
+    if (editEndTime.value && editStartTime.value && editEndTime.value <= editStartTime.value) {
+      const [y, m, d] = datePart.split('-').map(Number)
+      const next = new Date(y, m - 1, d + 1)
+      endDatePart = `${next.getFullYear()}-${String(next.getMonth() + 1).padStart(2, '0')}-${String(next.getDate()).padStart(2, '0')}`
+    }
     await api.patch(`/api/bookings/bookings/${event.value.id}/`, {
       start_datetime: `${datePart}T${editStartTime.value}:00`,
       end_datetime: `${endDatePart}T${editEndTime.value}:00`,
