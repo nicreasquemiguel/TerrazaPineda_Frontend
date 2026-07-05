@@ -198,6 +198,49 @@
                   </div>
                 </div>
 
+                <!-- Next Booking Card Content -->
+                <div v-else-if="card.type === 'next-booking'" class="text-white">
+                  <div class="flex items-center space-x-2 mb-2">
+                    <span class="text-sm font-medium opacity-90">{{ card.title }}</span>
+                    <span class="px-1.5 py-0.5 text-xs font-medium text-white bg-white bg-opacity-30 rounded-full">
+                      {{ getStatusText(card.eventData.bookings?.[0]?.status || 'pendiente') }}
+                    </span>
+                  </div>
+
+                  <div class="mb-2">
+                    <div class="text-xs font-semibold truncate mb-1">{{ card.eventData.bookings?.[0]?.package_name || 'Package' }}</div>
+                    <div class="flex items-center justify-between text-xs">
+                      <div class="flex items-center space-x-1">
+                        <span class="px-1.5 py-0.5 text-white bg-white bg-opacity-20 rounded text-xs">
+                          {{ card.eventData.bookings?.[0]?.people_count || 0 }}p
+                        </span>
+                        <span class="px-1.5 py-0.5 text-white bg-white bg-opacity-20 rounded text-xs">
+                          ${{ parseFloat(card.eventData.bookings?.[0]?.amount_due || 0).toLocaleString() }}
+                        </span>
+                      </div>
+                      <a
+                        :href="`tel:${card.eventData.bookings?.[0]?.client_phone}`"
+                        class="text-white opacity-75 hover:opacity-100 text-xs"
+                      >
+                        <i class="fa-solid fa-phone mr-1"></i>{{ card.eventData.bookings?.[0]?.client_phone }}
+                      </a>
+                    </div>
+                  </div>
+
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="flex items-center space-x-1">
+                      <i class="fa-solid fa-user"></i>
+                      <span class="truncate">{{ card.eventData.bookings?.[0]?.client_first_name }} {{ card.eventData.bookings?.[0]?.client_last_name }}</span>
+                    </div>
+                    <a
+                      :href="`/detalle-reserva/${card.eventData.bookings?.[0]?.booking_id}`"
+                      class="px-2 py-1 text-xs font-medium text-white bg-white bg-opacity-20 rounded hover:bg-opacity-30 transition-all duration-200"
+                    >
+                      <i class="fa-solid fa-eye mr-1"></i>Ver
+                    </a>
+                  </div>
+                </div>
+
                 <!-- Event Card Content -->
                 <div v-else-if="card.type === 'event'" class="text-white">
                   <div class="flex justify-between items-start mb-2">
@@ -580,10 +623,38 @@
         </div>
       </div>
 
-      <!-- Stats Grid (2×2) -->
+      <!-- Stats Grid -->
       <div class="grid grid-cols-2 gap-3 px-4 mb-4">
+        <!-- Next Booking card (full width) -->
         <div
-          v-for="(card, index) in statsCards.filter(c => c.type === 'stats')"
+          v-if="dashboardData?.next_booking"
+          class="col-span-2 p-4 rounded-xl shadow-sm text-white"
+          style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
+        >
+          <div class="flex items-center gap-2 mb-2">
+            <span class="text-sm font-semibold">{{ formatNextBookingDate(dashboardData.next_booking.start_datetime) }}</span>
+            <span class="px-2 py-0.5 text-xs bg-white bg-opacity-30 rounded-full">
+              {{ getStatusText(dashboardData.next_booking.status) }}
+            </span>
+          </div>
+          <div class="text-sm font-bold truncate mb-2">{{ dashboardData.next_booking.package_name }}</div>
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="px-2 py-1 bg-white bg-opacity-20 rounded-full">{{ dashboardData.next_booking.people_count }}p</span>
+              <span class="px-2 py-1 bg-white bg-opacity-20 rounded-full">${{ parseFloat(dashboardData.next_booking.amount_due || 0).toLocaleString() }}</span>
+              <span class="px-2 py-1 bg-white bg-opacity-20 rounded-full truncate max-w-[120px]">
+                {{ dashboardData.next_booking.client_first_name }} {{ dashboardData.next_booking.client_last_name }}
+              </span>
+            </div>
+            <a :href="`/detalle-reserva/${dashboardData.next_booking.booking_id}`" class="px-2 py-1 bg-white bg-opacity-20 rounded text-white">
+              <i class="fa-solid fa-eye mr-1"></i>Ver
+            </a>
+          </div>
+        </div>
+
+        <!-- Regular stats cards (excluding Usuarios Activos) -->
+        <div
+          v-for="(card, index) in statsCards.filter(c => c.type === 'stats' && c.title !== 'Usuarios Activos')"
           :key="index"
           class="p-4 rounded-xl shadow-sm"
           :style="{ background: card.gradient }"
@@ -1155,20 +1226,28 @@ const fetchPaymentsData = async () => {
   }
 }
 
+// Returns YYYY-MM-DD using local time components (avoids UTC-offset date shift)
+const toLocalDateStr = (date) => {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  return `${y}-${m}-${d}`
+}
+
 // Fetch week calendar data
 const fetchWeekCalendarData = async (date) => {
   try {
     console.log('=== fetchWeekCalendarData called ===')
     console.log('Input date:', date)
     console.log('Date type:', typeof date)
-    
+
     if (!date) {
       console.error('No date provided to fetchWeekCalendarData')
       return
     }
-    
+
     weekCalendarLoading.value = true
-    const formattedDate = date.toISOString().split('T')[0]
+    const formattedDate = toLocalDateStr(date)
     console.log('Formatted date for API:', formattedDate)
     
     const apiUrl = `/api/dashboard/dashboard/daily_cards/?date=${formattedDate}`
@@ -1285,6 +1364,35 @@ const statsCards = computed(() => {
   if (!dashboardData.value) return []
   
   const baseCards = [
+    dashboardData.value.next_booking
+      ? {
+          title: formatNextBookingDate(dashboardData.value.next_booking.start_datetime),
+          icon: 'fa-solid fa-calendar-check',
+          gradient: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+          color: 'from-blue-500 to-blue-600',
+          type: 'next-booking',
+          eventData: {
+            bookings: [{
+              booking_id: dashboardData.value.next_booking.booking_id,
+              package_name: dashboardData.value.next_booking.package_name,
+              people_count: dashboardData.value.next_booking.people_count,
+              amount_due: dashboardData.value.next_booking.amount_due,
+              client_first_name: dashboardData.value.next_booking.client_first_name,
+              client_last_name: dashboardData.value.next_booking.client_last_name,
+              client_phone: dashboardData.value.next_booking.client_phone,
+              status: dashboardData.value.next_booking.status,
+            }]
+          }
+        }
+      : {
+          title: 'Próxima Reserva',
+          value: 'Sin reservas',
+          percentage: '',
+          icon: 'fa-solid fa-calendar-check',
+          gradient: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+          color: 'from-blue-500 to-blue-600',
+          type: 'stats'
+        },
     {
       title: 'Reservas del Mes',
       value: dashboardData.value.current_month?.bookings || 0,
@@ -1301,15 +1409,6 @@ const statsCards = computed(() => {
       icon: 'fa-solid fa-dollar-sign',
       gradient: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
       color: 'from-green-500 to-green-600',
-      type: 'stats'
-    },
-    {
-      title: 'Reservas Aceptadas',
-      value: dashboardData.value.current_month?.accepted_bookings || 0,
-      percentage: `+${dashboardData.value.percentage_changes?.accepted_bookings || 0}%`,
-      icon: 'fa-solid fa-check-circle',
-      gradient: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
-      color: 'from-blue-500 to-blue-600',
       type: 'stats'
     },
     {
@@ -1385,11 +1484,16 @@ const getStatusColor = (status) => {
 // Helper function to get status text
 const getStatusText = (status) => {
   const statusTexts = {
+    'solicitud': 'Solicitud',
     'aceptacion': 'Aceptado',
+    'apartado': 'Apartado',
+    'liquidado': 'Liquidado',
+    'liquidado_entregado': 'Liquidado y Entregado',
+    'entregado': 'Entregado',
+    'finalizado': 'Finalizado',
     'pendiente': 'Pendiente',
     'rechazado': 'Rechazado',
     'cancelado': 'Cancelado',
-    'solicitud': 'Solicitud'
   }
   return statusTexts[status] || status
 }
@@ -1470,6 +1574,14 @@ const closeEventDetails = () => {
   selectedEventDay.value = null
   currentCardIndex.value = 0 // Reset to first stats card
   startCardRotation() // Resume auto-rotation when closing event details
+}
+
+// Format next booking date as "Martes 30"
+const formatNextBookingDate = (dateString) => {
+  if (!dateString) return ''
+  const date = new Date(dateString)
+  const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado']
+  return `${days[date.getDay()]} ${date.getDate()}`
 }
 
 // Format event date to Spanish format
@@ -1937,9 +2049,9 @@ const showCalendarEventDetails = (date) => {
     return
   }
   
-  const dateStr = date.toISOString().split('T')[0]
+  const dateStr = toLocalDateStr(date)
   console.log('Looking for date:', dateStr)
-  
+
   const dayData = weekCalendarData.value.daily_cards.find(day => day.date === dateStr)
   console.log('Found dayData:', dayData)
   
@@ -2139,9 +2251,9 @@ const getDayStatus = (date) => {
     return null
   }
   
-  const dateStr = date.toISOString().split('T')[0]
+  const dateStr = toLocalDateStr(date)
   const dayData = weekCalendarData.value.daily_cards.find(day => day.date === dateStr)
-  
+
   if (!dayData || !dayData.bookings || dayData.bookings.length === 0) {
     return null
   }
