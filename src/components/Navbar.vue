@@ -434,8 +434,8 @@
   ></div>
   
   <!-- Mobile Sidebar -->
-  <div 
-    class="fixed top-0 left-0 z-50 w-80 h-full bg-black transition-transform duration-300 ease-in-out transform md:hidden"
+  <div
+    class="fixed top-0 left-0 z-50 w-80 h-full bg-black transition-transform duration-300 ease-in-out transform md:hidden flex flex-col"
     :class="showMobileSidebar ? 'translate-x-0' : '-translate-x-full'"
   >
     <!-- Sidebar Header -->
@@ -458,7 +458,7 @@
     </div>
     
     <!-- Sidebar Content -->
-    <div class="flex flex-col h-full">
+    <div class="flex overflow-hidden flex-col flex-1">
       <!-- User Profile (only if logged in) -->
       <div v-if="authStore.isAuthenticated" class="p-6 border-b border-gray-700">
         <div class="flex items-center space-x-3">
