@@ -1,4 +1,5 @@
 <template>
+  <SocialPhoneModal v-if="showPhoneModal" @done="onPhoneSaved" />
   <div class="flex flex-col min-h-screen bg-[#fefefe]">
     <div class="flex flex-1 justify-center items-center px-2 py-8">
       <div class="flex overflow-hidden relative flex-col items-center p-8 w-full max-w-md rounded-3xl shadow-2xl bg-white/80">
@@ -139,6 +140,7 @@ import { ref, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'vue-toastification'
+import SocialPhoneModal from '@/components/SocialPhoneModal.vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -150,6 +152,8 @@ const loading = ref(false)
 const error = ref('')
 const socialLoading = ref(false)
 const socialError = ref('')
+const showPhoneModal = ref(false)
+const pendingRedirect = ref(null)
 const toast = useToast()
 
 async function handleLogin() {
@@ -175,14 +179,27 @@ async function handleLogin() {
   }
 }
 
-function redirectAfterSocialLogin(created) {
-  if (created) toast.success('¡Bienvenido a Terraza Pineda!')
-  else toast.success('¡Bienvenido de nuevo!')
+function getRedirectTarget() {
   const next = route.query.next
-  if (next) { router.push(next); return }
+  if (next) return next
   const user = authStore.user
-  if (user && (user.is_staff || user.role === 'admin')) router.push('/dashboard')
-  else router.push('/mis-reservas')
+  return (user && (user.is_staff || user.role === 'admin')) ? '/dashboard' : '/mis-reservas'
+}
+
+function redirectAfterSocialLogin(result) {
+  if (result.created) toast.success('¡Bienvenido a Terraza Pineda!')
+  else toast.success('¡Bienvenido de nuevo!')
+  if (result.needsPhone) {
+    pendingRedirect.value = getRedirectTarget()
+    showPhoneModal.value = true
+  } else {
+    router.push(getRedirectTarget())
+  }
+}
+
+function onPhoneSaved() {
+  showPhoneModal.value = false
+  router.push(pendingRedirect.value || '/mis-reservas')
 }
 
 // ── Google ──────────────────────────────────────────────────────────────────
@@ -221,7 +238,7 @@ async function handleGoogleLogin() {
         }
         const result = await authStore.loginWithSocial('google', response.access_token)
         socialLoading.value = false
-        if (result.success) redirectAfterSocialLogin(result.created)
+        if (result.success) redirectAfterSocialLogin(result)
         else socialError.value = result.error
       },
     })
@@ -240,7 +257,7 @@ async function handleFacebookLogin() {
       if (response.authResponse) {
         const result = await authStore.loginWithSocial('facebook', response.authResponse.accessToken)
         socialLoading.value = false
-        if (result.success) redirectAfterSocialLogin(result.created)
+        if (result.success) redirectAfterSocialLogin(result)
         else socialError.value = result.error
       } else {
         socialError.value = 'Login con Facebook cancelado.'

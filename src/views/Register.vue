@@ -1,4 +1,5 @@
 <template>
+  <SocialPhoneModal v-if="showPhoneModal" @done="onPhoneSaved" />
   <div class="flex flex-col min-h-screen bg-[#fefefe]">
     <div class="flex flex-1 justify-center items-center px-2 py-8">
       <div class="flex overflow-hidden relative flex-col items-center p-8 w-full max-w-md rounded-3xl shadow-2xl bg-white/80">
@@ -214,6 +215,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from 'vue-toastification'
+import SocialPhoneModal from '@/components/SocialPhoneModal.vue'
 
 const toast = useToast()
 const router = useRouter()
@@ -231,6 +233,7 @@ const error = ref('')
 const loading = ref(false)
 const socialLoading = ref(false)
 const socialError = ref('')
+const showPhoneModal = ref(false)
 
 const passwordStrength = computed(() => {
   const p = password.value
@@ -323,6 +326,21 @@ onMounted(() => {
   }
 })
 
+function afterSocialSuccess(result) {
+  if (result.created) toast.success('¡Cuenta creada exitosamente!')
+  else toast.success('¡Bienvenido de nuevo!')
+  if (result.needsPhone) {
+    showPhoneModal.value = true
+  } else {
+    router.push('/mis-reservas')
+  }
+}
+
+function onPhoneSaved() {
+  showPhoneModal.value = false
+  router.push('/mis-reservas')
+}
+
 async function handleGoogleLogin() {
   socialLoading.value = true
   socialError.value = ''
@@ -340,13 +358,8 @@ async function handleGoogleLogin() {
         }
         const result = await authStore.loginWithSocial('google', response.access_token)
         socialLoading.value = false
-        if (result.success) {
-          if (result.created) toast.success('¡Cuenta creada con Google!')
-          else toast.success('¡Bienvenido de nuevo!')
-          router.push('/mis-reservas')
-        } else {
-          socialError.value = result.error
-        }
+        if (result.success) afterSocialSuccess(result)
+        else socialError.value = result.error
       },
     })
     tokenClient.requestAccessToken({ prompt: 'consent' })
@@ -364,13 +377,8 @@ async function handleFacebookLogin() {
       if (response.authResponse) {
         const result = await authStore.loginWithSocial('facebook', response.authResponse.accessToken)
         socialLoading.value = false
-        if (result.success) {
-          if (result.created) toast.success('¡Cuenta creada con Facebook!')
-          else toast.success('¡Bienvenido de nuevo!')
-          router.push('/mis-reservas')
-        } else {
-          socialError.value = result.error
-        }
+        if (result.success) afterSocialSuccess(result)
+        else socialError.value = result.error
       } else {
         socialError.value = 'Registro con Facebook cancelado.'
         socialLoading.value = false

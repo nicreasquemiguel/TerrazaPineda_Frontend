@@ -270,7 +270,8 @@ export const useAuthStore = defineStore('auth', () => {
       const res = await api.post('/api/users/social/jwt/', { provider, token })
       setToken(res.data.access, res.data.refresh)
       await fetchUser()
-      return { success: true, created: res.data.created }
+      const needsPhone = !user.value?.phone
+      return { success: true, created: res.data.created, needsPhone }
     } catch (error) {
       console.error('[Auth] Social login error:', error.response?.data)
       logout()

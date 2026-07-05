@@ -118,8 +118,14 @@
             </router-link>
             <!-- User avatar and popover for desktop -->
             <div class="relative" @mouseenter="cancelCloseDesktop; openUserMenuDesktop" @mouseleave="closeUserMenuDesktop">
-              <button @click="openUserMenuDesktop" data-user-menu class="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#22d3ee] border-2 border-white shadow">
-                <span v-if="authStore.user && authStore.user.first_name && authStore.user.last_name" class="w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-br from-[#7c3aed] to-[#22d3ee] text-white text-base font-bold">
+              <button @click="openUserMenuDesktop" data-user-menu class="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#22d3ee] border-2 border-white shadow overflow-hidden">
+                <img
+                  v-if="authStore.user?.profile?.image && !String(authStore.user.profile.image).includes('default_user')"
+                  :src="authStore.user.profile.image"
+                  :alt="authStore.user.first_name"
+                  class="w-full h-full object-cover rounded-full"
+                />
+                <span v-else-if="authStore.user?.first_name && authStore.user?.last_name" class="text-white text-sm font-bold">
                   {{ authStore.user.first_name.charAt(0).toUpperCase() + authStore.user.last_name.charAt(0).toUpperCase() }}
                 </span>
                 <span v-else class="text-base font-bold text-white"><i class="fa-regular fa-user"></i></span>
@@ -250,9 +256,15 @@
               <button
                 @click="openUserMenuMobile"
                 data-user-menu-mobile
-                class="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#22d3ee] border-2 border-white shadow"
+                class="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#22d3ee] border-2 border-white shadow overflow-hidden"
               >
-                <span v-if="authStore.user && authStore.user.first_name && authStore.user.last_name" class="w-8 h-8 flex items-center justify-center rounded-full bg-gradient-to-br from-[#7c3aed] to-[#22d3ee] text-white text-base font-bold">
+                <img
+                  v-if="authStore.user?.profile?.image && !String(authStore.user.profile.image).includes('default_user')"
+                  :src="authStore.user.profile.image"
+                  :alt="authStore.user.first_name"
+                  class="w-full h-full object-cover rounded-full"
+                />
+                <span v-else-if="authStore.user?.first_name && authStore.user?.last_name" class="text-white text-sm font-bold">
                   {{ authStore.user.first_name.charAt(0).toUpperCase() + authStore.user.last_name.charAt(0).toUpperCase() }}
                 </span>
                 <span v-else class="text-base font-bold text-white"><i class="fa-regular fa-user"></i></span>
