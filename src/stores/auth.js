@@ -264,6 +264,25 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  // Social OAuth login (Google / Facebook)
+  async function loginWithSocial(provider, token) {
+    try {
+      const res = await api.post('/api/users/social/jwt/', { provider, token })
+      setToken(res.data.access, res.data.refresh)
+      await fetchUser()
+      return { success: true, created: res.data.created }
+    } catch (error) {
+      console.error('[Auth] Social login error:', error.response?.data)
+      logout()
+      const data = error.response?.data
+      const errorMessage =
+        data?.detail ||
+        data?.non_field_errors?.[0] ||
+        'Error al iniciar sesión con red social.'
+      return { success: false, error: errorMessage }
+    }
+  }
+
   // Change email
   async function changeEmail(newEmail) {
     try {
@@ -300,6 +319,7 @@ export const useAuthStore = defineStore('auth', () => {
     checkTokenValidity,
     clearInvalidAuth,
     login,
+    loginWithSocial,
     register,
     activateAccount,
     resendActivation,

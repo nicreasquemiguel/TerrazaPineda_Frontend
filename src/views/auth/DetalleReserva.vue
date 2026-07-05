@@ -800,6 +800,68 @@
         </div>
       </div>
 
+        <!-- Share Confirmation Card -->
+        <div
+          v-if="event && ['aceptacion','apartado','liquidado','liquidado_entregado','entregado','finalizado'].includes(event.status)"
+          class="mt-6"
+        >
+          <div class="p-5 bg-gradient-to-br from-[#1a0533] to-[#0a021e] rounded-2xl shadow-lg border border-purple-900/40">
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-lg">🎉</span>
+              <h2 class="text-base font-bold text-white">¡Comparte tu reservación!</h2>
+            </div>
+            <p class="text-xs text-purple-300 mb-4">Descarga tu tarjeta personalizada y compártela con tus amigos.</p>
+
+            <div v-if="confirmCardUrl" class="mb-4">
+              <img :src="confirmCardUrl" alt="Tarjeta de reservación" class="w-full max-w-xs mx-auto rounded-xl shadow-md" />
+            </div>
+            <div v-else-if="loadingConfirmCard" class="flex justify-center py-6">
+              <svg class="animate-spin h-6 w-6 text-purple-400" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mt-2">
+              <button
+                @click="loadConfirmCard"
+                v-if="!confirmCardUrl && !loadingConfirmCard"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition"
+              >
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Ver tarjeta
+              </button>
+              <a
+                v-if="confirmCardUrl"
+                :href="confirmCardUrl"
+                :download="`terraza-pineda-reserva.png`"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition"
+              >
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                Descargar
+              </a>
+              <a
+                v-if="event"
+                :href="`https://wa.me/?text=${encodeURIComponent('¡Reservé Terraza Pineda para el ' + formatEventDate(event.start_datetime) + '! 🎉 terrazapineda.com')}`"
+                target="_blank"
+                rel="noopener"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#25D366] hover:bg-[#1ebe5a] text-white text-sm font-semibold transition"
+              >
+                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.374 0 0 5.374 0 12c0 2.117.547 4.103 1.504 5.829L.057 23.882l6.233-1.635A11.934 11.934 0 0012 24c6.626 0 12-5.374 12-12 0-6.627-5.374-12-12-12zm0 21.818a9.818 9.818 0 01-4.999-1.369l-.358-.213-3.706.973.989-3.611-.234-.371A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182c5.43 0 9.818 4.389 9.818 9.818 0 5.43-4.389 9.818-9.818 9.818z"/></svg>
+                WhatsApp
+              </a>
+              <button
+                v-if="confirmCardUrl"
+                @click="copyLink(confirmCardUrl)"
+                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition"
+              >
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                Copiar enlace
+              </button>
+            </div>
+          </div>
+        </div><!-- /Share Confirmation Card -->
+
         <!-- Payment Methods Section (shown when reservation is accepted and not locked) -->
         <div v-if="event && !isLocked && (event.status === 'aceptacion' || event.status === 'apartado' || event.status === 'liquidado' || event.status === 'entregado' || event.status === 'finalizado')" class="mt-6">
           <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-lg">
@@ -1400,6 +1462,47 @@
                 <span class="ml-2 text-gray-500">{{ myReview.rating || 0 }}/5</span>
               </div>
               <div class="text-gray-700 whitespace-pre-line">{{ myReview.review }}</div>
+
+              <!-- Share review card -->
+              <div class="mt-4 pt-4 border-t border-gray-200">
+                <p class="font-semibold text-gray-700 mb-2">¡Comparte tu experiencia!</p>
+                <div v-if="reviewCardUrl" class="mb-3">
+                  <img :src="reviewCardUrl" alt="Tarjeta de reseña" class="w-full max-w-xs mx-auto rounded-xl shadow-md" />
+                </div>
+                <div v-else-if="loadingReviewCard" class="flex justify-center py-3">
+                  <svg class="animate-spin h-5 w-5 text-purple-400" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                </div>
+                <div class="flex flex-wrap gap-2">
+                  <button
+                    v-if="!reviewCardUrl && !loadingReviewCard"
+                    @click="loadReviewCard"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-semibold transition"
+                  >
+                    Ver tarjeta
+                  </button>
+                  <a
+                    v-if="reviewCardUrl"
+                    :href="reviewCardUrl"
+                    download="terraza-pineda-resena.png"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-semibold transition"
+                  >
+                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                    Descargar para Instagram/TikTok
+                  </a>
+                  <a
+                    v-if="event && myReview"
+                    :href="`https://wa.me/?text=${encodeURIComponent('¡Tuve mi evento en Terraza Pineda! ' + '★'.repeat(myReview.rating || 5) + ' ¡Totalmente recomendado! terrazapineda.com')}`"
+                    target="_blank"
+                    rel="noopener"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#1a9e4a] text-xs font-semibold transition"
+                  >
+                    WhatsApp
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
         </div><!-- /Review -->
@@ -3253,6 +3356,53 @@ const rejectBooking = async () => {
   }
 }
 
+// ── Share Cards ──────────────────────────────────────────────────────────────
+const confirmCardUrl = ref(null)
+const loadingConfirmCard = ref(false)
+const reviewCardUrl = ref(null)
+const loadingReviewCard = ref(false)
+
+async function loadConfirmCard() {
+  if (!event.value?.id) return
+  loadingConfirmCard.value = true
+  try {
+    const res = await api.get(`/api/bookings/bookings/${event.value.id}/share-card/confirmation/`)
+    confirmCardUrl.value = res.data.url
+  } catch (err) {
+    toast.error('No se pudo generar la tarjeta de reservación.')
+    console.error(err)
+  } finally {
+    loadingConfirmCard.value = false
+  }
+}
+
+async function loadReviewCard() {
+  if (!event.value?.id) return
+  loadingReviewCard.value = true
+  try {
+    const res = await api.get(`/api/bookings/bookings/${event.value.id}/share-card/review/`)
+    reviewCardUrl.value = res.data.url
+  } catch (err) {
+    toast.error('No se pudo generar la tarjeta de reseña.')
+    console.error(err)
+  } finally {
+    loadingReviewCard.value = false
+  }
+}
+
+function copyLink(url) {
+  navigator.clipboard.writeText(url).then(() => {
+    toast.success('¡Enlace copiado al portapapeles!')
+  }).catch(() => {
+    toast.error('No se pudo copiar el enlace.')
+  })
+}
+
+function formatEventDate(datetime) {
+  if (!datetime) return ''
+  const d = new Date(datetime)
+  return d.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+}
 
 </script>
 
