@@ -921,8 +921,8 @@
                   ]"
                 >
                   <div class="flex gap-3 items-center">
-                    <div class="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-full">
-                      <i class="text-blue-600 fa-brands fa-stripe"></i>
+                    <div class="flex justify-center items-center w-10 h-10 text-gray-400">
+                      <i class="text-lg fa-brands fa-stripe"></i>
                     </div>
                     <div>
                       <div class="font-semibold text-gray-900">Pago con Tarjeta</div>
@@ -1001,15 +1001,31 @@
                   </div>
 
 
+                  <!-- Commission breakdown -->
+                  <div v-if="paymentAmount && parseFloat(paymentAmount) > 0" class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 text-sm space-y-1.5">
+                    <div class="flex justify-between text-gray-600">
+                      <span>Pago a reserva</span>
+                      <span class="font-mono">${{ parseFloat(paymentAmount).toLocaleString('es-MX', { minimumFractionDigits: 2 }) }}</span>
+                    </div>
+                    <div class="flex justify-between text-gray-500">
+                      <span>Comisión Stripe <span class="text-xs">(3.6% + $3.00)</span></span>
+                      <span class="font-mono">${{ stripeCommission.toLocaleString('es-MX', { minimumFractionDigits: 2 }) }}</span>
+                    </div>
+                    <div class="flex justify-between font-semibold text-gray-900 pt-1.5 border-t border-gray-200">
+                      <span>Total a cobrar</span>
+                      <span class="font-mono">${{ stripeTotalCharge.toLocaleString('es-MX', { minimumFractionDigits: 2 }) }}</span>
+                    </div>
+                  </div>
+
                   <div class="flex gap-3">
-                    <button 
+                    <button
                       @click="pagar()"
                       :disabled="!paymentAmount || paymentAmount <= 0 || isPaying || ((parseFloat(event?.advance_paid) || 0) === 0 && paymentAmount < 1000)"
                       class="flex-1 px-6 py-3 text-sm font-semibold text-white bg-blue-600 rounded-lg transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <i class="mr-2 fa-solid fa-credit-card"></i>
                       <span v-if="isPaying">Procesando...</span>
-                      <span v-else>Pagar con Stripe</span>
+                      <span v-else>Pagar ${{ stripeTotalCharge.toLocaleString('es-MX', { minimumFractionDigits: 2 }) }} con Stripe</span>
                     </button>
                   </div>
                 </div>
@@ -1025,8 +1041,8 @@
                   ]"
                 >
                   <div class="flex gap-3 items-center">
-                    <div class="flex justify-center items-center w-10 h-10 bg-purple-100 rounded-full">
-                      <i class="text-purple-600 fa-brands fa-cc-mastercard"></i>
+                    <div class="flex justify-center items-center w-10 h-10 text-gray-400">
+                      <i class="text-lg fa-brands fa-cc-mastercard"></i>
                     </div>
                     <div>
                       <div class="font-semibold text-gray-900">MercadoPago</div>
@@ -1106,6 +1122,51 @@
                       </div>
                     </div>
 
+                    <!-- Payment type toggle -->
+                    <div class="mb-3">
+                      <div class="text-xs font-semibold text-gray-500 mb-1.5">Medio de pago</div>
+                      <div class="flex gap-2">
+                        <button
+                          v-for="t in [{ key: 'card', label: 'Tarjeta / SPEI' }, { key: 'cash', label: 'Efectivo (Oxxo)' }]"
+                          :key="t.key"
+                          @click="mpPaymentType = t.key"
+                          :class="['flex-1 py-1.5 px-2 text-xs font-semibold rounded border transition', mpPaymentType === t.key ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-300 hover:border-purple-400']"
+                        >{{ t.label }}</button>
+                      </div>
+                    </div>
+
+                    <!-- Release time (only for card) -->
+                    <div v-if="mpPaymentType === 'card'" class="mb-4">
+                      <div class="text-xs font-semibold text-gray-500 mb-1.5">Liberación del dinero</div>
+                      <div class="flex gap-2">
+                        <button
+                          v-for="r in [{ key: 'instant', label: 'Al instante', rate: '3.49%' }, { key: '14', label: '14 días', rate: '3.19%' }, { key: '30', label: '30 días', rate: '2.95%' }]"
+                          :key="r.key"
+                          @click="mpReleaseTime = r.key"
+                          :class="['flex-1 py-1.5 px-1 text-center text-xs rounded border transition', mpReleaseTime === r.key ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-300 hover:border-purple-400']"
+                        >
+                          <div class="font-semibold">{{ r.label }}</div>
+                          <div class="opacity-75">{{ r.rate }}</div>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Commission breakdown -->
+                    <div v-if="paymentAmount && parseFloat(paymentAmount) > 0" class="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 text-sm space-y-1.5">
+                      <div class="flex justify-between text-gray-600">
+                        <span>Pago a reserva</span>
+                        <span class="font-mono">${{ parseFloat(paymentAmount).toLocaleString('es-MX', { minimumFractionDigits: 2 }) }}</span>
+                      </div>
+                      <div class="flex justify-between text-gray-500">
+                        <span>Comisión MP <span class="text-xs">({{ mpPaymentType === 'cash' ? '3.79%' : { instant: '3.49%', '14': '3.19%', '30': '2.95%' }[mpReleaseTime] }} + $4.00 + IVA)</span></span>
+                        <span class="font-mono">${{ mpCommission.toLocaleString('es-MX', { minimumFractionDigits: 2 }) }}</span>
+                      </div>
+                      <div class="flex justify-between font-semibold text-gray-900 pt-1.5 border-t border-gray-200">
+                        <span>Total a cobrar</span>
+                        <span class="font-mono">${{ mpTotalCharge.toLocaleString('es-MX', { minimumFractionDigits: 2 }) }}</span>
+                      </div>
+                    </div>
+
                     <div class="flex gap-3">
                       <button
                         @click="pagarMercadoPago()"
@@ -1114,7 +1175,7 @@
                       >
                         <i class="mr-2 fa-brands fa-mercadopago"></i>
                         <span v-if="isPaying">Procesando...</span>
-                        <span v-else>Continuar con MercadoPago</span>
+                        <span v-else>Pagar ${{ mpTotalCharge.toLocaleString('es-MX', { minimumFractionDigits: 2 }) }} con MercadoPago</span>
                       </button>
                     </div>
                   </template>
@@ -1146,8 +1207,8 @@
                   ]"
                 >
                   <div class="flex gap-3 items-center">
-                    <div class="flex justify-center items-center w-10 h-10 bg-green-100 rounded-full">
-                      <i class="text-green-600 fa-solid fa-money-bill-transfer"></i>
+                    <div class="flex justify-center items-center w-10 h-10 text-gray-400">
+                      <i class="text-lg fa-solid fa-money-bill-transfer"></i>
                     </div>
                     <div>
                       <div class="font-semibold text-gray-900">Transferencia Bancaria</div>
@@ -1304,8 +1365,8 @@
                   ]"
                 >
                   <div class="flex gap-3 items-center">
-                    <div class="flex justify-center items-center w-10 h-10 bg-yellow-100 rounded-full">
-                      <i class="text-yellow-600 fa-solid fa-money-bill-wave"></i>
+                    <div class="flex justify-center items-center w-10 h-10 text-gray-400">
+                      <i class="text-lg fa-solid fa-money-bill-wave"></i>
                     </div>
                     <div>
                       <div class="font-semibold text-gray-900">Pago en Efectivo</div>
@@ -1400,90 +1461,67 @@
           </div>
         </div>
 
-        <!-- Payment History / Orders Section -->
+        <!-- Payment History -->
         <div v-if="ordersLoading" class="mt-6 p-4 text-sm text-center text-gray-400 bg-white rounded-2xl border border-gray-100 shadow-sm">
           <div class="inline-block mr-2 w-4 h-4 rounded-full border-2 border-gray-400 animate-spin border-t-transparent"></div>
           Cargando historial de pagos...
         </div>
-        <div v-else-if="ordersData && ordersData.length > 0" class="mt-6">
+        <div v-else-if="allPayments.length > 0" class="mt-6">
           <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-lg">
             <h2 class="mb-4 text-lg font-bold text-gray-900">Historial de Pagos</h2>
-            <div class="space-y-4">
-              <div v-for="order in ordersData" :key="order.id" class="overflow-hidden rounded-xl border border-gray-200">
-                <!-- Order header -->
-                <div class="flex items-center justify-between p-4 bg-gray-50">
-                  <div class="flex gap-3 items-center">
-                    <div class="flex flex-shrink-0 justify-center items-center w-9 h-9 bg-blue-100 rounded-full">
-                      <i class="text-sm text-blue-600 fa-solid fa-receipt"></i>
-                    </div>
-                    <div>
-                      <div class="text-sm font-semibold text-gray-900">Orden de pago</div>
-                      <div class="text-xs text-gray-400">{{ formatDate(order.created_at) }}</div>
-                    </div>
+            <div class="divide-y divide-gray-100">
+              <div v-for="payment in allPayments" :key="payment.id" class="py-4 first:pt-0 last:pb-0">
+                <div class="flex gap-3 items-start">
+                  <div class="flex flex-shrink-0 justify-center items-center w-9 h-9 text-gray-400">
+                    <i :class="['text-lg', getPaymentIcon(payment.gateway)]"></i>
                   </div>
-                  <div class="flex flex-col gap-1 items-end">
-                    <span :class="['px-2 py-0.5 rounded-full text-xs font-bold', getPaymentStatusClass(order.status)]">
-                      {{ getPaymentStatusText(order.status) }}
-                    </span>
-                    <span class="font-bold text-gray-900">${{ parseFloat(order.amount_due || 0).toLocaleString() }}</span>
-                  </div>
-                </div>
-
-                <!-- Payments list -->
-                <div v-if="order.payments && order.payments.length > 0" class="divide-y divide-gray-100">
-                  <div v-for="payment in order.payments" :key="payment.id" class="p-4">
-                    <div class="flex gap-3 items-start">
-                      <div :class="['flex flex-shrink-0 justify-center items-center w-9 h-9 rounded-full', getPaymentIconClass(payment.gateway, payment.status)]">
-                        <i :class="['text-sm', getPaymentIcon(payment.gateway)]"></i>
+                  <div class="flex-1 min-w-0">
+                    <div class="flex gap-2 justify-between items-start">
+                      <div>
+                        <div class="text-sm font-semibold text-gray-900">{{ getPaymentMethodText(payment.method) }}</div>
+                        <div class="text-xs text-gray-400">{{ getGatewayText(payment.gateway) }}</div>
                       </div>
-                      <div class="flex-1 min-w-0">
-                        <div class="flex gap-2 justify-between items-start">
-                          <div>
-                            <div class="text-sm font-semibold text-gray-900">{{ getPaymentMethodText(payment.method) }}</div>
-                            <div class="text-xs text-gray-400">{{ getGatewayText(payment.gateway) }}</div>
-                          </div>
-                          <div class="flex flex-col flex-shrink-0 gap-1 items-end">
-                            <span :class="['px-2 py-0.5 rounded-full text-xs font-bold', getPaymentStatusClass(payment.status)]">
-                              {{ getPaymentStatusText(payment.status) }}
-                            </span>
-                            <span class="text-sm font-bold text-gray-900">${{ parseFloat(payment.amount || 0).toLocaleString() }}</span>
-                          </div>
-                        </div>
-                        <div v-if="payment.paid_at" class="flex gap-1 items-center mt-1 text-xs text-gray-400">
-                          <i class="fa-regular fa-clock"></i>
-                          Pagado el {{ formatDate(payment.paid_at) }}
-                        </div>
-                        <div v-if="payment.card_last4" class="mt-1 text-xs text-gray-500">
-                          Tarjeta terminada en {{ payment.card_last4 }}
-                        </div>
-                        <!-- Payment photo -->
-                        <div v-if="getPaymentPhotoUrl(payment)" class="mt-3">
-                          <div class="flex gap-1 items-center mb-1.5 text-xs font-semibold text-gray-600">
-                            <i class="text-gray-400 fa-solid fa-image"></i>
-                            Comprobante de pago
-                          </div>
-                          <img
-                            :src="getPaymentPhotoUrl(payment)"
-                            alt="Comprobante de pago"
-                            class="object-cover w-full max-w-xs h-40 rounded-lg border border-gray-200 transition-opacity cursor-pointer hover:opacity-90"
-                            @click="openPhotoModal(getPaymentPhotoUrl(payment))"
-                            @error="handleImageError"
-                            @load="handleImageLoad"
-                          />
-                          <button
-                            @click="openPhotoModal(getPaymentPhotoUrl(payment))"
-                            class="flex gap-1 items-center mt-1.5 text-xs text-blue-600 hover:text-blue-800"
-                          >
-                            <i class="fa-solid fa-expand-alt"></i>
-                            Ver en pantalla completa
-                          </button>
-                        </div>
+                      <div class="flex flex-col flex-shrink-0 gap-1 items-end">
+                        <span :class="['px-2 py-0.5 rounded-full text-xs font-bold', getPaymentStatusClass(payment.status)]">
+                          {{ getPaymentStatusText(payment.status) }}
+                        </span>
+                        <span class="text-sm font-bold text-gray-900">${{ parseFloat(payment.amount || 0).toLocaleString() }}</span>
                       </div>
                     </div>
+                    <div v-if="payment.paid_at" class="flex gap-1 items-center mt-1 text-xs text-gray-400">
+                      <i class="fa-regular fa-clock"></i>
+                      Pagado el {{ formatDate(payment.paid_at) }}
+                    </div>
+                    <div v-if="payment.created_at && !payment.paid_at" class="flex gap-1 items-center mt-1 text-xs text-gray-400">
+                      <i class="fa-regular fa-clock"></i>
+                      {{ formatDate(payment.created_at) }}
+                    </div>
+                    <div v-if="payment.card_last4" class="mt-1 text-xs text-gray-500">
+                      Tarjeta terminada en {{ payment.card_last4 }}
+                    </div>
+                    <!-- Payment photo -->
+                    <div v-if="getPaymentPhotoUrl(payment)" class="mt-3">
+                      <div class="flex gap-1 items-center mb-1.5 text-xs font-semibold text-gray-600">
+                        <i class="text-gray-400 fa-solid fa-image"></i>
+                        Comprobante de pago
+                      </div>
+                      <img
+                        :src="getPaymentPhotoUrl(payment)"
+                        alt="Comprobante de pago"
+                        class="object-cover w-full max-w-xs h-40 rounded-lg border border-gray-200 transition-opacity cursor-pointer hover:opacity-90"
+                        @click="openPhotoModal(getPaymentPhotoUrl(payment))"
+                        @error="handleImageError"
+                        @load="handleImageLoad"
+                      />
+                      <button
+                        @click="openPhotoModal(getPaymentPhotoUrl(payment))"
+                        class="flex gap-1 items-center mt-1.5 text-xs text-blue-600 hover:text-blue-800"
+                      >
+                        <i class="fa-solid fa-expand-alt"></i>
+                        Ver en pantalla completa
+                      </button>
+                    </div>
                   </div>
-                </div>
-                <div v-else class="p-4 text-sm text-center text-gray-400">
-                  Sin pagos registrados en esta orden
                 </div>
               </div>
             </div>
@@ -2039,6 +2077,36 @@ const {
     // Support both .results and array
     return res.data.results || res.data
   }
+})
+
+const mpReleaseTime = ref('instant') // 'instant' | '14' | '30'
+const mpPaymentType = ref('card')    // 'card' | 'cash'
+
+const MP_RATES = { instant: 0.0349, '14': 0.0319, '30': 0.0295, cash: 0.0379 }
+
+const mpCommission = computed(() => {
+  const amt = parseFloat(paymentAmount.value) || 0
+  const rate = mpPaymentType.value === 'cash' ? MP_RATES.cash : (MP_RATES[mpReleaseTime.value] || MP_RATES.instant)
+  return Math.round((amt * rate + 4) * 1.16 * 100) / 100
+})
+
+const mpTotalCharge = computed(() => {
+  return (parseFloat(paymentAmount.value) || 0) + mpCommission.value
+})
+
+const stripeCommission = computed(() => {
+  const amt = parseFloat(paymentAmount.value) || 0
+  return Math.round((amt * 0.036 + 3) * 100) / 100
+})
+
+const stripeTotalCharge = computed(() => {
+  return (parseFloat(paymentAmount.value) || 0) + stripeCommission.value
+})
+
+const allPayments = computed(() => {
+  if (!ordersData.value) return []
+  return ordersData.value.flatMap(o => o.payments || [])
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
 })
 
 const formatDate = (dateString) => {
@@ -2669,6 +2737,13 @@ const isPaying = ref(false)
 
 const paymentAmount = ref('')
 
+// Auto-fill $1,000 when booking loads with no advance paid yet
+watch(event, (val) => {
+  if (!val || paymentAmount.value) return
+  const paid = parseFloat(val.advance_paid) || 0
+  if (paid === 0) paymentAmount.value = '1000'
+}, { immediate: true })
+
 const mpPreferenceId = ref(null)
 const mpPublicKey = import.meta.env.VITE_MERCADOPAGO_PUBLIC_KEY
 let walletBrickController = null
@@ -2792,7 +2867,9 @@ async function pagarMercadoPago(amount = paymentAmount.value) {
     const res = await api.post('/api/store/orders/create_and_initiate/', {
       booking_id: event.value.id,
       amount: amountToPay,
-      gateway: 'mercadopago'
+      gateway: 'mercadopago',
+      mp_release_time: mpReleaseTime.value,
+      mp_payment_type: mpPaymentType.value,
     })
 
     if (res.data.preference_id) {
