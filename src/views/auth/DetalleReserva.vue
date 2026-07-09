@@ -802,7 +802,7 @@
 
         <!-- Share Confirmation Card -->
         <div
-          v-if="event && ['aceptacion','apartado','liquidado','liquidado_entregado','entregado','finalizado'].includes(event.status)"
+          v-if="event && !authStore.user?.is_staff && ['aceptacion','apartado','liquidado','liquidado_entregado','entregado','finalizado'].includes(event.status)"
           class="mt-6"
         >
           <div class="p-5 bg-gradient-to-br from-[#1a0533] to-[#0a021e] rounded-2xl shadow-lg border border-purple-900/40">
@@ -1682,6 +1682,14 @@
             </h3>
             <div class="space-y-2.5 text-xs text-gray-600">
               <div class="flex gap-2 items-start">
+                <i class="mt-0.5 flex-shrink-0 text-yellow-500 fa-solid fa-coins"></i>
+                <p><span class="font-semibold text-gray-700">Anticipo de reserva:</span> se requiere un anticipo de <span class="font-semibold text-gray-900">$1,000 MXN</span> para apartar la fecha. Este monto no es reembolsable salvo las excepciones descritas a continuación.</p>
+              </div>
+              <div class="flex gap-2 items-start">
+                <i class="mt-0.5 flex-shrink-0 text-orange-500 fa-solid fa-triangle-exclamation"></i>
+                <p><span class="font-semibold text-gray-700">Pago total:</span> el monto total del evento debe quedar <span class="font-semibold text-gray-900">liquidado antes del inicio del evento</span>. No se entrega el lugar si no está pagado por completo.</p>
+              </div>
+              <div class="flex gap-2 items-start">
                 <i class="mt-0.5 flex-shrink-0 text-green-500 fa-solid fa-circle-check"></i>
                 <p><span class="font-semibold text-gray-700">Más de 45 días de anticipación:</span> se devuelve el 50% del anticipo. El resto se retiene por gastos administrativos.</p>
               </div>
@@ -1694,6 +1702,11 @@
                 <p><span class="font-semibold text-gray-700">Cambios de fecha:</span> con al menos 3 semanas de anticipación, sujeto a disponibilidad. Solo se permite un cambio por evento.</p>
               </div>
             </div>
+            <router-link to="/reglamento"
+              class="inline-flex gap-1.5 items-center mt-3 text-xs font-semibold text-purple-600 hover:text-purple-800 hover:underline">
+              <i class="fa-solid fa-book-open"></i>
+              Ver reglamento completo
+            </router-link>
             <div class="flex flex-col gap-2 mt-4">
               <!-- Reschedule button — staff bypass the 1-change limit -->
               <button v-if="isStaff || event.date_changes_count === 0"
