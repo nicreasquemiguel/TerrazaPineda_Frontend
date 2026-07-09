@@ -806,14 +806,27 @@
           class="mt-6"
         >
           <div class="p-5 bg-gradient-to-br from-[#1a0533] to-[#0a021e] rounded-2xl shadow-lg border border-purple-900/40">
-            <div class="flex items-center gap-2 mb-3">
+            <div class="flex items-center gap-2 mb-1">
               <span class="text-lg">🎉</span>
               <h2 class="text-base font-bold text-white">¡Comparte tu reservación!</h2>
             </div>
-            <p class="text-xs text-purple-300 mb-4">Descarga tu tarjeta personalizada y compártela con tus amigos.</p>
+            <p class="text-xs text-purple-300 mb-4">Genera tu tarjeta personalizada y compártela.</p>
 
+            <!-- Card preview -->
             <div v-if="confirmCardUrl" class="mb-4">
               <img :src="confirmCardUrl" alt="Tarjeta de reservación" class="w-full max-w-xs mx-auto rounded-xl shadow-md" />
+              <div class="flex justify-center mt-2">
+                <button
+                  @click="loadConfirmCard"
+                  :disabled="loadingConfirmCard"
+                  class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-purple-300 text-xs font-medium transition disabled:opacity-50"
+                >
+                  <svg :class="['h-3.5 w-3.5', loadingConfirmCard && 'animate-spin']" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                  </svg>
+                  {{ loadingConfirmCard ? 'Generando...' : 'Nueva frase' }}
+                </button>
+              </div>
             </div>
             <div v-else-if="loadingConfirmCard" class="flex justify-center py-6">
               <svg class="animate-spin h-6 w-6 text-purple-400" fill="none" viewBox="0 0 24 24">
@@ -822,42 +835,64 @@
               </svg>
             </div>
 
-            <div class="flex flex-wrap gap-2 mt-2">
+            <!-- Generate button (before card loads) -->
+            <button
+              v-if="!confirmCardUrl && !loadingConfirmCard"
+              @click="loadConfirmCard"
+              class="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition mb-2"
+            >
+              <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              Generar tarjeta
+            </button>
+
+            <!-- Share buttons (after card loads) -->
+            <div v-if="confirmCardUrl" class="flex flex-col gap-2">
+
+              <!-- Native share (mobile: opens Instagram / Facebook / WhatsApp sheet) -->
               <button
-                @click="loadConfirmCard"
-                v-if="!confirmCardUrl && !loadingConfirmCard"
-                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition"
+                v-if="canNativeShare"
+                @click="nativeShareCard(confirmCardUrl, '¡Reservé Terraza Pineda para el ' + formatEventDate(event.start_datetime) + '! 🎉')"
+                class="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-gradient-to-r from-[#7c3aed] to-[#22d3ee] text-white text-sm font-bold shadow transition hover:opacity-90"
               >
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                Ver tarjeta
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                Compartir imagen
               </button>
-              <a
-                v-if="confirmCardUrl"
-                :href="confirmCardUrl"
-                :download="`terraza-pineda-reserva.png`"
-                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition"
-              >
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                Descargar
-              </a>
-              <a
-                v-if="event"
-                :href="`https://wa.me/?text=${encodeURIComponent('¡Reservé Terraza Pineda para el ' + formatEventDate(event.start_datetime) + '! 🎉 terrazapineda.com')}`"
-                target="_blank"
-                rel="noopener"
-                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-[#25D366] hover:bg-[#1ebe5a] text-white text-sm font-semibold transition"
-              >
-                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.374 0 0 5.374 0 12c0 2.117.547 4.103 1.504 5.829L.057 23.882l6.233-1.635A11.934 11.934 0 0012 24c6.626 0 12-5.374 12-12 0-6.627-5.374-12-12-12zm0 21.818a9.818 9.818 0 01-4.999-1.369l-.358-.213-3.706.973.989-3.611-.234-.371A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182c5.43 0 9.818 4.389 9.818 9.818 0 5.43-4.389 9.818-9.818 9.818z"/></svg>
-                WhatsApp
-              </a>
-              <button
-                v-if="confirmCardUrl"
-                @click="copyLink(confirmCardUrl)"
-                class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition"
-              >
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
-                Copiar enlace
-              </button>
+
+              <div class="flex gap-2">
+                <!-- WhatsApp -->
+                <a
+                  :href="`https://wa.me/?text=${encodeURIComponent('¡Reservé Terraza Pineda para el ' + formatEventDate(event.start_datetime) + '! 🎉 terrazapineda.com')}`"
+                  target="_blank" rel="noopener"
+                  class="flex flex-1 items-center justify-center gap-1.5 py-2 rounded-lg bg-[#25D366] hover:bg-[#1ebe5a] text-white text-sm font-semibold transition"
+                >
+                  <svg class="h-4 w-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.374 0 0 5.374 0 12c0 2.117.547 4.103 1.504 5.829L.057 23.882l6.233-1.635A11.934 11.934 0 0012 24c6.626 0 12-5.374 12-12 0-6.627-5.374-12-12-12zm0 21.818a9.818 9.818 0 01-4.999-1.369l-.358-.213-3.706.973.989-3.611-.234-.371A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182c5.43 0 9.818 4.389 9.818 9.818 0 5.43-4.389 9.818-9.818 9.818z"/></svg>
+                  WhatsApp
+                </a>
+
+                <!-- Facebook -->
+                <button
+                  @click="shareOnFacebook(confirmCardUrl)"
+                  class="flex flex-1 items-center justify-center gap-1.5 py-2 rounded-lg bg-[#1877F2] hover:bg-[#1565d8] text-white text-sm font-semibold transition"
+                >
+                  <svg class="h-4 w-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  Facebook
+                </button>
+
+                <!-- Download -->
+                <a
+                  :href="confirmCardUrl"
+                  download="terraza-pineda-reserva.png"
+                  class="flex flex-1 items-center justify-center gap-1.5 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition"
+                >
+                  <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                  Guardar
+                </a>
+              </div>
+
+              <!-- Instagram tip (desktop only) -->
+              <p v-if="!canNativeShare" class="text-xs text-purple-400 text-center pt-1">
+                📱 Para Instagram: descarga la imagen y súbela desde tu celular o la app.
+              </p>
             </div>
           </div>
         </div><!-- /Share Confirmation Card -->
@@ -3367,7 +3402,7 @@ async function loadConfirmCard() {
   loadingConfirmCard.value = true
   try {
     const res = await api.get(`/api/bookings/bookings/${event.value.id}/share-card/confirmation/`)
-    confirmCardUrl.value = res.data.url
+    confirmCardUrl.value = res.data.url + '?t=' + Date.now()
   } catch (err) {
     toast.error('No se pudo generar la tarjeta de reservación.')
     console.error(err)
@@ -3402,6 +3437,29 @@ function formatEventDate(datetime) {
   if (!datetime) return ''
   const d = new Date(datetime)
   return d.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
+}
+
+const canNativeShare = typeof navigator !== 'undefined' && !!navigator.share
+
+function shareOnFacebook(url) {
+  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=600,height=500,scrollbars=yes')
+}
+
+async function nativeShareCard(url, text) {
+  try {
+    const resp = await fetch(url)
+    const blob = await resp.blob()
+    const file = new File([blob], 'terraza-pineda.png', { type: 'image/png' })
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: 'Terraza Pineda', text })
+    } else {
+      await navigator.share({ title: 'Terraza Pineda', text, url })
+    }
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      window.open(url, '_blank')
+    }
+  }
 }
 
 </script>
