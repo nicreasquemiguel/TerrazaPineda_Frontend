@@ -2098,11 +2098,13 @@ const mpCommission = computed(() => {
   return Math.round((mpTotalCharge.value - (parseFloat(paymentAmount.value) || 0)) * 100) / 100
 })
 
-// Gross-up: charge = (booking_amount + fixed) / (1 - rate)
-// ensures net after Stripe fee = booking_amount
+// Actual Stripe rate for this account: 4.1% + $3.00 pre-IVA, IVA 16% on the fee
+// Gross-up: charge = (booking + fixed×IVA) / (1 − rate×IVA)
 const stripeTotalCharge = computed(() => {
   const amt = parseFloat(paymentAmount.value) || 0
-  return Math.ceil((amt + 3) / (1 - 0.036) * 100) / 100
+  const effectiveRate = 0.041 * 1.16
+  const effectiveFixed = 3 * 1.16
+  return Math.ceil((amt + effectiveFixed) / (1 - effectiveRate) * 100) / 100
 })
 
 const stripeCommission = computed(() => {
