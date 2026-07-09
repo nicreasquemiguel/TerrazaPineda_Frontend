@@ -340,7 +340,8 @@ const route = useRoute()
 const activeTab = ref('profile')
 
 // Check URL query params to auto-open notifications tab
-onMounted(() => {
+onMounted(async () => {
+  await authStore.fetchUser()
   if (route.query.notifications === 'true') {
     activeTab.value = 'notifications'
     console.log('[Perfil] Auto-opening notifications tab from URL param')
