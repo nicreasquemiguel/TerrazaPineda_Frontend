@@ -40,8 +40,10 @@
 <script setup>
 import { ref } from 'vue'
 import api from '@/services/api'
+import { useAuthStore } from '@/stores/auth'
 
 const emit = defineEmits(['done'])
+const authStore = useAuthStore()
 
 const phone = ref('')
 const loading = ref(false)
@@ -62,6 +64,7 @@ async function submit() {
   loading.value = true
   try {
     await api.patch('/api/users/me/', { phone: phone.value })
+    await authStore.fetchUser()
     emit('done')
   } catch (err) {
     error.value = err.response?.data?.phone?.[0] || 'Error al guardar el teléfono. Intenta de nuevo.'
