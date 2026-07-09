@@ -13,7 +13,7 @@
 
         <form @submit.prevent="handleRegister" class="flex flex-col gap-5 w-full">
           <!-- First & Last name row -->
-          <div class="flex gap-3">
+          <div class="flex flex-col gap-3 sm:flex-row">
             <div class="flex flex-col gap-2 flex-1">
               <label for="first_name" class="font-semibold text-gray-700 text-sm">Nombre(s)</label>
               <input
@@ -267,6 +267,16 @@ function formatPhone(event) {
 
 const handleRegister = async () => {
   error.value = ''
+
+  if (!first_name.value.trim()) {
+    error.value = 'El nombre es obligatorio.'
+    return
+  }
+
+  if (!last_name.value.trim()) {
+    error.value = 'El apellido es obligatorio.'
+    return
+  }
 
   if (password.value !== confirmPassword.value) {
     error.value = 'Las contraseñas no coinciden.'
