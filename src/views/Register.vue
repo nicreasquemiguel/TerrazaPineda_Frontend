@@ -383,12 +383,13 @@ async function handleFacebookLogin() {
   socialLoading.value = true
   socialError.value = ''
   try {
-    FB.login(async (response) => {
+    FB.login((response) => {
       if (response.authResponse) {
-        const result = await authStore.loginWithSocial('facebook', response.authResponse.accessToken)
-        socialLoading.value = false
-        if (result.success) afterSocialSuccess(result)
-        else socialError.value = result.error
+        authStore.loginWithSocial('facebook', response.authResponse.accessToken).then((result) => {
+          socialLoading.value = false
+          if (result.success) afterSocialSuccess(result)
+          else socialError.value = result.error
+        })
       } else {
         socialError.value = 'Registro con Facebook cancelado.'
         socialLoading.value = false
