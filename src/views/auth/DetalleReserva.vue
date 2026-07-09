@@ -879,14 +879,13 @@
                 </button>
 
                 <!-- Download -->
-                <a
-                  :href="confirmCardUrl"
-                  download="terraza-pineda-reserva.png"
+                <button
+                  @click="downloadCard(confirmCardUrl, 'terraza-pineda-reserva.png')"
                   class="flex flex-1 items-center justify-center gap-1.5 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition"
                 >
                   <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
                   Guardar
-                </a>
+                </button>
               </div>
 
               <!-- Instagram tip (desktop only) -->
@@ -3440,6 +3439,20 @@ function formatEventDate(datetime) {
 }
 
 const canNativeShare = typeof navigator !== 'undefined' && !!navigator.share
+
+async function downloadCard(url, filename) {
+  try {
+    const resp = await fetch(url)
+    const blob = await resp.blob()
+    const a = document.createElement('a')
+    a.href = URL.createObjectURL(blob)
+    a.download = filename
+    a.click()
+    URL.revokeObjectURL(a.href)
+  } catch {
+    window.open(url, '_blank')
+  }
+}
 
 function shareOnFacebook(url) {
   window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=600,height=500,scrollbars=yes')
