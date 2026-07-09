@@ -859,9 +859,9 @@
               </button>
 
               <div class="flex gap-2">
-                <!-- WhatsApp -->
+                <!-- WhatsApp — includes image URL so WhatsApp renders a preview -->
                 <a
-                  :href="`https://wa.me/?text=${encodeURIComponent('¡Reservé Terraza Pineda para el ' + formatEventDate(event.start_datetime) + '! 🎉 terrazapineda.com')}`"
+                  :href="`https://wa.me/?text=${encodeURIComponent('¡Reservé Terraza Pineda para el ' + formatEventDate(event.start_datetime) + '! 🎉\n' + confirmCardUrl.split('?')[0])}`"
                   target="_blank" rel="noopener"
                   class="flex flex-1 items-center justify-center gap-1.5 py-2 rounded-lg bg-[#25D366] hover:bg-[#1ebe5a] text-white text-sm font-semibold transition"
                 >
@@ -869,13 +869,13 @@
                   WhatsApp
                 </a>
 
-                <!-- Facebook -->
+                <!-- Copy link (works everywhere: Facebook, Instagram bio, etc.) -->
                 <button
-                  @click="shareOnFacebook(confirmCardUrl)"
+                  @click="copyCardLink(confirmCardUrl)"
                   class="flex flex-1 items-center justify-center gap-1.5 py-2 rounded-lg bg-[#1877F2] hover:bg-[#1565d8] text-white text-sm font-semibold transition"
                 >
-                  <svg class="h-4 w-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-                  Facebook
+                  <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  Copiar
                 </button>
 
                 <!-- Download -->
@@ -888,10 +888,12 @@
                 </button>
               </div>
 
-              <!-- Instagram tip (desktop only) -->
-              <p v-if="!canNativeShare" class="text-xs text-purple-400 text-center pt-1">
-                📱 Para Instagram: descarga la imagen y súbela desde tu celular o la app.
-              </p>
+              <!-- Tips by platform -->
+              <div class="text-xs text-purple-400 text-center pt-1 space-y-0.5">
+                <p v-if="canNativeShare">📲 "Compartir imagen" abre Instagram, Facebook y más desde tu cel.</p>
+                <p v-else>📲 En tu cel: usa "Compartir imagen" para subir directo a Instagram o Facebook.</p>
+                <p>📋 "Copiar" → pega el enlace en Facebook, WhatsApp o donde quieras.</p>
+              </div>
             </div>
           </div>
         </div><!-- /Share Confirmation Card -->
@@ -3438,39 +3440,60 @@ function formatEventDate(datetime) {
   return d.toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-const canNativeShare = typeof navigator !== 'undefined' && !!navigator.share
+// Properly detect if device supports native file sharing (mobile only)
+const canNativeShare = (() => {
+  if (typeof navigator === 'undefined' || !navigator.share) return false
+  try {
+    const f = new File([''], 'test.png', { type: 'image/png' })
+    return !!(navigator.canShare && navigator.canShare({ files: [f] }))
+  } catch {
+    return false
+  }
+})()
+
+async function _fetchImageBlob(url) {
+  const resp = await fetch(url, { mode: 'cors' })
+  if (!resp.ok) throw new Error('fetch failed')
+  return resp.blob()
+}
 
 async function downloadCard(url, filename) {
   try {
-    const resp = await fetch(url)
-    const blob = await resp.blob()
+    const blob = await _fetchImageBlob(url)
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = filename
     a.click()
     URL.revokeObjectURL(a.href)
   } catch {
-    window.open(url, '_blank')
+    // CORS blocked — open in new tab so user can long-press / right-click save
+    window.open(url.split('?')[0], '_blank')
   }
 }
 
-function shareOnFacebook(url) {
-  window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, '_blank', 'width=600,height=500,scrollbars=yes')
+function copyCardLink(url) {
+  navigator.clipboard.writeText(url.split('?')[0]).then(() => {
+    toast.success('¡Enlace copiado! Pégalo en Facebook, Instagram o donde quieras.')
+  }).catch(() => {
+    toast.error('No se pudo copiar el enlace.')
+  })
 }
 
 async function nativeShareCard(url, text) {
   try {
-    const resp = await fetch(url)
-    const blob = await resp.blob()
-    const file = new File([blob], 'terraza-pineda.png', { type: 'image/png' })
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: 'Terraza Pineda', text })
-    } else {
-      await navigator.share({ title: 'Terraza Pineda', text, url })
+    let shareData
+    try {
+      const blob = await _fetchImageBlob(url)
+      const file = new File([blob], 'terraza-pineda.png', { type: 'image/png' })
+      shareData = { files: [file], title: 'Terraza Pineda', text }
+    } catch {
+      // CORS unavailable — share the URL so at least the sheet opens
+      shareData = { title: 'Terraza Pineda', text, url: url.split('?')[0] }
     }
+    await navigator.share(shareData)
   } catch (err) {
     if (err.name !== 'AbortError') {
-      window.open(url, '_blank')
+      await downloadCard(url, 'terraza-pineda.png')
     }
   }
 }
