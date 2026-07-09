@@ -2084,23 +2084,29 @@ const mpPaymentType = ref('card')    // 'card' | 'cash'
 
 const MP_RATES = { instant: 0.0349, '14': 0.0319, '30': 0.0295, cash: 0.0379 }
 
-const mpCommission = computed(() => {
+// Gross-up for MP: charge = (booking_amount + 4×IVA) / (1 − rate×IVA)
+// ensures net after MP fee = booking_amount
+const mpTotalCharge = computed(() => {
   const amt = parseFloat(paymentAmount.value) || 0
   const rate = mpPaymentType.value === 'cash' ? MP_RATES.cash : (MP_RATES[mpReleaseTime.value] || MP_RATES.instant)
-  return Math.round((amt * rate + 4) * 1.16 * 100) / 100
+  const effectiveRate = rate * 1.16
+  const effectiveFixed = 4 * 1.16
+  return Math.ceil((amt + effectiveFixed) / (1 - effectiveRate) * 100) / 100
 })
 
-const mpTotalCharge = computed(() => {
-  return (parseFloat(paymentAmount.value) || 0) + mpCommission.value
+const mpCommission = computed(() => {
+  return Math.round((mpTotalCharge.value - (parseFloat(paymentAmount.value) || 0)) * 100) / 100
+})
+
+// Gross-up: charge = (booking_amount + fixed) / (1 - rate)
+// ensures net after Stripe fee = booking_amount
+const stripeTotalCharge = computed(() => {
+  const amt = parseFloat(paymentAmount.value) || 0
+  return Math.ceil((amt + 3) / (1 - 0.036) * 100) / 100
 })
 
 const stripeCommission = computed(() => {
-  const amt = parseFloat(paymentAmount.value) || 0
-  return Math.round((amt * 0.036 + 3) * 100) / 100
-})
-
-const stripeTotalCharge = computed(() => {
-  return (parseFloat(paymentAmount.value) || 0) + stripeCommission.value
+  return Math.round((stripeTotalCharge.value - (parseFloat(paymentAmount.value) || 0)) * 100) / 100
 })
 
 const allPayments = computed(() => {
