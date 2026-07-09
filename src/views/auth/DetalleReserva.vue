@@ -851,7 +851,7 @@
               <!-- Native share (mobile: opens Instagram / Facebook / WhatsApp sheet) -->
               <button
                 v-if="canNativeShare"
-                @click="nativeShareCard(confirmCardUrl, '¡Reservé Terraza Pineda para el ' + formatEventDate(event.start_datetime) + '! 🎉')"
+                @click="nativeShareCard(confirmCardApiUrl, '¡Reservé Terraza Pineda para el ' + formatEventDate(event.start_datetime) + '! 🎉')"
                 class="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-gradient-to-r from-[#7c3aed] to-[#22d3ee] text-white text-sm font-bold shadow transition hover:opacity-90"
               >
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
@@ -880,7 +880,7 @@
 
                 <!-- Download -->
                 <button
-                  @click="downloadCard(confirmCardUrl, 'terraza-pineda-reserva.png')"
+                  @click="downloadCard(confirmCardApiUrl, 'terraza-pineda-reserva.png')"
                   class="flex flex-1 items-center justify-center gap-1.5 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition"
                 >
                   <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
@@ -3393,9 +3393,11 @@ const rejectBooking = async () => {
 }
 
 // ── Share Cards ──────────────────────────────────────────────────────────────
-const confirmCardUrl = ref(null)
+const confirmCardUrl = ref(null)   // media URL → used for <img> preview
+const confirmCardApiUrl = ref(null) // API endpoint → used for blob fetch (guaranteed CORS)
 const loadingConfirmCard = ref(false)
 const reviewCardUrl = ref(null)
+const reviewCardApiUrl = ref(null)
 const loadingReviewCard = ref(false)
 
 async function loadConfirmCard() {
@@ -3404,6 +3406,8 @@ async function loadConfirmCard() {
   try {
     const res = await api.get(`/api/bookings/bookings/${event.value.id}/share-card/confirmation/`)
     confirmCardUrl.value = res.data.url + '?t=' + Date.now()
+    // API image endpoint — goes through DRF so CORS headers are guaranteed
+    confirmCardApiUrl.value = `/api/bookings/bookings/${event.value.id}/share-card/confirmation/image/?t=${Date.now()}`
   } catch (err) {
     toast.error('No se pudo generar la tarjeta de reservación.')
     console.error(err)
@@ -3417,7 +3421,8 @@ async function loadReviewCard() {
   loadingReviewCard.value = true
   try {
     const res = await api.get(`/api/bookings/bookings/${event.value.id}/share-card/review/`)
-    reviewCardUrl.value = res.data.url
+    reviewCardUrl.value = res.data.url + '?t=' + Date.now()
+    reviewCardApiUrl.value = `/api/bookings/bookings/${event.value.id}/share-card/review/image/?t=${Date.now()}`
   } catch (err) {
     toast.error('No se pudo generar la tarjeta de reseña.')
     console.error(err)
@@ -3451,23 +3456,23 @@ const canNativeShare = (() => {
   }
 })()
 
-async function _fetchImageBlob(url) {
-  const resp = await fetch(url, { mode: 'cors' })
-  if (!resp.ok) throw new Error('fetch failed')
-  return resp.blob()
+async function _fetchImageBlob(apiUrl) {
+  // Use the authenticated api service — goes through DRF, CORS guaranteed
+  const res = await api.get(apiUrl, { responseType: 'blob' })
+  return res.data
 }
 
-async function downloadCard(url, filename) {
+async function downloadCard(apiUrl, filename) {
   try {
-    const blob = await _fetchImageBlob(url)
+    const blob = await _fetchImageBlob(apiUrl)
     const a = document.createElement('a')
     a.href = URL.createObjectURL(blob)
     a.download = filename
     a.click()
     URL.revokeObjectURL(a.href)
   } catch {
-    // CORS blocked — open in new tab so user can long-press / right-click save
-    window.open(url.split('?')[0], '_blank')
+    // Fallback: open preview in new tab (user can long-press to save on mobile)
+    window.open(apiUrl.split('?')[0], '_blank')
   }
 }
 
