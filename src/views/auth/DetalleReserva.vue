@@ -1335,26 +1335,65 @@
                     </div>
                   </div>
 
-
-                  <div class="p-4 mb-4 bg-yellow-100 rounded-lg border border-yellow-200">
-                    <div class="flex items-start space-x-2">
-                      <i class="mt-0.5 text-yellow-600 fa-solid fa-info-circle"></i>
-                      <div class="text-sm text-yellow-800">
-                        <div class="font-medium">Importante:</div>
-                        <div>Contacta con nosotros para coordinar el pago en efectivo y confirmar la disponibilidad.</div>
+                  <!-- Staff: register cash payment directly -->
+                  <template v-if="isStaff">
+                    <div class="p-4 mb-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                      <div class="flex items-start space-x-2">
+                        <i class="mt-0.5 text-yellow-600 fa-solid fa-user-shield"></i>
+                        <div class="text-sm text-yellow-800 font-medium">Registrar pago en efectivo recibido</div>
                       </div>
                     </div>
-                  </div>
-
-                  <div class="flex gap-3">
-                    <button 
-                      @click="contactForCashPayment()"
-                      class="flex-1 px-6 py-3 text-sm font-semibold text-white bg-yellow-600 rounded-lg transition-colors hover:bg-yellow-700"
+                    <div class="mb-4">
+                      <label class="block mb-2 text-sm font-semibold text-gray-700">Monto recibido:</label>
+                      <div class="relative">
+                        <span class="absolute left-3 top-1/2 text-gray-500 transform -translate-y-1/2">$</span>
+                        <input
+                          v-model="cashAmount"
+                          type="number"
+                          step="0.01"
+                          min="0.01"
+                          class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
+                          placeholder="0.00"
+                        />
+                      </div>
+                      <div class="flex flex-wrap gap-2 mt-2">
+                        <button @click="cashAmount = ((parseFloat(event?.total_price) || 0) - (parseFloat(event?.advance_paid) || 0)).toString()"
+                          class="px-3 py-1 text-xs font-semibold text-yellow-700 bg-yellow-50 rounded border border-yellow-200 hover:bg-yellow-100">
+                          Pagar todo
+                        </button>
+                      </div>
+                    </div>
+                    <button
+                      @click="registerCashPayment()"
+                      :disabled="!cashAmount || isRegisteringCash"
+                      class="w-full px-6 py-3 text-sm font-semibold text-white bg-yellow-600 rounded-lg transition-colors hover:bg-yellow-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      <i class="mr-2 fa-solid fa-phone"></i>
-                      Contactar para Coordinar
+                      <i class="mr-2 fa-solid fa-money-bill-wave"></i>
+                      {{ isRegisteringCash ? 'Registrando...' : 'Registrar pago en efectivo' }}
                     </button>
-                  </div>
+                  </template>
+
+                  <!-- Non-staff: contact to coordinate -->
+                  <template v-else>
+                    <div class="p-4 mb-4 bg-yellow-100 rounded-lg border border-yellow-200">
+                      <div class="flex items-start space-x-2">
+                        <i class="mt-0.5 text-yellow-600 fa-solid fa-info-circle"></i>
+                        <div class="text-sm text-yellow-800">
+                          <div class="font-medium">Importante:</div>
+                          <div>Contacta con nosotros para coordinar el pago en efectivo y confirmar la disponibilidad.</div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="flex gap-3">
+                      <button
+                        @click="contactForCashPayment()"
+                        class="flex-1 px-6 py-3 text-sm font-semibold text-white bg-yellow-600 rounded-lg transition-colors hover:bg-yellow-700"
+                      >
+                        <i class="mr-2 fa-solid fa-phone"></i>
+                        Contactar para Coordinar
+                      </button>
+                    </div>
+                  </template>
                 </div>
               </div>
             </div>
@@ -3027,8 +3066,32 @@ const selectedPaymentMethod = ref('')
 // Function for cash payment contact
 const contactForCashPayment = () => {
   toast.info('Redirigiendo para coordinar pago en efectivo...')
-  // You can add logic here to open contact form or redirect to contact page
   console.log('Contact for cash payment:', paymentAmount.value)
+}
+
+const cashAmount = ref('')
+const isRegisteringCash = ref(false)
+
+async function registerCashPayment() {
+  const amount = parseFloat(cashAmount.value)
+  if (!amount || amount <= 0) {
+    toast.error('Ingresa un monto válido.')
+    return
+  }
+  isRegisteringCash.value = true
+  try {
+    await api.post('/api/store/orders/register_cash_payment/', {
+      booking_id: event.value.id,
+      amount
+    })
+    toast.success('Pago en efectivo registrado.')
+    cashAmount.value = ''
+    refetch()
+  } catch (err) {
+    toast.error(err?.response?.data?.detail || 'Error al registrar el pago.')
+  } finally {
+    isRegisteringCash.value = false
+  }
 }
 
 const reviewRating = ref(0)
