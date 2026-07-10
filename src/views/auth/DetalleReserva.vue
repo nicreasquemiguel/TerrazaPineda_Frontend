@@ -1695,26 +1695,26 @@
                 <!-- Vertical connector line -->
                 <div v-if="i < steps.length - 1" class="absolute left-[11px] top-7 bottom-0 w-0.5"
                   :class="[
-                    i < getCurrentStepIndex(event.status) ? 'bg-green-300' :
-                    i === getCurrentStepIndex(event.status) ? 'bg-blue-200' :
+                    i < getCurrentStepIndex(event.status, event.is_entregado) ? 'bg-green-300' :
+                    i === getCurrentStepIndex(event.status, event.is_entregado) ? 'bg-blue-200' :
                     'bg-gray-200'
                   ]"
                 ></div>
 
                 <!-- Step icon -->
                 <div class="relative z-10 flex-shrink-0 mt-2.5">
-                  <div v-if="i === getCurrentStepIndex(event.status)"
+                  <div v-if="i === getCurrentStepIndex(event.status, event.is_entregado)"
                     class="absolute inset-0 w-6 h-6 bg-green-400 rounded-full opacity-40 animate-ping">
                   </div>
                   <div class="relative flex justify-center items-center w-6 h-6 text-xs font-bold rounded-full"
                     :class="[
-                      i < getCurrentStepIndex(event.status) ? 'bg-green-500 text-white shadow-sm' :
-                      i === getCurrentStepIndex(event.status) ? 'bg-green-500 text-white shadow-md' :
-                      i === getCurrentStepIndex(event.status) + 1 && getCurrentStepIndex(event.status) >= 0 ? 'bg-blue-500 text-white shadow-sm' :
+                      i < getCurrentStepIndex(event.status, event.is_entregado) ? 'bg-green-500 text-white shadow-sm' :
+                      i === getCurrentStepIndex(event.status, event.is_entregado) ? 'bg-green-500 text-white shadow-md' :
+                      i === getCurrentStepIndex(event.status, event.is_entregado) + 1 && getCurrentStepIndex(event.status, event.is_entregado) >= 0 ? 'bg-blue-500 text-white shadow-sm' :
                       'bg-white border-2 border-gray-300 text-gray-400'
                     ]"
                   >
-                    <i v-if="i < getCurrentStepIndex(event.status)" class="text-xs fa-solid fa-check"></i>
+                    <i v-if="i < getCurrentStepIndex(event.status, event.is_entregado)" class="text-xs fa-solid fa-check"></i>
                     <span v-else class="text-xs">{{ i + 1 }}</span>
                   </div>
                 </div>
@@ -1722,26 +1722,26 @@
                 <!-- Step card -->
                 <div class="flex-1 min-w-0 rounded-xl border px-3 py-2.5 transition"
                   :class="[
-                    i < getCurrentStepIndex(event.status) ? 'border-green-200 bg-green-50' :
-                    i === getCurrentStepIndex(event.status) ? 'border-green-300 bg-green-50 shadow-sm ring-1 ring-green-200' :
-                    i === getCurrentStepIndex(event.status) + 1 && getCurrentStepIndex(event.status) >= 0 ? 'border-blue-300 bg-blue-50 shadow-sm ring-1 ring-blue-200' :
+                    i < getCurrentStepIndex(event.status, event.is_entregado) ? 'border-green-200 bg-green-50' :
+                    i === getCurrentStepIndex(event.status, event.is_entregado) ? 'border-green-300 bg-green-50 shadow-sm ring-1 ring-green-200' :
+                    i === getCurrentStepIndex(event.status, event.is_entregado) + 1 && getCurrentStepIndex(event.status, event.is_entregado) >= 0 ? 'border-blue-300 bg-blue-50 shadow-sm ring-1 ring-blue-200' :
                     'border-gray-200 bg-white'
                   ]"
                 >
                   <div class="flex justify-between items-center gap-1">
                     <span class="text-sm font-semibold"
                       :class="[
-                        i === getCurrentStepIndex(event.status) ? 'text-green-800' :
-                        i === getCurrentStepIndex(event.status) + 1 && getCurrentStepIndex(event.status) >= 0 ? 'text-blue-800' :
+                        i === getCurrentStepIndex(event.status, event.is_entregado) ? 'text-green-800' :
+                        i === getCurrentStepIndex(event.status, event.is_entregado) + 1 && getCurrentStepIndex(event.status, event.is_entregado) >= 0 ? 'text-blue-800' :
                         'text-gray-900'
                       ]"
                     >{{ step.label }}</span>
                     <!-- Status badge -->
-                    <span v-if="i < getCurrentStepIndex(event.status)"
+                    <span v-if="i < getCurrentStepIndex(event.status, event.is_entregado)"
                       class="flex-shrink-0 px-2 py-0.5 text-xs font-semibold text-green-700 bg-green-100 rounded-full">Listo</span>
-                    <span v-else-if="i === getCurrentStepIndex(event.status)"
+                    <span v-else-if="i === getCurrentStepIndex(event.status, event.is_entregado)"
                       class="flex-shrink-0 px-2 py-0.5 text-xs font-bold text-white bg-green-500 rounded-full">Actual</span>
-                    <span v-else-if="i === getCurrentStepIndex(event.status) + 1 && getCurrentStepIndex(event.status) >= 0"
+                    <span v-else-if="i === getCurrentStepIndex(event.status, event.is_entregado) + 1 && getCurrentStepIndex(event.status, event.is_entregado) >= 0"
                       class="flex-shrink-0 px-2 py-0.5 text-xs font-bold text-white bg-blue-500 rounded-full">Próximo</span>
                   </div>
                   <p class="mt-0.5 text-xs leading-relaxed text-gray-500">{{ step.description }}</p>
@@ -1758,6 +1758,33 @@
               Entrega y cierre del evento
             </h3>
             <div class="flex flex-col gap-3">
+              <!-- Hora de entrega -->
+              <div class="flex justify-between items-center">
+                <div class="flex flex-col gap-0.5">
+                  <span class="text-xs font-semibold text-gray-500">Hora de llegada al evento</span>
+                  <span v-if="!editingHoraEntrega" class="text-sm font-bold text-gray-800">
+                    {{ event.hora_entrega ? event.hora_entrega.slice(0,5) : 'Sin especificar' }}
+                  </span>
+                  <div v-else class="flex gap-2 items-center mt-0.5">
+                    <input type="time" v-model="horaEntregaInput"
+                      class="px-2 py-1 text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+                    <button @click="saveHoraEntrega" :disabled="horaEntregaLoading"
+                      class="px-3 py-1 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                      <i v-if="horaEntregaLoading" class="fa-solid fa-spinner fa-spin mr-1"></i>
+                      Guardar
+                    </button>
+                    <button @click="editingHoraEntrega = false" class="px-3 py-1 text-xs font-semibold text-gray-500 bg-gray-100 rounded-lg hover:bg-gray-200">
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+                <button v-if="!editingHoraEntrega" @click="editingHoraEntrega = true; horaEntregaInput = event.hora_entrega ? event.hora_entrega.slice(0,5) : ''"
+                  class="px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100">
+                  <i class="fa-solid fa-pen mr-1"></i>
+                  {{ event.hora_entrega ? 'Editar' : 'Agregar hora' }}
+                </button>
+              </div>
+              <hr class="border-gray-100" />
               <!-- Entregado row -->
               <div class="flex justify-between items-center">
                 <span :class="event.is_entregado ? 'bg-cyan-100 text-cyan-700 border-cyan-200' : 'bg-gray-100 text-gray-400 border-gray-200'"
@@ -1769,7 +1796,7 @@
                   :class="event.is_entregado ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' : 'bg-cyan-50 text-cyan-600 border-cyan-200 hover:bg-cyan-100'"
                   class="px-3 py-1.5 text-xs font-semibold rounded-lg border disabled:opacity-50">
                   <i v-if="entregadoLoading" class="fa-solid fa-spinner fa-spin mr-1"></i>
-                  {{ event.is_entregado ? 'Desmarcar' : 'Marcar entregado' }}
+                  {{ event.is_entregado ? 'Quitar entregado' : 'Marcar entregado' }}
                 </button>
               </div>
               <!-- Finalizado row -->
@@ -2054,14 +2081,32 @@ const isStaff = computed(() => {
 
 const entregadoLoading = ref(false)
 const finalizarLoading = ref(false)
+const editingHoraEntrega = ref(false)
+const horaEntregaInput = ref('')
+const horaEntregaLoading = ref(false)
+
+const saveHoraEntrega = async () => {
+  if (!event.value) return
+  horaEntregaLoading.value = true
+  try {
+    await api.patch(`/api/bookings/bookings/${event.value.id}/`, { hora_entrega: horaEntregaInput.value || null })
+    await refetch()
+    editingHoraEntrega.value = false
+    toast.success('Hora de llegada guardada')
+  } catch {
+    toast.error('Error al guardar la hora')
+  } finally {
+    horaEntregaLoading.value = false
+  }
+}
 
 const toggleEntregado = async () => {
   if (!event.value) return
   entregadoLoading.value = true
   try {
     const res = await api.post(`/api/bookings/bookings/${event.value.id}/marcar_entregado/`)
-    event.value.is_entregado = res.data.is_entregado
-    toast.success(res.data.is_entregado ? 'Marcado como entregado' : 'Desmarcado')
+    await refetch()
+    toast.success(res.data.is_entregado ? 'Marcado como entregado' : 'Entrega removida')
   } catch {
     toast.error('Error al actualizar el estado de entrega')
   } finally {
@@ -2073,8 +2118,8 @@ const finalizarReserva = async () => {
   if (!event.value) return
   finalizarLoading.value = true
   try {
-    const res = await api.post(`/api/bookings/bookings/${event.value.id}/finalizar/`)
-    event.value.status = res.data.status
+    await api.post(`/api/bookings/bookings/${event.value.id}/finalizar/`)
+    await refetch()
     toast.success('Reserva finalizada')
   } catch {
     toast.error('Error al finalizar la reserva')
@@ -2327,6 +2372,12 @@ const steps = [
     description: 'Pago completo realizado, tu evento está saldado'
   },
   {
+    key: 'entregado',
+    label: 'Entregado',
+    icon: 'fa-solid fa-door-open',
+    description: 'El lugar ha sido entregado para el evento'
+  },
+  {
     key: 'finalizado',
     label: 'Finalizado',
     icon: 'fa-regular fa-star',
@@ -2336,12 +2387,12 @@ const steps = [
 
 const terminalStatuses = ['rechazado', 'cancelado']
 
-// Returns -1 for terminal states (rechazado/cancelado) so all steps render as pending
-const getCurrentStepIndex = (status) => {
+// Returns -1 for terminal states; uses is_entregado to show the entregado step
+const getCurrentStepIndex = (status, isEntregado = false) => {
   if (terminalStatuses.includes(status)) return -1
-  // Old compound statuses map to liquidado position in the new simplified flow
-  if (status === 'liquidado_entregado' || status === 'entregado') {
-    return steps.findIndex(step => step.key === 'liquidado')
+  if (status === 'finalizado') return steps.findIndex(s => s.key === 'finalizado')
+  if (isEntregado || status === 'liquidado_entregado' || status === 'entregado') {
+    return steps.findIndex(s => s.key === 'entregado')
   }
   const stepIndex = steps.findIndex(step => step.key === status)
   return stepIndex >= 0 ? stepIndex : 0
