@@ -1536,45 +1536,60 @@
               <span v-if="reviewLoading" class="text-xs text-gray-500">Cargando…</span>
             </div>
 
-            <!-- Star rating -->
-            <div class="flex gap-2 items-center mb-3">
-              <button v-for="s in 5" :key="s" type="button"
-                @click="rating = s"
-                class="text-2xl focus:outline-none"
-                :class="s <= (rating || 0) ? 'text-yellow-400' : 'text-gray-300'">
-                <i :class="s <= (rating || 0) ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
-              </button>
-              <span class="ml-2 text-sm text-gray-500">{{ rating || 0 }}/5</span>
-            </div>
-
-            <!-- Review text -->
-            <textarea v-model="reviewText" rows="4"
-              placeholder="Cuéntanos cómo fue tu experiencia"
-              class="p-3 w-full text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
-
-            <!-- Actions -->
-            <div class="flex gap-2 justify-end items-center mt-3">
-              <button @click="resetReviewForm" type="button"
-                class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 rounded hover:bg-gray-200">Limpiar</button>
-              <button @click="saveReview" :disabled="savingReview || (rating || 0) === 0"
-                class="px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg shadow hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">
-                <span v-if="savingReview" class="flex gap-2 items-center">
-                  <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
-                  Guardando…
-                </span>
-                <span v-else>Guardar reseña</span>
-              </button>
-            </div>
-
-            <!-- Existing info -->
-            <div v-if="myReview && (myReview.rating || myReview.review)" class="p-3 mt-4 text-xs bg-gray-50 rounded border border-gray-200">
-              <div class="mb-1 font-semibold text-gray-700">Última reseña guardada</div>
-              <div class="flex gap-2 items-center mb-1">
-                <span class="text-yellow-400" v-for="s in (myReview.rating || 0)" :key="'rs'+s"><i class="fa-solid fa-star"></i></span>
-                <span class="text-gray-400" v-for="s in (5 - (myReview.rating || 0))" :key="'re'+s"><i class="fa-regular fa-star"></i></span>
-                <span class="ml-2 text-gray-500">{{ myReview.rating || 0 }}/5</span>
+            <!-- Staff: read-only view -->
+            <template v-if="isStaff">
+              <div v-if="myReview && (myReview.rating || myReview.review)">
+                <div class="flex gap-1 items-center mb-2">
+                  <span class="text-yellow-400" v-for="s in (myReview.rating || 0)" :key="'rs'+s"><i class="fa-solid fa-star"></i></span>
+                  <span class="text-gray-300" v-for="s in (5 - (myReview.rating || 0))" :key="'re'+s"><i class="fa-regular fa-star"></i></span>
+                  <span class="ml-2 text-sm text-gray-500">{{ myReview.rating || 0 }}/5</span>
+                </div>
+                <p class="text-sm text-gray-700 whitespace-pre-line">{{ myReview.review }}</p>
               </div>
-              <div class="text-gray-700 whitespace-pre-line">{{ myReview.review }}</div>
+              <p v-else class="text-sm text-gray-400 italic">El cliente aún no ha dejado una reseña.</p>
+            </template>
+
+            <!-- User: editable form -->
+            <template v-else>
+              <!-- Star rating -->
+              <div class="flex gap-2 items-center mb-3">
+                <button v-for="s in 5" :key="s" type="button"
+                  @click="rating = s"
+                  class="text-2xl focus:outline-none"
+                  :class="s <= (rating || 0) ? 'text-yellow-400' : 'text-gray-300'">
+                  <i :class="s <= (rating || 0) ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
+                </button>
+                <span class="ml-2 text-sm text-gray-500">{{ rating || 0 }}/5</span>
+              </div>
+
+              <!-- Review text -->
+              <textarea v-model="reviewText" rows="4"
+                placeholder="Cuéntanos cómo fue tu experiencia"
+                class="p-3 w-full text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+
+              <!-- Actions -->
+              <div class="flex gap-2 justify-end items-center mt-3">
+                <button @click="resetReviewForm" type="button"
+                  class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 rounded hover:bg-gray-200">Limpiar</button>
+                <button @click="saveReview" :disabled="savingReview || (rating || 0) === 0"
+                  class="px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg shadow hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <span v-if="savingReview" class="flex gap-2 items-center">
+                    <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
+                    Guardando…
+                  </span>
+                  <span v-else>Guardar reseña</span>
+                </button>
+              </div>
+
+              <!-- Existing info -->
+              <div v-if="myReview && (myReview.rating || myReview.review)" class="p-3 mt-4 text-xs bg-gray-50 rounded border border-gray-200">
+                <div class="mb-1 font-semibold text-gray-700">Última reseña guardada</div>
+                <div class="flex gap-2 items-center mb-1">
+                  <span class="text-yellow-400" v-for="s in (myReview.rating || 0)" :key="'rs'+s"><i class="fa-solid fa-star"></i></span>
+                  <span class="text-gray-400" v-for="s in (5 - (myReview.rating || 0))" :key="'re'+s"><i class="fa-regular fa-star"></i></span>
+                  <span class="ml-2 text-gray-500">{{ myReview.rating || 0 }}/5</span>
+                </div>
+                <div class="text-gray-700 whitespace-pre-line">{{ myReview.review }}</div>
 
               <!-- Share review card -->
               <div class="mt-4 pt-4 border-t border-gray-200">
@@ -1617,6 +1632,7 @@
                 </div>
               </div>
             </div>
+            </template><!-- /v-else user form -->
           </div>
         </div><!-- /Review -->
         </div><!-- /LEFT COLUMN -->
@@ -1763,7 +1779,7 @@
                 <div class="flex flex-col gap-0.5">
                   <span class="text-xs font-semibold text-gray-500">Hora de llegada al evento</span>
                   <span v-if="!editingHoraEntrega" class="text-sm font-bold text-gray-800">
-                    {{ event.hora_entrega ? event.hora_entrega.slice(0,5) : 'Sin especificar' }}
+                    {{ event.hora_entrega ? event.hora_entrega.slice(0,5) : (event.start_datetime ? new Date(event.start_datetime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false }) : 'Sin especificar') }}
                   </span>
                   <div v-else class="flex gap-2 items-center mt-0.5">
                     <input type="time" v-model="horaEntregaInput"
@@ -1778,7 +1794,7 @@
                     </button>
                   </div>
                 </div>
-                <button v-if="!editingHoraEntrega" @click="editingHoraEntrega = true; horaEntregaInput = event.hora_entrega ? event.hora_entrega.slice(0,5) : ''"
+                <button v-if="!editingHoraEntrega" @click="editingHoraEntrega = true; horaEntregaInput = event.hora_entrega ? event.hora_entrega.slice(0,5) : (event.start_datetime ? new Date(event.start_datetime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false }) : '')"
                   class="px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100">
                   <i class="fa-solid fa-pen mr-1"></i>
                   {{ event.hora_entrega ? 'Editar' : 'Agregar hora' }}
