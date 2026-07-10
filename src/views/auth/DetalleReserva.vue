@@ -1707,9 +1707,9 @@
             </div>
 
             <div class="flex flex-col">
-              <div v-for="(step, i) in steps" :key="step.key" class="relative flex gap-3 pb-2">
+              <div v-for="(step, i) in visibleSteps" :key="step.key" class="relative flex gap-3 pb-2">
                 <!-- Vertical connector line -->
-                <div v-if="i < steps.length - 1" class="absolute left-[11px] top-7 bottom-0 w-0.5"
+                <div v-if="i < visibleSteps.length - 1" class="absolute left-[11px] top-7 bottom-0 w-0.5"
                   :class="[
                     i < getCurrentStepIndex(event.status, event.is_entregado) ? 'bg-green-300' :
                     i === getCurrentStepIndex(event.status, event.is_entregado) ? 'bg-blue-200' :
@@ -2388,12 +2388,6 @@ const steps = [
     description: 'Pago completo realizado, tu evento está saldado'
   },
   {
-    key: 'entregado',
-    label: 'Entregado',
-    icon: 'fa-solid fa-door-open',
-    description: 'El lugar ha sido entregado para el evento'
-  },
-  {
     key: 'finalizado',
     label: 'Finalizado',
     icon: 'fa-regular fa-star',
@@ -2401,16 +2395,35 @@ const steps = [
   }
 ]
 
+const entregadoStep = {
+  key: 'entregado',
+  label: 'Entregado',
+  icon: 'fa-solid fa-door-open',
+  description: 'El lugar ha sido entregado para el evento'
+}
+
+// Default: entregado sits after liquidado. When marked, it's inserted after the status stored in entregado_after_status.
+const visibleSteps = computed(() => {
+  const defaultIdx = steps.findIndex(s => s.key === 'liquidado')
+  const anchorKey = event.value?.entregado_after_status
+  const anchorIdx = anchorKey ? steps.findIndex(s => s.key === anchorKey) : -1
+  // use the stored anchor if valid and not the last step; otherwise default to after liquidado
+  const insertAfter = anchorIdx >= 0 && anchorIdx < steps.length - 1 ? anchorIdx : defaultIdx
+  return [...steps.slice(0, insertAfter + 1), entregadoStep, ...steps.slice(insertAfter + 1)]
+})
+
 const terminalStatuses = ['rechazado', 'cancelado']
 
-// Returns -1 for terminal states; uses is_entregado to show the entregado step
+// Returns -1 for terminal states; uses visibleSteps for correct index
 const getCurrentStepIndex = (status, isEntregado = false) => {
+  const stepsToUse = visibleSteps.value
   if (terminalStatuses.includes(status)) return -1
-  if (status === 'finalizado') return steps.findIndex(s => s.key === 'finalizado')
+  if (status === 'finalizado') return stepsToUse.findIndex(s => s.key === 'finalizado')
   if (isEntregado || status === 'liquidado_entregado' || status === 'entregado') {
-    return steps.findIndex(s => s.key === 'entregado')
+    const idx = stepsToUse.findIndex(s => s.key === 'entregado')
+    return idx >= 0 ? idx : stepsToUse.findIndex(s => s.key === 'liquidado')
   }
-  const stepIndex = steps.findIndex(step => step.key === status)
+  const stepIndex = stepsToUse.findIndex(step => step.key === status)
   return stepIndex >= 0 ? stepIndex : 0
 }
 
