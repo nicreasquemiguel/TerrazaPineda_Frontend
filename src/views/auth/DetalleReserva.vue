@@ -513,35 +513,24 @@
         <span class="font-semibold text-gray-700">Detalle</span>
       </nav>
 
+      <!-- Staff badge — compact pill, full-width above the grid -->
+      <div v-if="isStaff" class="flex justify-between items-center px-3 py-1.5 mb-3 bg-indigo-50 rounded-lg border border-indigo-200">
+        <div class="flex gap-2 items-center min-w-0">
+          <i class="flex-shrink-0 text-xs text-indigo-500 fa-solid fa-user-shield"></i>
+          <span class="text-xs font-semibold text-indigo-700 truncate">
+            Staff · {{ event.user_name || event.user?.first_name || 'Cliente' }} {{ event.user?.last_name || '' }}
+          </span>
+        </div>
+        <div class="flex flex-shrink-0 gap-1.5 items-center ml-2">
+          <span class="px-2 py-0.5 text-[10px] font-bold tracking-wide text-indigo-600 bg-indigo-100 rounded-full">ADMIN</span>
+          <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
+        </div>
+      </div>
+
       <!-- Two-column layout: left=steps, right=summary+payment -->
       <div class="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
         <!-- RIGHT COLUMN (summary+payment) — rendered second in HTML, placed right by grid -->
         <div class="flex flex-col gap-4 min-w-0 lg:order-2">
-
-      <!-- Staff Info Banner -->
-      <div v-if="isStaff" class="overflow-hidden relative p-1 mb-6 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-xl">
-        <div class="p-4 bg-white rounded-lg">
-          <div class="flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-              <div class="flex justify-center items-center w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full">
-                <i class="text-white fa-solid fa-user-shield"></i>
-              </div>
-              <div>
-                <div class="text-sm font-medium text-gray-600">Modo Staff</div>
-                <div class="text-base font-bold text-gray-900">
-                  Viendo reserva de {{ event.user_name || event.user?.first_name || 'Cliente' }}
-                </div>
-              </div>
-            </div>
-            <div class="flex items-center space-x-2">
-              <div class="px-3 py-1 text-xs font-semibold text-indigo-600 bg-indigo-100 rounded-full">
-                ADMIN
-              </div>
-              <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <!-- Client Information for Staff -->
       <div v-if="isStaff" class="p-4 mb-6 bg-white rounded-2xl border border-gray-200 shadow-sm">
