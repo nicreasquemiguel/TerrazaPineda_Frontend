@@ -1750,6 +1750,44 @@
             </div>
           </div>
 
+          <!-- Estado de entrega y cierre (staff manages, client sees read-only) -->
+          <div v-if="event && ['aceptacion','apartado','liquidado','liquidado_entregado','entregado','finalizado'].includes(event.status)"
+            class="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
+            <h3 class="mb-3 text-sm font-bold text-gray-700">
+              <i class="mr-1.5 text-purple-400 fa-solid fa-flag-checkered"></i>
+              Entrega y cierre del evento
+            </h3>
+            <div class="flex flex-col gap-3">
+              <!-- Entregado row -->
+              <div class="flex justify-between items-center">
+                <span :class="event.is_entregado ? 'bg-cyan-100 text-cyan-700 border-cyan-200' : 'bg-gray-100 text-gray-400 border-gray-200'"
+                  class="flex gap-1.5 items-center px-3 py-1 text-xs font-semibold rounded-full border">
+                  <i :class="event.is_entregado ? 'fa-solid fa-door-open' : 'fa-solid fa-door-closed'"></i>
+                  {{ event.is_entregado ? 'Lugar entregado' : 'Pendiente de entrega' }}
+                </span>
+                <button v-if="isStaff" @click="toggleEntregado" :disabled="entregadoLoading"
+                  :class="event.is_entregado ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' : 'bg-cyan-50 text-cyan-600 border-cyan-200 hover:bg-cyan-100'"
+                  class="px-3 py-1.5 text-xs font-semibold rounded-lg border disabled:opacity-50">
+                  <i v-if="entregadoLoading" class="fa-solid fa-spinner fa-spin mr-1"></i>
+                  {{ event.is_entregado ? 'Desmarcar' : 'Marcar entregado' }}
+                </button>
+              </div>
+              <!-- Finalizado row -->
+              <div class="flex justify-between items-center">
+                <span :class="event.status === 'finalizado' ? 'bg-purple-100 text-purple-700 border-purple-200' : 'bg-gray-100 text-gray-400 border-gray-200'"
+                  class="flex gap-1.5 items-center px-3 py-1 text-xs font-semibold rounded-full border">
+                  <i :class="event.status === 'finalizado' ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
+                  {{ event.status === 'finalizado' ? 'Reserva finalizada' : 'Pendiente de finalizar' }}
+                </span>
+                <button v-if="isStaff && event.status !== 'finalizado'" @click="finalizarReserva" :disabled="finalizarLoading"
+                  class="px-3 py-1.5 text-xs font-semibold text-purple-600 bg-purple-50 rounded-lg border border-purple-200 hover:bg-purple-100 disabled:opacity-50">
+                  <i v-if="finalizarLoading" class="fa-solid fa-spinner fa-spin mr-1"></i>
+                  Finalizar reserva
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Cancellation Policy + Cancel Button -->
           <div v-if="!isLocked"
             class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
@@ -2014,6 +2052,37 @@ const isStaff = computed(() => {
   return authStore.user?.is_staff
 })
 
+const entregadoLoading = ref(false)
+const finalizarLoading = ref(false)
+
+const toggleEntregado = async () => {
+  if (!event.value) return
+  entregadoLoading.value = true
+  try {
+    const res = await api.post(`/api/bookings/bookings/${event.value.id}/marcar_entregado/`)
+    event.value.is_entregado = res.data.is_entregado
+    toast.success(res.data.is_entregado ? 'Marcado como entregado' : 'Desmarcado')
+  } catch {
+    toast.error('Error al actualizar el estado de entrega')
+  } finally {
+    entregadoLoading.value = false
+  }
+}
+
+const finalizarReserva = async () => {
+  if (!event.value) return
+  finalizarLoading.value = true
+  try {
+    const res = await api.post(`/api/bookings/bookings/${event.value.id}/finalizar/`)
+    event.value.status = res.data.status
+    toast.success('Reserva finalizada')
+  } catch {
+    toast.error('Error al finalizar la reserva')
+  } finally {
+    finalizarLoading.value = false
+  }
+}
+
 // Package price locked at booking time; falls back to live price for legacy bookings
 const packageBookedPrice = computed(() => {
   if (!event.value) return 0
@@ -2258,18 +2327,6 @@ const steps = [
     description: 'Pago completo realizado, tu evento está saldado'
   },
   {
-    key: 'liquidado_entregado',
-    label: 'Liquidado y Entregado',
-    icon: 'fa-solid fa-handshake',
-    description: 'Monto liquidado y lugar entregado para tu evento'
-  },
-  {
-    key: 'entregado',
-    label: 'Entregado',
-    icon: 'fa-solid fa-door-open',
-    description: 'El lugar ha sido entregado para tu evento'
-  },
-  {
     key: 'finalizado',
     label: 'Finalizado',
     icon: 'fa-regular fa-star',
@@ -2282,6 +2339,10 @@ const terminalStatuses = ['rechazado', 'cancelado']
 // Returns -1 for terminal states (rechazado/cancelado) so all steps render as pending
 const getCurrentStepIndex = (status) => {
   if (terminalStatuses.includes(status)) return -1
+  // Old compound statuses map to liquidado position in the new simplified flow
+  if (status === 'liquidado_entregado' || status === 'entregado') {
+    return steps.findIndex(step => step.key === 'liquidado')
+  }
   const stepIndex = steps.findIndex(step => step.key === status)
   return stepIndex >= 0 ? stepIndex : 0
 }
