@@ -529,8 +529,8 @@
 
       <!-- Two-column layout: left=steps, right=summary+payment -->
       <div class="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
-        <!-- RIGHT COLUMN (summary+payment) — rendered second in HTML, placed right by grid -->
-        <div class="flex flex-col gap-4 min-w-0 lg:order-2">
+        <!-- RIGHT TOP: summary + share (mobile: 1st, desktop: col-2 row-1) -->
+        <div class="flex flex-col gap-4 min-w-0 order-1 lg:col-start-2 lg:row-start-1">
 
       <!-- Client Information for Staff -->
       <div v-if="isStaff" class="p-4 mb-6 bg-white rounded-2xl border border-gray-200 shadow-sm">
@@ -698,7 +698,7 @@
                   </div>
                   <div>
                     <div class="text-xs text-gray-500">Hora de llegada al evento</div>
-                    <div v-if="!editingHoraEntrega" class="text-sm font-bold text-gray-900">
+                    <div v-if="!editingHoraEntrega || isLocked" class="text-sm font-bold text-gray-900">
                       {{ event.hora_entrega ? event.hora_entrega.slice(0,5) : (event.start_datetime ? new Date(event.start_datetime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false }) : 'Sin especificar') }}
                     </div>
                     <div v-else class="flex gap-2 items-center mt-0.5">
@@ -715,7 +715,7 @@
                     </div>
                   </div>
                 </div>
-                <button v-if="!editingHoraEntrega" @click="editingHoraEntrega = true; horaEntregaInput = event.hora_entrega ? event.hora_entrega.slice(0,5) : (event.start_datetime ? new Date(event.start_datetime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false }) : '')"
+                <button v-if="!editingHoraEntrega && !isLocked" @click="editingHoraEntrega = true; horaEntregaInput = event.hora_entrega ? event.hora_entrega.slice(0,5) : (event.start_datetime ? new Date(event.start_datetime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false }) : '')"
                   class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-purple-600 bg-white rounded-lg border border-purple-200 hover:bg-purple-50 flex-shrink-0">
                   <i class="fa-solid fa-pen text-xs"></i>
                   {{ event.hora_entrega ? 'Editar hora' : 'Agregar hora' }}
@@ -803,19 +803,6 @@
                 </div>
               </div>
 
-              <!-- Read-only badges for non-staff -->
-              <div v-else class="flex flex-wrap gap-2 mx-4 mb-4">
-                <span :class="event.is_entregado ? 'bg-cyan-100 text-cyan-700 border-cyan-200' : 'bg-gray-100 text-gray-400 border-gray-200'"
-                  class="flex gap-1.5 items-center px-3 py-1.5 text-xs font-semibold rounded-full border">
-                  <i :class="event.is_entregado ? 'fa-solid fa-door-open' : 'fa-solid fa-door-closed'"></i>
-                  {{ event.is_entregado ? 'Lugar entregado' : 'Pendiente de entrega' }}
-                </span>
-                <span :class="event.status === 'finalizado' ? 'bg-purple-100 text-purple-700 border-purple-200' : 'bg-gray-100 text-gray-400 border-gray-200'"
-                  class="flex gap-1.5 items-center px-3 py-1.5 text-xs font-semibold rounded-full border">
-                  <i :class="event.status === 'finalizado' ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
-                  {{ event.status === 'finalizado' ? 'Reserva finalizada' : 'Pendiente de finalizar' }}
-                </span>
-              </div>
             </div>
 
             <!-- Package & People Card -->
@@ -1037,6 +1024,10 @@
             </div>
           </div>
         </div><!-- /Share Confirmation Card -->
+        </div><!-- /RIGHT TOP -->
+
+        <!-- RIGHT BOTTOM: payment + history + review (mobile: 3rd, desktop: col-2 row-2) -->
+        <div class="flex flex-col gap-4 min-w-0 order-3 lg:col-start-2 lg:row-start-2">
 
         <!-- Payment Methods Section (shown when reservation is accepted and not locked) -->
         <div v-if="event && !isLocked && (event.status === 'aceptacion' || event.status === 'apartado' || event.status === 'liquidado' || event.status === 'entregado' || event.status === 'finalizado')" class="mt-6">
@@ -1775,10 +1766,10 @@
             </template><!-- /v-else user form -->
           </div>
         </div><!-- /Review -->
-        </div><!-- /LEFT COLUMN -->
+        </div><!-- /RIGHT BOTTOM -->
 
         <!-- LEFT COLUMN (steps — sticky on desktop) -->
-        <div class="flex flex-col gap-4 lg:order-1 lg:sticky lg:top-24">
+        <div class="flex flex-col gap-4 order-2 lg:col-start-1 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-24">
           <!-- Steps Progress -->
           <div class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
             <h2 class="mb-3 text-base font-bold text-primary-700 sm:text-lg">Pasos a seguir</h2>
@@ -1960,7 +1951,7 @@
               </button>
             </div>
           </div>
-        </div><!-- /RIGHT COLUMN -->
+        </div><!-- /LEFT -->
       </div><!-- /grid -->
 
         <!-- Staff Card -->
