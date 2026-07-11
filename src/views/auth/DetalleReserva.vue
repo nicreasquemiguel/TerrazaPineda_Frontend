@@ -1985,6 +1985,14 @@
                   <p class="text-xs text-gray-500 sm:text-sm">{{ logsData?.length || 0 }} eventos registrados</p>
                 </div>
               </div>
+              <button
+                @click="refetchLogs()"
+                :disabled="logsLoading"
+                class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition-colors"
+              >
+                <i class="fa-solid fa-rotate-right" :class="logsLoading ? 'animate-spin' : ''"></i>
+                <span class="hidden sm:inline">Actualizar</span>
+              </button>
             </div>
           </div>
           
@@ -2188,6 +2196,7 @@ const toggleEntregado = async () => {
   try {
     const res = await api.post(`/api/bookings/bookings/${event.value.id}/marcar_entregado/`)
     await refetch()
+    refetchLogs()
     toast.success(res.data.is_entregado ? 'Marcado como entregado' : 'Entrega removida')
   } catch {
     toast.error('Error al actualizar el estado de entrega')
@@ -2202,6 +2211,7 @@ const finalizarReserva = async () => {
   try {
     await api.post(`/api/bookings/bookings/${event.value.id}/finalizar/`)
     await refetch()
+    refetchLogs()
     toast.success('Reserva finalizada')
   } catch {
     toast.error('Error al finalizar la reserva')
@@ -3379,6 +3389,7 @@ async function registerCashPayment() {
     toast.success('Pago en efectivo registrado.')
     cashAmount.value = ''
     refetch()
+    refetchLogs()
   } catch (err) {
     toast.error(err?.response?.data?.detail || 'Error al registrar el pago.')
   } finally {
@@ -3607,9 +3618,10 @@ function getDefaultEventSummary() {
 }
 
 // Fetch logs for the booking
-const { data: logsData, isLoading: logsLoading, error: logsError } = useQuery({
+const { data: logsData, isLoading: logsLoading, error: logsError, refetch: refetchLogs } = useQuery({
   queryKey: ['logs', () => event.value?.id],
   enabled: computed(() => !!event.value?.id && isStaff.value),
+  staleTime: 0,
   queryFn: async () => {
     if (!event.value?.id) return []
     const res = await api.get(`/api/logs/booking/by_booking/?booking_id=${event.value.id}`)
@@ -3620,36 +3632,31 @@ const { data: logsData, isLoading: logsLoading, error: logsError } = useQuery({
 // Helper functions for logs
 const getLogActionClass = (action) => {
   switch (action) {
-    case 'created':
-      return 'bg-green-100 text-green-700'
-    case 'updated':
-      return 'bg-blue-100 text-blue-700'
-    case 'status_changed':
-      return 'bg-yellow-100 text-yellow-700'
-    case 'deleted':
-      return 'bg-red-100 text-red-700'
-    case 'payment_received':
-      return 'bg-emerald-100 text-emerald-700'
-    default:
-      return 'bg-gray-100 text-gray-700'
+    case 'created':      return 'bg-green-100 text-green-700'
+    case 'confirmed':    return 'bg-green-100 text-green-700'
+    case 'updated':      return 'bg-blue-100 text-blue-700'
+    case 'status_changed': return 'bg-yellow-100 text-yellow-700'
+    case 'cancelled':    return 'bg-orange-100 text-orange-700'
+    case 'rejected':     return 'bg-red-100 text-red-700'
+    case 'deleted':      return 'bg-red-100 text-red-700'
+    case 'payment_received': return 'bg-emerald-100 text-emerald-700'
+    case 'admin_approved':   return 'bg-emerald-100 text-emerald-700'
+    case 'admin_rejected':   return 'bg-red-100 text-red-700'
+    case 'reminder_sent': return 'bg-purple-100 text-purple-700'
+    case 'review_requested': return 'bg-indigo-100 text-indigo-700'
+    default:             return 'bg-gray-100 text-gray-700'
   }
 }
 
 const getLogActionText = (action) => {
-  switch (action) {
-    case 'created':
-      return 'Creada'
-    case 'updated':
-      return 'Actualizada'
-    case 'status_changed':
-      return 'Estado Cambiado'
-    case 'deleted':
-      return 'Eliminada'
-    case 'payment_received':
-      return 'Pago Recibido'
-    default:
-      return action || 'Acción'
+  const labels = {
+    created: 'Creada', confirmed: 'Confirmada', updated: 'Actualizada',
+    status_changed: 'Estado Cambiado', cancelled: 'Cancelada', rejected: 'Rechazada',
+    deleted: 'Eliminada', payment_received: 'Pago Recibido',
+    admin_approved: 'Pago Aprobado por Staff', admin_rejected: 'Pago Rechazado por Staff',
+    reminder_sent: 'Recordatorio Enviado', review_requested: 'Reseña Solicitada',
   }
+  return labels[action] || action || 'Acción'
 }
 
 const formatLogDate = (timestamp) => {
@@ -3670,20 +3677,21 @@ const formatLogDate = (timestamp) => {
 }
 
 const getLogIcon = (action) => {
-  switch (action) {
-    case 'created':
-      return 'fa-solid fa-plus text-green-600'
-    case 'updated':
-      return 'fa-solid fa-edit text-blue-600'
-    case 'status_changed':
-      return 'fa-solid fa-exchange-alt text-yellow-600'
-    case 'deleted':
-      return 'fa-solid fa-trash text-red-600'
-    case 'payment_received':
-      return 'fa-solid fa-credit-card text-green-600'
-    default:
-      return 'fa-solid fa-circle text-gray-600'
+  const icons = {
+    created:          'fa-solid fa-plus text-green-600',
+    confirmed:        'fa-solid fa-check text-green-600',
+    updated:          'fa-solid fa-pen text-blue-600',
+    status_changed:   'fa-solid fa-arrows-rotate text-yellow-600',
+    cancelled:        'fa-solid fa-ban text-orange-600',
+    rejected:         'fa-solid fa-times text-red-600',
+    deleted:          'fa-solid fa-trash text-red-600',
+    payment_received: 'fa-solid fa-circle-dollar-to-slot text-emerald-600',
+    admin_approved:   'fa-solid fa-user-check text-emerald-600',
+    admin_rejected:   'fa-solid fa-user-xmark text-red-600',
+    reminder_sent:    'fa-solid fa-bell text-purple-600',
+    review_requested: 'fa-solid fa-star text-indigo-600',
   }
+  return icons[action] || 'fa-solid fa-circle text-gray-400'
 }
 
 const formatKey = (key) => {
@@ -3720,9 +3728,8 @@ const approveBooking = async () => {
     })
 
     if (response.status >= 200 && response.status < 300) {
-      // Refresh the event data
       await refetch()
-      // Show success message
+      refetchLogs()
       toast.success('Reserva aprobada exitosamente')
     }
   } catch (error) {
@@ -3744,12 +3751,10 @@ const rejectBooking = async () => {
     })
 
     if (response.status >= 200 && response.status < 300) {
-      // Refresh the event data
       await refetch()
-      // Close modal and reset
+      refetchLogs()
       showRejectModal.value = false
       rejectReason.value = ''
-      // Show success message
       toast.success('Reserva rechazada exitosamente')
     }
   } catch (error) {

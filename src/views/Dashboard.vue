@@ -1121,6 +1121,7 @@ const authenticatedNavigationItems = [
   { name: 'Reservar', path: '/reservar' },
   { name: 'Mis Reservas', path: '/mis-reservas' },
   { name: 'Dashboard', path: '/dashboard', condition: 'staff' },
+  { name: 'Actividad', path: '/actividad', condition: 'staff' },
   { name: 'Configuración', path: '/configuracion', condition: 'staff' },
 ]
 
@@ -1147,6 +1148,7 @@ const getNavigationIcon = (name) => {
     'Preguntas': 'fa-solid fa-question-circle',
     'Mis Reservas': 'fa-solid fa-calendar-check',
     'Dashboard': 'fa-solid fa-tachometer-alt',
+    'Actividad': 'fa-solid fa-list-alt',
     'Configuración': 'fa-solid fa-sliders'
   }
   return iconMap[name] || 'fa-solid fa-link'
