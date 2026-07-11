@@ -1381,25 +1381,15 @@
                   <div class="mb-4">
                     <div class="text-xs font-semibold text-gray-500 mb-1.5">¿Cómo vas a depositar?</div>
                     <div class="flex gap-2">
-                      <!-- SPEI button -->
                       <button @click="transferDepositMethod = 'spei'"
                         :class="['flex-1 flex gap-1.5 items-center justify-center py-2 px-2 text-xs font-semibold rounded border transition',
                           transferDepositMethod === 'spei' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:border-green-400']">
-                        <i class="fa-solid fa-money-bill-transfer"></i> SPEI
+                        <i class="fa-solid fa-money-bill-transfer"></i> Transferencia
                       </button>
-                      <!-- Store deposit button -->
                       <button @click="transferDepositMethod = 'oxxo'"
-                        :class="['flex-1 flex flex-wrap gap-1 items-center justify-center py-2 px-1 rounded border transition',
-                          transferDepositMethod === 'oxxo' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white border-gray-300 hover:border-orange-400']">
-                        <!-- Brand chips -->
-                        <span class="px-1.5 py-0.5 rounded text-[9px] font-black tracking-tight"
-                          :class="transferDepositMethod === 'oxxo' ? 'bg-white/20 text-white' : 'bg-red-600 text-white'">OXXO</span>
-                        <span class="px-1.5 py-0.5 rounded text-[9px] font-black tracking-tight"
-                          :class="transferDepositMethod === 'oxxo' ? 'bg-white/20 text-white' : 'bg-green-700 text-white'">7-ELEVEn</span>
-                        <span class="px-1.5 py-0.5 rounded text-[9px] font-black tracking-tight"
-                          :class="transferDepositMethod === 'oxxo' ? 'bg-white/20 text-white' : 'bg-blue-600 text-white'">Walmart</span>
-                        <span class="px-1.5 py-0.5 rounded text-[9px] font-black tracking-tight"
-                          :class="transferDepositMethod === 'oxxo' ? 'bg-white/20 text-white' : 'bg-red-700 text-white'">Fcia. GDL</span>
+                        :class="['flex-1 flex gap-1.5 items-center justify-center py-2 px-2 text-xs font-semibold rounded border transition',
+                          transferDepositMethod === 'oxxo' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white text-gray-600 border-gray-300 hover:border-orange-400']">
+                        <i class="fa-solid fa-store"></i> Depósito
                       </button>
                     </div>
                   </div>
@@ -1458,13 +1448,12 @@
                         <span class="text-orange-500 font-bold flex-shrink-0">1.</span>
                         <span class="flex flex-wrap gap-1 items-center">Ve a cualquier
                           <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-red-600 text-white">OXXO</span>
-                          <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-green-700 text-white">7-ELEVEn</span>
+                          <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-green-700 text-white">7-Eleven</span>
                           <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-blue-600 text-white">Walmart</span>
-                          <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-red-700 text-white">Fcia. GDL</span>
+                          <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-blue-700 text-white">Fma GDL</span>
                         </span>
                       </div>
                       <div class="flex gap-2 items-start"><span class="text-orange-500 font-bold flex-shrink-0">2.</span> Pide un <strong>depósito con número de tarjeta</strong>.</div>
-                      <div class="flex gap-2 items-start"><span class="text-orange-500 font-bold flex-shrink-0">3.</span> Proporciona el número de tarjeta <span class="font-mono font-bold">4152 3144 4172 4641</span> y el monto exacto.</div>
                       <div class="flex gap-2 items-start"><span class="text-orange-500 font-bold flex-shrink-0">4.</span> Guarda tu ticket y súbelo como comprobante aquí abajo.</div>
                       <div class="flex gap-2 items-start text-orange-500 font-semibold"><i class="fa-solid fa-triangle-exclamation flex-shrink-0 mt-px"></i> Puede haber una comisión de $10–$15 MXN por parte de la tienda, no incluida en el total.</div>
                     </div>
@@ -1661,7 +1650,7 @@
                 </div>
 
                 <!-- Expanded detail panel -->
-                <div v-if="expandedPaymentId === payment.id" class="mt-2 ml-10 p-3 bg-gray-50 rounded-xl border border-gray-100 text-[11px] text-gray-600 space-y-2">
+                <div v-if="expandedPaymentId === payment.id" class="mt-2 p-3 bg-gray-50 rounded-xl border border-gray-100 text-[11px] text-gray-600 space-y-2">
                   <div class="grid grid-cols-2 gap-x-4 gap-y-1.5">
                     <div>
                       <div class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Plataforma</div>
@@ -2038,7 +2027,7 @@
                 <p><span class="font-semibold text-gray-700">Cambios de fecha:</span> con al menos 3 semanas de anticipación, sujeto a disponibilidad. Solo se permite un cambio por evento.</p>
               </div>
               <div class="flex gap-2 items-start">
-                <i class="mt-0.5 flex-shrink-0 text-purple-400 fa-solid fa-credit-card"></i>
+                <i class="mt-0.5 flex-shrink-0 text-gray-400 fa-solid fa-credit-card"></i>
                 <p><span class="font-semibold text-gray-700">Comisiones de plataformas de pago:</span> las comisiones e importes adicionales cobrados por plataformas externas (MercadoPago, Stripe, transferencia bancaria, etc.) <span class="font-semibold text-gray-900">no están incluidos en el costo total de la reserva</span> y corren por cuenta del cliente.</p>
               </div>
             </div>
