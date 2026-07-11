@@ -120,10 +120,11 @@
           <label class="block mb-2 text-sm font-semibold text-gray-700">Cantidad a pagar:</label>
           <div class="relative">
             <span class="absolute left-3 top-1/2 text-gray-500 transform -translate-y-1/2">$</span>
-            <input 
-              v-model="paymentAmount" 
-              type="number" 
-              step="0.01" 
+            <input
+              v-model="paymentAmount"
+              type="number"
+              inputmode="decimal"
+              step="0.01"
               :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
               :max="remainingAmount"
               :disabled="remainingAmount <= 0 || parseFloat(paymentAmount) >= remainingAmount"
@@ -223,10 +224,11 @@
           <label class="block mb-2 text-sm font-semibold text-gray-700">Cantidad a pagar:</label>
           <div class="relative">
             <span class="absolute left-3 top-1/2 text-gray-500 transform -translate-y-1/2">$</span>
-            <input 
-              v-model="transferAmount" 
-              type="number" 
-              step="50" 
+            <input
+              v-model="transferAmount"
+              type="number"
+              inputmode="decimal"
+              step="50"
               :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
               :max="remainingAmount"
               :disabled="remainingAmount <= 0 || parseFloat(transferAmount) >= remainingAmount"
@@ -1062,10 +1064,11 @@
                     <label class="block mb-2 text-sm font-semibold text-gray-700">Cantidad a pagar:</label>
                     <div class="relative">
                       <span class="absolute left-3 top-1/2 text-gray-500 transform -translate-y-1/2">$</span>
-                      <input 
-                        v-model="paymentAmount" 
-                        type="number" 
-                        step="0.01" 
+                      <input
+                        v-model="paymentAmount"
+                        type="number"
+                        inputmode="decimal"
+                        step="0.01"
                         :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
                         :max="remainingAmount"
                         :disabled="remainingAmount <= 0 || parseFloat(paymentAmount) >= remainingAmount"
@@ -1142,7 +1145,7 @@
                   @click="selectedPaymentMethod = selectedPaymentMethod === 'mercadopago' ? '' : 'mercadopago'"
                   :class="[
                     'flex w-full items-center justify-between p-4 text-left transition-colors',
-                    selectedPaymentMethod === 'mercadopago' ? 'border-purple-200' : 'hover:bg-gray-50'
+                    selectedPaymentMethod === 'mercadopago' ? 'border-yellow-400' : 'hover:bg-gray-50'
                   ]"
                 >
                   <div class="flex gap-3 items-center">
@@ -1187,11 +1190,12 @@
                         <input
                           v-model="paymentAmount"
                           type="number"
+                          inputmode="decimal"
                           step="0.01"
                           :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
                           :max="remainingAmount"
                           :disabled="remainingAmount <= 0 || parseFloat(paymentAmount) >= remainingAmount"
-                          class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                          class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed"
                           placeholder="0.00"
                         />
                       </div>
@@ -1208,7 +1212,7 @@
                       <div class="flex flex-wrap gap-2 mt-3">
                         <button
                           @click="paymentAmount = remainingAmount"
-                          class="px-3 py-1 text-xs font-semibold text-purple-700 bg-purple-50 rounded border border-purple-200 hover:bg-purple-100"
+                          class="px-3 py-1 text-xs font-semibold text-yellow-700 bg-yellow-50 rounded border border-yellow-300 hover:bg-yellow-100"
                         >
                           Pagar todo
                         </button>
@@ -1235,24 +1239,8 @@
                           v-for="t in [{ key: 'card', label: 'Tarjeta / SPEI' }, { key: 'cash', label: 'Efectivo (Oxxo)' }]"
                           :key="t.key"
                           @click="mpPaymentType = t.key"
-                          :class="['flex-1 py-1.5 px-2 text-xs font-semibold rounded border transition', mpPaymentType === t.key ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-300 hover:border-purple-400']"
+                          :class="['flex-1 py-1.5 px-2 text-xs font-semibold rounded border transition', mpPaymentType === t.key ? 'bg-yellow-400 text-gray-900 border-yellow-400' : 'bg-white text-gray-600 border-gray-300 hover:border-yellow-400']"
                         >{{ t.label }}</button>
-                      </div>
-                    </div>
-
-                    <!-- Release time (only for card) -->
-                    <div v-if="mpPaymentType === 'card'" class="mb-4">
-                      <div class="text-xs font-semibold text-gray-500 mb-1.5">Liberación del dinero</div>
-                      <div class="flex gap-2">
-                        <button
-                          v-for="r in [{ key: 'instant', label: 'Al instante', rate: '3.49%' }, { key: '14', label: '14 días', rate: '3.19%' }, { key: '30', label: '30 días', rate: '2.95%' }]"
-                          :key="r.key"
-                          @click="mpReleaseTime = r.key"
-                          :class="['flex-1 py-1.5 px-1 text-center text-xs rounded border transition', mpReleaseTime === r.key ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-600 border-gray-300 hover:border-purple-400']"
-                        >
-                          <div class="font-semibold">{{ r.label }}</div>
-                          <div class="opacity-75">{{ r.rate }}</div>
-                        </button>
                       </div>
                     </div>
 
@@ -1263,7 +1251,7 @@
                         <span class="font-mono">${{ parseFloat(paymentAmount).toLocaleString('es-MX', { minimumFractionDigits: 2 }) }}</span>
                       </div>
                       <div class="flex justify-between text-gray-500">
-                        <span>Comisión MP <span class="text-xs">({{ mpPaymentType === 'cash' ? '3.79%' : { instant: '3.49%', '14': '3.19%', '30': '2.95%' }[mpReleaseTime] }} + $4.00 + IVA)</span></span>
+                        <span>Comisión MP <span class="text-xs">({{ mpPaymentType === 'cash' ? '3.79%' : '3.49%' }} + $4.00 + IVA)</span></span>
                         <span class="font-mono">${{ mpCommission.toLocaleString('es-MX', { minimumFractionDigits: 2 }) }}</span>
                       </div>
                       <div class="flex justify-between font-semibold text-gray-900 pt-1.5 border-t border-gray-200">
@@ -1276,7 +1264,7 @@
                       <button
                         @click="pagarMercadoPago()"
                         :disabled="!paymentAmount || paymentAmount <= 0 || isPaying || ((parseFloat(event?.advance_paid) || 0) === 0 && paymentAmount < 1000)"
-                        class="flex-1 px-6 py-3 text-sm font-semibold text-white bg-purple-600 rounded-lg transition-colors hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        class="flex-1 px-6 py-3 text-sm font-semibold text-gray-900 bg-yellow-400 rounded-lg transition-colors hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <i class="mr-2 fa-brands fa-mercadopago"></i>
                         <span v-if="isPaying">Procesando...</span>
@@ -1348,10 +1336,11 @@
                     <label class="block mb-2 text-sm font-semibold text-gray-700">Cantidad a pagar:</label>
                     <div class="relative">
                       <span class="absolute left-3 top-1/2 text-gray-500 transform -translate-y-1/2">$</span>
-                      <input 
-                        v-model="transferAmount" 
-                        type="number" 
-                        step="50" 
+                      <input
+                        v-model="transferAmount"
+                        type="number"
+                        inputmode="decimal"
+                        step="50"
                         :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
                         :max="remainingAmount"
                         :disabled="remainingAmount <= 0 || parseFloat(transferAmount) >= remainingAmount"
@@ -1388,31 +1377,40 @@
                     </div>
                   </div>
 
-                  <!-- Bank Cards -->
+                  <!-- Bank Account -->
                   <div class="mb-4">
-                    <div class="mb-3 text-sm font-semibold text-gray-700">Selecciona una cuenta:</div>
-                    <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                      <!-- Card 1 -->
-                      <div class="relative p-4 text-white bg-gradient-to-br from-blue-600 to-blue-800 rounded-xl shadow-lg transition-shadow cursor-pointer hover:shadow-xl">
-                        <div class="flex justify-between items-start mb-4">
-                          <div class="text-sm font-medium opacity-90">Cuenta Principal</div>
-                          <div class="w-8 h-6 bg-white rounded opacity-20"></div>
+                    <div class="mb-2 text-sm font-semibold text-gray-700">Datos de la cuenta:</div>
+                    <div class="relative p-4 text-white bg-gradient-to-br from-blue-700 to-blue-900 rounded-xl shadow-md">
+                      <div class="flex justify-between items-start mb-3">
+                        <div>
+                          <div class="text-[10px] font-semibold tracking-widest uppercase opacity-70">Banco</div>
+                          <div class="text-sm font-bold">BBVA Bancomer</div>
                         </div>
-                        <div class="mb-2 text-lg font-bold tracking-wider">**** **** **** 1234</div>
-                        <div class="text-xs opacity-90">Banco de México</div>
-                        <div class="mt-2 text-xs opacity-75">CLABE: 012345678901234567</div>
+                        <i class="text-2xl opacity-40 fa-solid fa-building-columns"></i>
                       </div>
-                      
-                      <!-- Card 2 -->
-                      <div class="relative p-4 text-white bg-gradient-to-br from-green-600 to-green-800 rounded-xl shadow-lg transition-shadow cursor-pointer hover:shadow-xl">
-                        <div class="flex justify-between items-start mb-4">
-                          <div class="text-sm font-medium opacity-90">Cuenta Alternativa</div>
-                          <div class="w-8 h-6 bg-white rounded opacity-20"></div>
+                      <div class="mb-2">
+                        <div class="text-[10px] font-semibold tracking-widest uppercase opacity-70">Titular</div>
+                        <div class="text-sm font-bold">Christopher Pineda</div>
+                      </div>
+                      <div class="mb-1">
+                        <div class="text-[10px] font-semibold tracking-widest uppercase opacity-70">CLABE interbancaria</div>
+                        <div class="flex items-center gap-2 mt-0.5">
+                          <span class="text-base font-bold tracking-widest font-mono">0123 2001 5086 5040 05</span>
+                          <button @click="copyClabe" class="flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-blue-900 bg-white rounded opacity-80 hover:opacity-100 transition">
+                            <i class="fa-solid fa-copy text-[10px]"></i>
+                            Copiar
+                          </button>
                         </div>
-                        <div class="mb-2 text-lg font-bold tracking-wider">**** **** **** 5678</div>
-                        <div class="text-xs opacity-90">Banco Santander</div>
-                        <div class="mt-2 text-xs opacity-75">CLABE: 014180000000000000</div>
                       </div>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-gray-700 space-y-1.5">
+                      <div class="font-semibold text-blue-700 mb-1">¿Cómo realizar tu transferencia?</div>
+                      <div class="flex gap-2 items-start"><span class="text-blue-500 font-bold flex-shrink-0">1.</span> Abre tu app bancaria o ve a una sucursal / OXXO Pay.</div>
+                      <div class="flex gap-2 items-start"><span class="text-blue-500 font-bold flex-shrink-0">2.</span> Elige "Transferencia SPEI" e ingresa la CLABE de arriba.</div>
+                      <div class="flex gap-2 items-start"><span class="text-blue-500 font-bold flex-shrink-0">3.</span> Ingresa el monto exacto que pusiste arriba.</div>
+                      <div class="flex gap-2 items-start"><span class="text-blue-500 font-bold flex-shrink-0">4.</span> Sube el comprobante aquí abajo para confirmar tu pago.</div>
                     </div>
                   </div>
 
@@ -1516,6 +1514,7 @@
                         <input
                           v-model="cashAmount"
                           type="number"
+                          inputmode="decimal"
                           step="0.01"
                           min="0.01"
                           class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-yellow-500 focus:border-yellow-500"
@@ -2280,16 +2279,15 @@ const {
   }
 })
 
-const mpReleaseTime = ref('instant') // 'instant' | '14' | '30'
 const mpPaymentType = ref('card')    // 'card' | 'cash'
 
-const MP_RATES = { instant: 0.0349, '14': 0.0319, '30': 0.0295, cash: 0.0379 }
+const MP_RATES = { instant: 0.0349, cash: 0.0379 }
 
 // Gross-up for MP: charge = (booking_amount + 4×IVA) / (1 − rate×IVA)
 // ensures net after MP fee = booking_amount
 const mpTotalCharge = computed(() => {
   const amt = parseFloat(paymentAmount.value) || 0
-  const rate = mpPaymentType.value === 'cash' ? MP_RATES.cash : (MP_RATES[mpReleaseTime.value] || MP_RATES.instant)
+  const rate = mpPaymentType.value === 'cash' ? MP_RATES.cash : MP_RATES.instant
   const effectiveRate = rate * 1.16
   const effectiveFixed = 4 * 1.16
   return Math.ceil((amt + effectiveFixed) / (1 - effectiveRate) * 100) / 100
@@ -3091,7 +3089,7 @@ async function pagarMercadoPago(amount = paymentAmount.value) {
       booking_id: event.value.id,
       amount: amountToPay,
       gateway: 'mercadopago',
-      mp_release_time: mpReleaseTime.value,
+      mp_release_time: 'instant',
       mp_payment_type: mpPaymentType.value,
     })
 
@@ -3271,6 +3269,10 @@ async function copyToClipboard(text) {
     document.body.removeChild(textArea)
     toast.success('Copiado al portapapeles')
   }
+}
+
+function copyClabe() {
+  copyToClipboard('012320015086504005')
 }
 
 async function submitTransferPayment() {
