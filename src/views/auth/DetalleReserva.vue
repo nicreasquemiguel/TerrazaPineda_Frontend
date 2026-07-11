@@ -981,18 +981,23 @@
               <div class="text-xs font-semibold text-gray-900 truncate">{{ event.user?.email || 'N/A' }}</div>
             </div>
           </div>
-          <div v-if="event.user?.phone" class="flex items-center gap-2">
+          <div v-if="event.user?.phone" class="flex items-center gap-2 col-span-2">
             <i class="text-blue-400 text-sm fa-solid fa-phone flex-shrink-0"></i>
-            <div class="min-w-0">
+            <div class="min-w-0 flex-1">
               <div class="text-[10px] text-gray-400">Teléfono</div>
               <div class="text-xs font-semibold text-gray-900">{{ event.user.phone }}</div>
             </div>
-          </div>
-          <div class="flex items-center gap-2">
-            <i class="text-blue-400 text-sm fa-solid fa-calendar flex-shrink-0"></i>
-            <div class="min-w-0">
-              <div class="text-[10px] text-gray-400">Fecha de Creación</div>
-              <div class="text-xs font-semibold text-gray-900">{{ formatDate(event.created_at) }}</div>
+            <div class="flex gap-1.5 flex-shrink-0">
+              <a :href="'tel:' + event.user.phone"
+                class="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-blue-600 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition">
+                <i class="fa-solid fa-phone text-[9px]"></i>
+                Llamar
+              </a>
+              <a :href="'https://wa.me/' + event.user.phone.replace(/\D/g, '')" target="_blank" rel="noopener"
+                class="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-green-600 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition">
+                <i class="fa-brands fa-whatsapp text-[10px]"></i>
+                WhatsApp
+              </a>
             </div>
           </div>
         </div>
