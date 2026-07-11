@@ -502,40 +502,24 @@
     
     <!-- Event content when loaded -->
     <div v-else-if="event" class="px-4 mx-auto max-w-5xl sm:px-6 lg:px-8">
-      <!-- Breadcrumb -->
-      <nav class="mb-2 text-xs text-gray-500">
-        <router-link to="/dashboard" class="hover:underline">Dashboard</router-link>
-        <span class="mx-2">/</span>
-        <router-link :to="isStaff ? '/mis-reservas' : '/mis-reservas'" class="hover:underline">
-          {{ isStaff ? 'Reservas' : 'Mis Reservas' }}
-        </router-link>
-        <span class="mx-2">/</span>
-        <span class="font-semibold text-gray-700">Detalle</span>
-      </nav>
+      <!-- Breadcrumb + staff pill inline -->
+      <div class="flex items-center justify-between mb-3">
+        <nav class="text-xs text-gray-500">
+          <router-link to="/dashboard" class="hover:underline">Dashboard</router-link>
+          <span class="mx-2">/</span>
+          <router-link :to="isStaff ? '/mis-reservas' : '/mis-reservas'" class="hover:underline">
+            {{ isStaff ? 'Reservas' : 'Mis Reservas' }}
+          </router-link>
+          <span class="mx-2">/</span>
+          <span class="font-semibold text-gray-700">Detalle</span>
+        </nav>
 
-      <!-- Staff badge — compact pill, full-width above the grid -->
-      <div v-if="isStaff" class="flex justify-between items-center px-3 py-1.5 mb-3 bg-indigo-50 rounded-lg border border-indigo-200">
-        <div class="flex gap-2 items-center min-w-0">
-          <i class="flex-shrink-0 text-xs text-indigo-500 fa-solid fa-user-shield"></i>
-          <span class="text-xs font-semibold text-indigo-700 truncate">
-            Staff · {{ event.user_name || event.user?.first_name || 'Cliente' }} {{ event.user?.last_name || '' }}
-          </span>
-        </div>
-        <div class="flex flex-shrink-0 gap-1.5 items-center ml-2">
-          <span class="px-2 py-0.5 text-[10px] font-bold tracking-wide text-indigo-600 bg-indigo-100 rounded-full">ADMIN</span>
+        <!-- Staff pill -->
+        <div v-if="isStaff" class="flex items-center gap-1.5 ml-3 flex-shrink-0 px-2.5 py-1 bg-indigo-50 border border-indigo-200 rounded-full">
+          <i class="text-[10px] text-indigo-500 fa-solid fa-user-shield"></i>
+          <span class="text-[10px] font-bold tracking-wide text-indigo-600">ADMIN</span>
           <span class="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
         </div>
-      </div>
-
-      <!-- Mobile-only compact status strip -->
-      <div class="flex items-center gap-2 px-3 py-2 mb-3 bg-white rounded-xl border border-gray-200 shadow-sm lg:hidden">
-        <i class="text-xs text-blue-400 fa-regular fa-calendar flex-shrink-0"></i>
-        <span class="text-xs text-gray-500 truncate">
-          {{ event.start_datetime ? formatDate(event.start_datetime) : 'Sin fecha' }}
-        </span>
-        <span :class="statusBadge(event.is_entregado && event.status !== 'finalizado' ? 'entregado' : event.status)" class="ml-auto flex-shrink-0">
-          {{ visibleSteps.find(s => s.key === (event.is_entregado && event.status !== 'finalizado' ? 'entregado' : event.status))?.label || event.status }}
-        </span>
       </div>
 
       <!-- Two-column layout: left=steps, right=summary+payment -->
@@ -690,15 +674,15 @@
                 </span>
               </div>
 
-              <!-- Hora de llegada -->
-              <div class="mx-4 mb-3 flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+              <!-- Hora de llegada (only shown when entregado) -->
+              <div v-if="event.is_entregado" class="mx-4 mb-3 flex items-center justify-between p-3 bg-gray-50 rounded-xl">
                 <div class="flex items-center gap-3">
                   <div class="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-full flex-shrink-0">
                     <i class="fa-regular fa-clock text-purple-500 text-sm"></i>
                   </div>
                   <div>
                     <div class="text-xs text-gray-500">Hora de llegada al evento</div>
-                    <div v-if="!editingHoraEntrega || isLocked" class="text-sm font-bold text-gray-900">
+                    <div v-if="!editingHoraEntrega || !isStaff" class="text-sm font-bold text-gray-900">
                       {{ event.hora_entrega ? event.hora_entrega.slice(0,5) : (event.start_datetime ? new Date(event.start_datetime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false }) : 'Sin especificar') }}
                     </div>
                     <div v-else class="flex gap-2 items-center mt-0.5">
@@ -715,7 +699,8 @@
                     </div>
                   </div>
                 </div>
-                <button v-if="!editingHoraEntrega && !isLocked" @click="editingHoraEntrega = true; horaEntregaInput = event.hora_entrega ? event.hora_entrega.slice(0,5) : (event.start_datetime ? new Date(event.start_datetime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false }) : '')"
+                <!-- Edit button: staff only -->
+                <button v-if="isStaff && !editingHoraEntrega && !isLocked" @click="editingHoraEntrega = true; horaEntregaInput = event.hora_entrega ? event.hora_entrega.slice(0,5) : (event.start_datetime ? new Date(event.start_datetime).toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit', hour12: false }) : '')"
                   class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-purple-600 bg-white rounded-lg border border-purple-200 hover:bg-purple-50 flex-shrink-0">
                   <i class="fa-solid fa-pen text-xs"></i>
                   {{ event.hora_entrega ? 'Editar hora' : 'Agregar hora' }}
