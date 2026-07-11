@@ -1,94 +1,200 @@
 <template>
   <div>
     <!-- Cambiar paquete Modal -->
-    <div v-if="showPackageModal" class="flex fixed inset-0 z-50 justify-center items-center bg-black/40">
-      <div class="relative p-6 w-full max-w-md bg-white rounded-2xl shadow-xl">
-        <button @click="showPackageModal = false" class="absolute top-3 right-3 text-2xl text-gray-400 hover:text-gray-700">&times;</button>
-        <h3 class="mb-4 text-lg font-bold text-gray-900">Selecciona un paquete</h3>
-        <div v-if="packagesLoading" class="py-8 text-center">Cargando paquetes...</div>
-        <div v-else-if="packagesError" class="py-8 text-center text-red-600">
-          Error cargando paquetes: {{ packagesError.message }}
+    <div v-if="showPackageModal"
+      class="flex fixed inset-0 z-50 justify-center items-end sm:items-center bg-black/50 backdrop-blur-sm"
+      @click.self="showPackageModal = false">
+      <div class="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden">
+        <!-- Header -->
+        <div class="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-gray-100">
+          <div class="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-2xl flex-shrink-0">
+            <i class="fa-solid fa-box-open text-blue-500 text-base"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-base font-bold text-gray-900">Cambiar paquete</div>
+            <div class="text-xs text-gray-400">Selecciona el nuevo paquete</div>
+          </div>
+          <button @click="showPackageModal = false"
+            class="flex justify-center items-center w-8 h-8 bg-gray-100 rounded-full text-gray-400 hover:bg-gray-200 transition">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
         </div>
-        <div v-else>
-          <div class="flex overflow-y-auto flex-col gap-3 max-h-72">
-            <div v-if="availablePackages.length === 0" class="py-4 text-center text-gray-500">
-              No hay paquetes disponibles
-            </div>
-            <template v-else>
-              <div v-for="pkg in availablePackages" :key="pkg?.id || pkg?.title || Math.random()"
-                @click="selectedPackageId = pkg?.id; console.log('Selected package:', pkg?.id)"
-                :class="[ 'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition',
-                  selectedPackageId === pkg?.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:bg-gray-50' ]">
-                <div v-if="pkg?.icon" class="text-xl text-blue-500">
-                  <Icon :icon="pkg.icon" />
-                </div>
-                <div class="flex-1">
-                  <div class="font-bold text-gray-900">{{ pkg?.title || 'Sin título' }}</div>
-                  <div class="text-sm text-gray-500">{{ pkg?.n_people || 0 }} personas • ${{ (pkg?.price || 0).toLocaleString() }}</div>
-                </div>
-                <span v-if="selectedPackageId === pkg?.id" class="font-bold text-blue-500">✓</span>
+        <!-- Body -->
+        <div class="px-5 py-4 max-h-[55vh] overflow-y-auto">
+          <div v-if="packagesLoading" class="py-10 text-center text-sm text-gray-400">
+            <i class="fa-solid fa-spinner fa-spin mr-2"></i>Cargando paquetes...
+          </div>
+          <div v-else-if="packagesError" class="py-8 text-center text-sm text-red-500">
+            Error cargando paquetes: {{ packagesError.message }}
+          </div>
+          <div v-else-if="availablePackages.length === 0" class="py-8 text-center text-sm text-gray-400">
+            No hay paquetes disponibles
+          </div>
+          <div v-else class="flex flex-col gap-2">
+            <div v-for="pkg in availablePackages" :key="pkg?.id || pkg?.title"
+              @click="selectedPackageId = pkg?.id"
+              :class="['flex items-center gap-3 p-3.5 rounded-2xl border-2 cursor-pointer transition-all',
+                selectedPackageId === pkg?.id
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-white']">
+              <div class="flex justify-center items-center w-10 h-10 rounded-xl flex-shrink-0"
+                :class="selectedPackageId === pkg?.id ? 'bg-blue-100' : 'bg-white'">
+                <Icon v-if="pkg?.icon" :icon="pkg.icon"
+                  :class="selectedPackageId === pkg?.id ? 'text-blue-500' : 'text-gray-400'"
+                  class="text-xl" />
+                <i v-else class="fa-solid fa-box text-gray-300 text-lg"></i>
               </div>
-            </template>
+              <div class="flex-1 min-w-0">
+                <div class="font-bold text-gray-900 text-sm">{{ pkg?.title || 'Sin título' }}</div>
+                <div class="text-xs text-gray-400 mt-0.5">{{ pkg?.n_people || 0 }} personas · ${{ (pkg?.price || 0).toLocaleString() }}</div>
+              </div>
+              <div class="flex justify-center items-center w-6 h-6 rounded-full flex-shrink-0 transition-all"
+                :class="selectedPackageId === pkg?.id ? 'bg-blue-500' : 'bg-gray-200'">
+                <i class="fa-solid fa-check text-white text-[10px]"></i>
+              </div>
+            </div>
           </div>
-          <div class="flex gap-2 justify-end mt-6">
-            <button @click="showPackageModal = false" class="px-4 py-2 font-semibold text-gray-600 bg-gray-100 rounded hover:bg-gray-200">Cancelar</button>
-            <button @click="() => { console.log('Save package button clicked'); savePackageChange(); }" :disabled="selectedPackageId === (event.package && event.package.id)" class="px-4 py-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50">Guardar</button>
-          </div>
+        </div>
+        <!-- Footer -->
+        <div class="px-5 pb-6 pt-3 border-t border-gray-100">
+          <button @click="savePackageChange()"
+            :disabled="selectedPackageId === (event.package && event.package.id)"
+            class="w-full py-3 text-sm font-bold text-white bg-blue-500 rounded-2xl hover:bg-blue-600 disabled:opacity-40 transition-colors shadow-sm">
+            Guardar paquete
+          </button>
+          <button @click="showPackageModal = false"
+            class="mt-2.5 w-full py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors">
+            Cancelar
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Cambiar extras Modal -->
-    <div v-if="showExtrasModal" class="flex fixed inset-0 z-50 justify-center items-center bg-black/40">
-      <div class="relative p-6 w-full max-w-md bg-white rounded-2xl shadow-xl">
-        <button @click="showExtrasModal = false" class="absolute top-3 right-3 text-2xl text-gray-400 hover:text-gray-700">&times;</button>
-        <h3 class="mb-4 text-lg font-bold text-gray-900">Gestionar extras</h3>
-        
-        <!-- Available Extras -->
-        <div class="mb-6">
-          <h4 class="mb-3 font-semibold text-gray-700">Extras disponibles</h4>
-          <div class="flex overflow-y-auto flex-col gap-2 max-h-48">
-            <div v-for="extra in availableExtras.filter(e => !isExtraSelected(e))" :key="extra.name"
+    <div v-if="showExtrasModal"
+      class="flex fixed inset-0 z-50 justify-center items-end sm:items-center bg-black/50 backdrop-blur-sm"
+      @click.self="showExtrasModal = false">
+      <div class="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden">
+        <!-- Header -->
+        <div class="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-gray-100">
+          <div class="flex justify-center items-center w-10 h-10 bg-cyan-100 rounded-2xl flex-shrink-0">
+            <i class="fa-solid fa-gift text-cyan-500 text-base"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-base font-bold text-gray-900">Gestionar extras</div>
+            <div class="text-xs text-gray-400">Toca un extra para agregarlo o quitarlo</div>
+          </div>
+          <button @click="showExtrasModal = false"
+            class="flex justify-center items-center w-8 h-8 bg-gray-100 rounded-full text-gray-400 hover:bg-gray-200 transition">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+        <!-- Body — single unified list, tap toggles -->
+        <div class="px-5 py-4 max-h-[55vh] overflow-y-auto">
+          <div v-if="availableExtras.length === 0" class="py-8 text-center text-sm text-gray-400">
+            No hay extras disponibles
+          </div>
+          <div v-else class="flex flex-col gap-2">
+            <div v-for="extra in availableExtras" :key="extra.name"
               @click="toggleExtra(extra)"
-              :class="[ 'flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition',
-                'border-gray-200 hover:bg-gray-50' ]">
-              <div class="text-xl text-cyan-500">
-                <i class="fa-solid fa-gift"></i>
+              :class="['flex items-center gap-3 p-3.5 rounded-2xl border-2 cursor-pointer transition-all',
+                isExtraSelected(extra)
+                  ? 'border-cyan-400 bg-cyan-50'
+                  : 'border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-white']">
+              <div class="flex justify-center items-center w-10 h-10 rounded-xl flex-shrink-0"
+                :class="isExtraSelected(extra) ? 'bg-cyan-100' : 'bg-white'">
+                <i class="fa-solid fa-gift text-lg"
+                  :class="isExtraSelected(extra) ? 'text-cyan-500' : 'text-gray-300'"></i>
               </div>
-              <div class="flex-1">
-                <div class="font-bold text-gray-900">{{ extra.name }}</div>
-                <div class="text-sm text-gray-500">${{ extra.price.toLocaleString() }}</div>
+              <div class="flex-1 min-w-0">
+                <div class="font-bold text-gray-900 text-sm">{{ extra.name }}</div>
+                <div class="text-xs text-gray-400 mt-0.5">${{ extra.price.toLocaleString() }}</div>
               </div>
-            </div>
-            <div v-if="availableExtras.filter(e => !isExtraSelected(e)).length === 0" class="py-4 text-center text-gray-500">
-              No hay extras disponibles
-            </div>
-          </div>
-        </div>
-
-        <!-- Selected Extras -->
-        <div v-if="selectedExtras.length > 0" class="mb-6">
-          <h4 class="mb-3 font-semibold text-gray-700">Extras seleccionados</h4>
-          <div class="flex flex-col gap-2">
-            <div v-for="extra in selectedExtras" :key="extra.name"
-              class="flex gap-3 items-center p-3 bg-green-50 rounded-lg border border-green-200">
-              <div class="text-xl text-cyan-500">
-                <i class="fa-solid fa-gift"></i>
+              <div class="flex justify-center items-center w-6 h-6 rounded-full flex-shrink-0 transition-all"
+                :class="isExtraSelected(extra) ? 'bg-cyan-500' : 'bg-gray-200'">
+                <i class="fa-solid fa-check text-white text-[10px]"></i>
               </div>
-              <div class="flex-1">
-                <div class="font-bold text-gray-900">{{ extra.name }}</div>
-                <div class="text-sm text-gray-500">${{ extra.price.toLocaleString() }}</div>
-              </div>
-              <button @click="removeSelectedExtra(extra)" class="text-red-500 hover:text-red-700">
-                <i class="fa-solid fa-times"></i>
-              </button>
             </div>
           </div>
         </div>
+        <!-- Selected count chip -->
+        <div v-if="selectedExtras.length > 0" class="mx-5 mb-2 flex items-center gap-2 px-3 py-2 bg-cyan-50 rounded-xl border border-cyan-100">
+          <i class="fa-solid fa-circle-check text-cyan-500 text-xs"></i>
+          <span class="text-xs font-semibold text-cyan-700">{{ selectedExtras.length }} extra{{ selectedExtras.length > 1 ? 's' : '' }} seleccionado{{ selectedExtras.length > 1 ? 's' : '' }}</span>
+        </div>
+        <!-- Footer -->
+        <div class="px-5 pb-6 pt-3 border-t border-gray-100">
+          <button @click="saveExtrasChange()"
+            class="w-full py-3 text-sm font-bold text-white bg-cyan-500 rounded-2xl hover:bg-cyan-600 transition-colors shadow-sm">
+            Guardar extras
+          </button>
+          <button @click="showExtrasModal = false"
+            class="mt-2.5 w-full py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
 
-        <div class="flex gap-2 justify-end">
-          <button @click="showExtrasModal = false" class="px-4 py-2 font-semibold text-gray-600 bg-gray-100 rounded hover:bg-gray-200">Cancelar</button>
-          <button @click="() => { console.log('Save extras button clicked'); saveExtrasChange(); }" class="px-4 py-2 font-semibold text-white bg-green-600 rounded hover:bg-green-700">Guardar</button>
+    <!-- Modal Cargo Adicional (staff only) -->
+    <div v-if="showCustomChargeModal"
+      class="flex fixed inset-0 z-50 justify-center items-end sm:items-center bg-black/50 backdrop-blur-sm"
+      @click.self="showCustomChargeModal = false; customChargeDescription = ''; customChargePrice = ''">
+      <div class="w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden">
+        <!-- Header -->
+        <div class="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-gray-100">
+          <div class="flex justify-center items-center w-10 h-10 bg-orange-100 rounded-2xl flex-shrink-0">
+            <i class="fa-solid fa-receipt text-orange-500 text-base"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-base font-bold text-gray-900">Cargo adicional</div>
+            <div class="text-xs text-gray-400">Solo visible para staff</div>
+          </div>
+          <button @click="showCustomChargeModal = false; customChargeDescription = ''; customChargePrice = ''"
+            class="flex justify-center items-center w-8 h-8 bg-gray-100 rounded-full text-gray-400 hover:bg-gray-200 transition">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+        <!-- Body -->
+        <div class="flex flex-col gap-4 px-5 py-5">
+          <div>
+            <label class="mb-1.5 block text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Descripción</label>
+            <div class="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-xl border border-gray-200 focus-within:border-orange-300 focus-within:ring-2 focus-within:ring-orange-100 transition-all">
+              <i class="fa-solid fa-tag text-gray-300 text-sm flex-shrink-0"></i>
+              <input v-model="customChargeDescription" type="text" placeholder="Ej. Hora extra, decoración..."
+                class="flex-1 text-sm bg-transparent outline-none text-gray-900 placeholder-gray-400" />
+            </div>
+          </div>
+          <div>
+            <label class="mb-1.5 block text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Monto</label>
+            <div class="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-xl border border-gray-200 focus-within:border-orange-300 focus-within:ring-2 focus-within:ring-orange-100 transition-all">
+              <span class="text-sm font-bold text-gray-300">$</span>
+              <input v-model="customChargePrice" type="number" inputmode="decimal" placeholder="0"
+                class="flex-1 text-sm bg-transparent outline-none text-gray-900 placeholder-gray-400" />
+              <span class="text-xs text-gray-300 font-medium">MXN</span>
+            </div>
+          </div>
+          <!-- Live preview -->
+          <transition name="fade">
+            <div v-if="customChargeDescription || customChargePrice"
+              class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 border border-orange-100 rounded-xl">
+              <i class="fa-solid fa-circle-plus text-orange-400 text-sm flex-shrink-0"></i>
+              <div class="flex-1 text-sm font-semibold text-gray-800 truncate">{{ customChargeDescription || 'Descripción...' }}</div>
+              <div class="text-sm font-bold text-orange-500">${{ customChargePrice ? parseFloat(customChargePrice).toLocaleString() : '0' }}</div>
+            </div>
+          </transition>
+        </div>
+        <!-- Footer -->
+        <div class="px-5 pb-6">
+          <button @click="addCustomCharge"
+            :disabled="isAddingCustomCharge || !customChargeDescription.trim() || !customChargePrice"
+            class="w-full py-3 text-sm font-bold text-white bg-orange-500 rounded-2xl hover:bg-orange-600 disabled:opacity-40 transition-colors shadow-sm">
+            {{ isAddingCustomCharge ? 'Agregando...' : 'Agregar cargo' }}
+          </button>
+          <button @click="showCustomChargeModal = false; customChargeDescription = ''; customChargePrice = ''"
+            class="mt-2.5 w-full py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors">
+            Cancelar
+          </button>
         </div>
       </div>
     </div>
@@ -658,6 +764,10 @@
                 <i class="fa-solid fa-plus text-[10px]"></i>
                 Agregar
               </button>
+              <button v-if="isStaff" @click="showCustomChargeModal = true" class="flex-shrink-0 flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-orange-700 bg-orange-50 rounded border border-orange-200 transition hover:bg-orange-100">
+                <i class="fa-solid fa-plus text-[10px]"></i>
+                Cargo
+              </button>
             </div>
           </div>
           <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
@@ -699,6 +809,21 @@
               </div>
             </div>
             <div v-else class="px-2 py-2 text-sm text-gray-400">Sin extras</div>
+            <!-- Custom charges (item_type === 'other') -->
+            <div v-if="event.line_items && event.line_items.filter(li => li.item_type === 'other').length > 0"
+              class="border-t border-gray-100">
+              <div v-for="charge in event.line_items.filter(li => li.item_type === 'other')" :key="charge.id"
+                class="flex items-center px-4 h-14 border-b border-gray-100 last:border-b-0">
+                <i class="mr-2 text-orange-400 fa-solid fa-circle-plus"></i>
+                <div class="flex-1 text-sm font-semibold text-gray-900">{{ charge.description }}</div>
+                <div class="mr-3 text-sm font-semibold text-gray-900">${{ parseFloat(charge.unit_price).toLocaleString() }}</div>
+                <button v-if="isStaff" @click="removeCustomCharge(charge.id)"
+                  :disabled="removingChargeId === charge.id"
+                  class="flex justify-center items-center w-5 h-5 text-xs text-red-400 rounded-full transition hover:text-red-600 disabled:opacity-40">
+                  <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
         <div class="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
@@ -1696,6 +1821,18 @@
                       @error="handleImageError"
                       @load="handleImageLoad"
                     />
+                  </div>
+                  <!-- Staff approve button -->
+                  <div v-if="isStaff && payment.status === 'pending'" class="pt-2 border-t border-gray-200">
+                    <button
+                      @click.stop="approvePayment(payment.id)"
+                      :disabled="approvingPaymentId === payment.id"
+                      class="w-full py-2 text-xs font-bold text-white bg-green-500 rounded-xl hover:bg-green-600 disabled:opacity-50 transition-colors"
+                    >
+                      <i v-if="approvingPaymentId === payment.id" class="fa-solid fa-spinner fa-spin mr-1"></i>
+                      <i v-else class="fa-solid fa-circle-check mr-1"></i>
+                      {{ approvingPaymentId === payment.id ? 'Aprobando...' : 'Aprobar pago' }}
+                    </button>
                   </div>
                 </div>
               </div>
@@ -2876,6 +3013,44 @@ const selectedPackageId = ref(null)
 // Extras modal variables
 const showExtrasModal = ref(false)
 const selectedExtras = ref([])
+const showCustomChargeModal = ref(false)
+const customChargeDescription = ref('')
+const customChargePrice = ref('')
+const isAddingCustomCharge = ref(false)
+const removingChargeId = ref(null)
+
+async function addCustomCharge() {
+  if (!customChargeDescription.value.trim() || !customChargePrice.value) return
+  isAddingCustomCharge.value = true
+  try {
+    const res = await api.post(`/api/bookings/bookings/${event.value.id}/add_custom_charge/`, {
+      description: customChargeDescription.value.trim(),
+      price: parseFloat(customChargePrice.value),
+    })
+    event.value = res.data
+    showCustomChargeModal.value = false
+    customChargeDescription.value = ''
+    customChargePrice.value = ''
+    toast.success('Cargo agregado.')
+  } catch (e) {
+    toast.error(e?.response?.data?.detail || 'Error al agregar cargo.')
+  } finally {
+    isAddingCustomCharge.value = false
+  }
+}
+
+async function removeCustomCharge(lineItemId) {
+  removingChargeId.value = lineItemId
+  try {
+    const res = await api.delete(`/api/bookings/bookings/${event.value.id}/remove_custom_charge/${lineItemId}/`)
+    event.value = res.data
+    toast.success('Cargo eliminado.')
+  } catch (e) {
+    toast.error(e?.response?.data?.detail || 'Error al eliminar cargo.')
+  } finally {
+    removingChargeId.value = null
+  }
+}
 
 // Transfer accordion variables
 const showTransferAccordion = ref(false)
@@ -3032,6 +3207,21 @@ const isPaying = ref(false)
 const paymentAmount = ref('')
 const expandedPaymentId = ref(null)
 const togglePaymentDetail = (id) => { expandedPaymentId.value = expandedPaymentId.value === id ? null : id }
+const approvingPaymentId = ref(null)
+
+async function approvePayment(paymentId) {
+  approvingPaymentId.value = paymentId
+  try {
+    await api.post(`/api/store/payments/${paymentId}/approve/`)
+    toast.success('Pago aprobado.')
+    await refetchOrders()
+  } catch (e) {
+    const msg = e?.response?.data?.detail || 'Error al aprobar el pago.'
+    toast.error(msg)
+  } finally {
+    approvingPaymentId.value = null
+  }
+}
 
 // Auto-fill $1,000 when booking loads with no advance paid yet
 watch(event, (val) => {

@@ -182,9 +182,15 @@
               <div class="relative">
                 <div class="flex justify-between items-center mb-2 font-bold text-gray-700">
                   <span>Servicios extra</span>
-                  <button @click="goToStep(3)" class="ml-2 px-2 py-0.5 rounded-full bg-[#e0f2fe] text-[#0369a1] text-[11px] font-semibold shadow-sm hover:bg-[#bae6fd] transition">Editar</button>
+                  <div class="flex gap-2">
+                    <button @click="goToStep(3)" class="px-2 py-0.5 rounded-full bg-[#e0f2fe] text-[#0369a1] text-[11px] font-semibold shadow-sm hover:bg-[#bae6fd] transition">Editar</button>
+                    <button v-if="isStaff" @click="showCustomChargeModal = true" class="flex gap-1 items-center px-2 py-0.5 text-[11px] font-semibold text-orange-700 bg-orange-50 rounded-full border border-orange-200 shadow-sm hover:bg-orange-100 transition">
+                      <i class="fa-solid fa-plus text-[9px]"></i>
+                      Cargo
+                    </button>
+                  </div>
                 </div>
-                <div v-if="selectedExtrasDetails.length" class="flex flex-col gap-1">
+                <div class="flex flex-col gap-1">
                   <div v-for="extra in selectedExtrasDetails" :key="extra.id" class="flex justify-between items-center px-3 py-1 text-sm bg-white rounded-lg border">
                     <span class="flex gap-2 items-center text-base font-semibold">
                       <span v-if="extra.icon"><Icon :icon="extra.icon" class="text-lg" /></span>
@@ -192,8 +198,18 @@
                     </span>
                     <span class="text-base font-bold text-gray-500">${{ Math.round(extra.price) }}</span>
                   </div>
+                  <div v-for="(charge, i) in customCharges" :key="'cc-'+i" class="flex justify-between items-center px-3 py-1 text-sm bg-orange-50 rounded-lg border border-orange-200">
+                    <span class="flex gap-2 items-center font-semibold text-orange-800">
+                      <i class="fa-solid fa-circle-plus text-orange-400"></i>
+                      {{ charge.description }}
+                    </span>
+                    <div class="flex gap-2 items-center">
+                      <span class="font-bold text-gray-500">${{ Math.round(charge.price) }}</span>
+                      <button @click="removeLocalCharge(i)" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-xmark text-xs"></i></button>
+                    </div>
+                  </div>
+                  <div v-if="!selectedExtrasDetails.length && !customCharges.length" class="text-xs text-gray-500">Ninguno</div>
                 </div>
-                <div v-else class="text-xs text-gray-500">Ninguno</div>
               </div>
               <!-- Descripción -->
               <div>
@@ -274,6 +290,67 @@
       </div>
     </div>
 
+    <!-- Modal Cargo Adicional (staff only) -->
+    <div v-if="showCustomChargeModal"
+      class="flex fixed inset-0 z-50 justify-center items-end sm:items-center bg-black/50 backdrop-blur-sm"
+      @click.self="showCustomChargeModal = false; customChargeDescription = ''; customChargePrice = ''">
+      <div class="w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden">
+        <!-- Header -->
+        <div class="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-gray-100">
+          <div class="flex justify-center items-center w-10 h-10 bg-orange-100 rounded-2xl flex-shrink-0">
+            <i class="fa-solid fa-receipt text-orange-500 text-base"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-base font-bold text-gray-900">Cargo adicional</div>
+            <div class="text-xs text-gray-400">Solo visible para staff</div>
+          </div>
+          <button @click="showCustomChargeModal = false; customChargeDescription = ''; customChargePrice = ''"
+            class="flex justify-center items-center w-8 h-8 bg-gray-100 rounded-full text-gray-400 hover:bg-gray-200 transition">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+        <!-- Body -->
+        <div class="flex flex-col gap-4 px-5 py-5">
+          <div>
+            <label class="mb-1.5 block text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Descripción</label>
+            <div class="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-xl border border-gray-200 focus-within:border-orange-300 focus-within:ring-2 focus-within:ring-orange-100 transition-all">
+              <i class="fa-solid fa-tag text-gray-300 text-sm flex-shrink-0"></i>
+              <input v-model="customChargeDescription" type="text" placeholder="Ej. Hora extra, decoración..."
+                class="flex-1 text-sm bg-transparent outline-none text-gray-900 placeholder-gray-400" />
+            </div>
+          </div>
+          <div>
+            <label class="mb-1.5 block text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Monto</label>
+            <div class="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-xl border border-gray-200 focus-within:border-orange-300 focus-within:ring-2 focus-within:ring-orange-100 transition-all">
+              <span class="text-sm font-bold text-gray-300">$</span>
+              <input v-model="customChargePrice" type="number" inputmode="decimal" placeholder="0"
+                class="flex-1 text-sm bg-transparent outline-none text-gray-900 placeholder-gray-400" />
+              <span class="text-xs text-gray-300 font-medium">MXN</span>
+            </div>
+          </div>
+          <!-- Live preview -->
+          <div v-if="customChargeDescription || customChargePrice"
+            class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 border border-orange-100 rounded-xl">
+            <i class="fa-solid fa-circle-plus text-orange-400 text-sm flex-shrink-0"></i>
+            <div class="flex-1 text-sm font-semibold text-gray-800 truncate">{{ customChargeDescription || 'Descripción...' }}</div>
+            <div class="text-sm font-bold text-orange-500">${{ customChargePrice ? parseFloat(customChargePrice).toLocaleString() : '0' }}</div>
+          </div>
+        </div>
+        <!-- Footer -->
+        <div class="px-5 pb-6">
+          <button @click="addLocalCharge"
+            :disabled="!customChargeDescription.trim() || !customChargePrice"
+            class="w-full py-3 text-sm font-bold text-white bg-orange-500 rounded-2xl hover:bg-orange-600 disabled:opacity-40 transition-colors shadow-sm">
+            Agregar cargo
+          </button>
+          <button @click="showCustomChargeModal = false; customChargeDescription = ''; customChargePrice = ''"
+            class="mt-2.5 w-full py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- ── Auth Modal ── -->
     <div v-if="showAuthModal" class="flex fixed inset-0 z-50 justify-center items-center bg-black/40">
       <div class="flex relative flex-col items-center p-6 w-full max-w-xs bg-white rounded-2xl shadow-2xl">
@@ -320,6 +397,10 @@ watch(date, (newDate, oldDate) => {
 })
 const selectedExtras = ref([]);
 const description = ref('');
+const customCharges = ref([]);
+const showCustomChargeModal = ref(false);
+const customChargeDescription = ref('');
+const customChargePrice = ref('');
 const currentStep = ref(1);
 const steps = [
   'Fecha',
@@ -348,13 +429,29 @@ function prevStep() {
 const extrasTotal = computed(() => {
   return selectedExtrasDetails.value.reduce((sum, extra) => sum + (Number(extra.price) || 0), 0);
 });
+const customChargesTotal = computed(() => {
+  return customCharges.value.reduce((sum, c) => sum + (Number(c.price) || 0), 0);
+});
 const totalCost = computed(() => {
   const pkg = selectedPackage.value?.price ? Number(selectedPackage.value.price) : 0;
-  return pkg + extrasTotal.value;
+  return pkg + extrasTotal.value + customChargesTotal.value;
 });
 const totalCostNoDecimals = computed(() => {
   return Math.round(totalCost.value);
 });
+
+const isStaff = computed(() => authStore.user?.is_staff)
+
+function addLocalCharge() {
+  if (!customChargeDescription.value.trim() || !customChargePrice.value) return;
+  customCharges.value.push({ description: customChargeDescription.value.trim(), price: parseFloat(customChargePrice.value) });
+  customChargeDescription.value = '';
+  customChargePrice.value = '';
+  showCustomChargeModal.value = false;
+}
+function removeLocalCharge(index) {
+  customCharges.value.splice(index, 1);
+}
 
 async function sendRequest() {
   if (isSending.value) return;
@@ -368,10 +465,21 @@ async function sendRequest() {
   };
   try {
     const response = await api.post('/api/bookings/bookings/', data);
+    const bookingId = response.data?.id;
+    if (bookingId && customCharges.value.length > 0) {
+      for (const charge of customCharges.value) {
+        try {
+          await api.post(`/api/bookings/bookings/${bookingId}/add_custom_charge/`, {
+            description: charge.description,
+            price: charge.price,
+          });
+        } catch {}
+      }
+    }
     localStorage.removeItem('reserveCart')
     toast.success('¡Solicitud enviada con éxito!')
-    if (response.data && response.data.id) {
-      router.push(`/detalle-reserva/${response.data.id}`)
+    if (bookingId) {
+      router.push(`/detalle-reserva/${bookingId}`)
     } else {
       router.push('/mis-reservas')
     }
