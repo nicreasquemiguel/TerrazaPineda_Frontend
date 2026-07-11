@@ -989,12 +989,12 @@
             </div>
             <div class="flex gap-1.5 flex-shrink-0">
               <a :href="'tel:' + event.user.phone"
-                class="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-blue-600 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition">
+                class="flex items-center justify-center gap-1 w-20 py-1 text-[10px] font-semibold text-blue-600 bg-blue-50 rounded-lg border border-blue-200 hover:bg-blue-100 transition">
                 <i class="fa-solid fa-phone text-[9px]"></i>
                 Llamar
               </a>
               <a :href="'https://wa.me/' + event.user.phone.replace(/\D/g, '')" target="_blank" rel="noopener"
-                class="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold text-green-600 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition">
+                class="flex items-center justify-center gap-1 w-20 py-1 text-[10px] font-semibold text-green-600 bg-green-50 rounded-lg border border-green-200 hover:bg-green-100 transition">
                 <i class="fa-brands fa-whatsapp text-[10px]"></i>
                 WhatsApp
               </a>
