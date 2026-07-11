@@ -674,8 +674,8 @@
               <!-- Header -->
               <div class="flex items-start justify-between p-4 pb-3">
                 <div class="flex items-start gap-3">
-                  <div class="flex-shrink-0 flex items-center justify-center w-10 h-10 bg-purple-100 rounded-xl">
-                    <i class="fa-solid fa-flag-checkered text-purple-500"></i>
+                  <div class="flex-shrink-0 flex items-center justify-center w-10 h-10">
+                    <i class="fa-solid fa-flag-checkered text-purple-500 text-xl"></i>
                   </div>
                   <div>
                     <div class="text-sm font-bold text-gray-900">Entrega y cierre del evento</div>
@@ -812,9 +812,6 @@
                       {{ event.status === 'finalizado' ? 'Reserva finalizada' : 'Finalizar reserva' }}
                     </span>
                   </div>
-                  <p class="text-[10px] text-gray-500 leading-tight">
-                    {{ event.status === 'finalizado' ? 'El cliente puede dejar su reseña.' : 'El cliente podrá dejar su reseña al finalizar.' }}
-                  </p>
                   <button v-if="event.status !== 'finalizado'" @click="finalizarReserva" :disabled="finalizarLoading"
                     class="w-full py-1.5 text-xs font-semibold text-white bg-purple-500 rounded-lg hover:bg-purple-600 disabled:opacity-50 transition-colors">
                     <i v-if="finalizarLoading" class="fa-solid fa-spinner fa-spin mr-1"></i>
