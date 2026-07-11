@@ -1574,58 +1574,40 @@
           <div class="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
             <h2 class="mb-3 text-sm font-bold text-gray-700">Historial de Pagos</h2>
             <div class="divide-y divide-gray-100">
-              <div v-for="payment in allPayments" :key="payment.id" class="py-4 first:pt-0 last:pb-0">
-                <div class="flex gap-3 items-start">
-                  <div class="flex flex-shrink-0 justify-center items-center w-9 h-9 text-gray-400">
-                    <i :class="['text-lg', getPaymentIcon(payment.gateway)]"></i>
+              <div v-for="payment in allPayments" :key="payment.id" class="py-2.5 first:pt-0 last:pb-0">
+                <div class="flex gap-2.5 items-center">
+                  <div class="flex flex-shrink-0 justify-center items-center w-8 h-8 bg-gray-50 rounded-lg text-gray-400">
+                    <i :class="['text-sm', getPaymentIcon(payment.gateway)]"></i>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <div class="flex gap-2 justify-between items-start">
-                      <div>
-                        <div class="text-sm font-semibold text-gray-900">{{ getPaymentMethodText(payment.method) }}</div>
-                        <div class="text-xs text-gray-400">{{ getGatewayText(payment.gateway) }}</div>
-                      </div>
-                      <div class="flex flex-col flex-shrink-0 gap-1 items-end">
-                        <span :class="['px-2 py-0.5 rounded-full text-xs font-bold', getPaymentStatusClass(payment.status)]">
+                    <div class="flex gap-2 justify-between items-center">
+                      <div class="flex gap-2 items-center min-w-0">
+                        <span class="text-sm font-semibold text-gray-900 truncate">{{ getPaymentMethodText(payment.method) }}</span>
+                        <span :class="['flex-shrink-0 px-1.5 py-0.5 rounded-full text-[10px] font-bold', getPaymentStatusClass(payment.status)]">
                           {{ getPaymentStatusText(payment.status) }}
                         </span>
-                        <span class="text-sm font-bold text-gray-900">${{ parseFloat(payment.amount || 0).toLocaleString() }}</span>
                       </div>
+                      <span class="flex-shrink-0 text-sm font-bold text-gray-900">${{ parseFloat(payment.amount || 0).toLocaleString() }}</span>
                     </div>
-                    <div v-if="payment.paid_at" class="flex gap-1 items-center mt-1 text-xs text-gray-400">
-                      <i class="fa-regular fa-clock"></i>
-                      Pagado el {{ formatDate(payment.paid_at) }}
-                    </div>
-                    <div v-if="payment.created_at && !payment.paid_at" class="flex gap-1 items-center mt-1 text-xs text-gray-400">
-                      <i class="fa-regular fa-clock"></i>
-                      {{ formatDate(payment.created_at) }}
-                    </div>
-                    <div v-if="payment.card_last4" class="mt-1 text-xs text-gray-500">
-                      Tarjeta terminada en {{ payment.card_last4 }}
-                    </div>
-                    <!-- Payment photo -->
-                    <div v-if="getPaymentPhotoUrl(payment)" class="mt-3">
-                      <div class="flex gap-1 items-center mb-1.5 text-xs font-semibold text-gray-600">
-                        <i class="text-gray-400 fa-solid fa-image"></i>
-                        Comprobante de pago
-                      </div>
-                      <img
-                        :src="getPaymentPhotoUrl(payment)"
-                        alt="Comprobante de pago"
-                        class="object-cover w-full max-w-xs h-40 rounded-lg border border-gray-200 transition-opacity cursor-pointer hover:opacity-90"
-                        @click="openPhotoModal(getPaymentPhotoUrl(payment))"
-                        @error="handleImageError"
-                        @load="handleImageLoad"
-                      />
-                      <button
-                        @click="openPhotoModal(getPaymentPhotoUrl(payment))"
-                        class="flex gap-1 items-center mt-1.5 text-xs text-blue-600 hover:text-blue-800"
-                      >
-                        <i class="fa-solid fa-expand-alt"></i>
-                        Ver en pantalla completa
-                      </button>
+                    <div class="flex gap-2 items-center mt-0.5">
+                      <span class="text-[10px] text-gray-500">
+                        <i class="fa-regular fa-calendar mr-0.5"></i>
+                        {{ formatDate(payment.paid_at || payment.created_at) }}
+                      </span>
+                      <span v-if="payment.card_last4" class="text-[10px] text-gray-400">· •••• {{ payment.card_last4 }}</span>
                     </div>
                   </div>
+                </div>
+                <!-- Payment photo (collapsed by default) -->
+                <div v-if="getPaymentPhotoUrl(payment)" class="mt-2 ml-10">
+                  <img
+                    :src="getPaymentPhotoUrl(payment)"
+                    alt="Comprobante"
+                    class="object-cover h-28 rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                    @click="openPhotoModal(getPaymentPhotoUrl(payment))"
+                    @error="handleImageError"
+                    @load="handleImageLoad"
+                  />
                 </div>
               </div>
             </div>
