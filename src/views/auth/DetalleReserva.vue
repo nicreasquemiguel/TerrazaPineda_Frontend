@@ -493,7 +493,7 @@
         </div>
       </div>
     </div>
-  <div class="py-4 pb-0 min-h-screen bg-gray-50">
+  <div class="pt-4 pb-16 min-h-screen bg-gray-50">
     <!-- Loading state -->
     <div v-if="loading" class="py-8 text-center">
       <div class="inline-block w-8 h-8 rounded-full border-b-2 border-cyan-500 animate-spin"></div>
@@ -1971,157 +1971,104 @@
       </div>
 
       <!-- Activity Logs Section for Staff -->
-      <div v-if="isStaff" class="mb-8">
-        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm">
+      <div v-if="isStaff" class="mt-6 mb-8">
+        <div class="overflow-hidden bg-white rounded-2xl border border-gray-200 shadow-sm">
           <!-- Header -->
-          <div class="px-4 py-3 border-b border-gray-200 sm:px-6 sm:py-4">
+          <div class="px-5 py-4 border-b border-gray-100 bg-gray-50/60">
             <div class="flex justify-between items-center">
-              <div class="flex items-center space-x-2 sm:space-x-3">
-                <div class="flex justify-center items-center w-6 h-6 bg-blue-600 rounded-lg sm:w-8 sm:h-8">
-                  <i class="text-xs text-white sm:text-sm fa-solid fa-history"></i>
-                </div>
-                <div class="flex-1 min-w-0">
-                  <h2 class="text-base font-semibold text-gray-900 truncate sm:text-lg">Registro de Actividad</h2>
-                  <p class="text-xs text-gray-500 sm:text-sm">{{ logsData?.length || 0 }} eventos registrados</p>
-                </div>
+              <div>
+                <h2 class="text-lg font-bold text-gray-900">Registro de Actividad</h2>
+                <p class="text-xs text-gray-400">{{ logsData?.length || 0 }} eventos</p>
               </div>
               <button
                 @click="refetchLogs()"
                 :disabled="logsLoading"
-                class="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-50 transition-colors"
+                class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-indigo-700 bg-indigo-50 rounded-lg border border-indigo-100 hover:bg-indigo-100 disabled:opacity-50 transition-colors"
               >
                 <i class="fa-solid fa-rotate-right" :class="logsLoading ? 'animate-spin' : ''"></i>
-                <span class="hidden sm:inline">Actualizar</span>
+                Actualizar
               </button>
             </div>
           </div>
-          
+
           <!-- Content -->
-          <div class="p-4 sm:p-6">
+          <div class="px-6 py-6">
             <!-- Loading state -->
-            <div v-if="logsLoading" class="py-8 text-center sm:py-12">
-              <div class="inline-flex items-center space-x-2 sm:space-x-3">
-                <div class="w-4 h-4 rounded-full border-2 border-blue-600 animate-spin sm:w-5 sm:h-5 border-t-transparent"></div>
-                <span class="text-xs text-gray-600 sm:text-sm">Cargando historial...</span>
-              </div>
+            <div v-if="logsLoading" class="flex justify-center items-center gap-2 py-12">
+              <div class="w-4 h-4 rounded-full border-2 border-indigo-500 animate-spin border-t-transparent"></div>
+              <span class="text-sm text-gray-400">Cargando historial...</span>
             </div>
-            
+
             <!-- Error state -->
-            <div v-else-if="logsError" class="py-8 text-center sm:py-12">
-              <div class="flex flex-col items-center space-y-2 sm:space-y-3">
-                <div class="flex justify-center items-center w-10 h-10 bg-red-100 rounded-full sm:w-12 sm:h-12">
-                  <i class="text-sm text-red-500 sm:text-base fa-solid fa-exclamation-triangle"></i>
-                </div>
-                <div class="px-4">
-                  <p class="text-xs font-medium text-red-600 sm:text-sm">Error cargando logs</p>
-                  <p class="text-xs text-gray-500">Intenta recargar la página</p>
-                </div>
+            <div v-else-if="logsError" class="flex flex-col items-center gap-3 py-12 text-center">
+              <div class="flex justify-center items-center w-11 h-11 bg-red-50 rounded-full">
+                <i class="text-red-400 fa-solid fa-triangle-exclamation"></i>
               </div>
+              <p class="text-sm font-medium text-red-600">Error cargando logs</p>
+              <p class="text-xs text-gray-400">Intenta recargar la página</p>
             </div>
-            
+
             <!-- Logs Timeline -->
-            <div v-else-if="logsData && logsData.length > 0" class="space-y-4 sm:space-y-6">
-              <div v-for="(log, index) in logsData" :key="log.id" class="flex relative items-start space-x-3 sm:space-x-4">
-                <!-- Timeline line -->
-                <div v-if="index < logsData.length - 1" class="absolute left-3 top-6 w-0.5 bg-gray-200 sm:left-4 sm:top-8" style="height: calc(100% + 1rem);"></div>
-                
-                <!-- Timeline dot -->
-                <div class="flex z-10 flex-shrink-0 justify-center items-center w-6 h-6 bg-white rounded-full border-2 sm:w-8 sm:h-8"
-                  :class="getLogActionClass(log.action).replace('text-', 'border-').replace('bg-', 'bg-')">
-                  <i class="text-xs" :class="getLogIcon(log.action)"></i>
-                </div>
-                
-                <!-- Log content -->
-                <div class="flex-1 pb-4 min-w-0 sm:pb-6">
-                  <!-- Mobile layout -->
-                  <div class="block sm:hidden">
-                    <div class="flex justify-between items-start mb-2">
-                      <div class="flex-1 pr-2 min-w-0">
-                        <p class="text-sm font-medium leading-tight text-gray-900">{{ log.description }}</p>
+            <div v-else-if="logsData && logsData.length > 0" class="relative">
+              <!-- Vertical guide line -->
+              <div class="absolute left-[17px] top-0 bottom-0 w-px bg-gray-100"></div>
+
+              <div class="space-y-3">
+                <div v-for="log in logsData" :key="log.id" class="flex gap-4">
+                  <!-- Icon dot -->
+                  <div class="relative z-10 flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full shadow-sm border border-white"
+                    :class="getLogActionClass(log.action)">
+                    <i class="text-xs" :class="getLogIcon(log.action)"></i>
+                  </div>
+
+                  <!-- Card -->
+                  <div class="flex-1 min-w-0 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200 hover:shadow-sm transition-all">
+                    <div class="px-4 py-3.5">
+                      <!-- Top row: description + timestamp -->
+                      <div class="flex justify-between items-start gap-4">
+                        <p class="text-sm font-medium leading-snug text-gray-800">{{ log.description }}</p>
+                        <span class="flex-shrink-0 text-[11px] text-gray-400 tabular-nums pt-0.5">{{ formatLogDate(log.timestamp) }}</span>
                       </div>
-                      <div class="flex-shrink-0 text-xs font-medium text-gray-500">
-                        {{ formatLogDate(log.timestamp) }}
+
+                      <!-- Meta row: user -->
+                      <div v-if="log.user_name" class="flex items-center gap-1.5 mt-2">
+                        <i class="text-[10px] text-gray-300 fa-solid fa-user"></i>
+                        <span class="text-xs text-gray-400">{{ log.user_name }}<span v-if="log.user_email" class="text-gray-300"> · {{ log.user_email }}</span></span>
                       </div>
-                    </div>
-                    
-                    <p v-if="log.user_name" class="mb-2 text-xs text-gray-500">
-                      Por {{ log.user_name }}
-                    </p>
-                    
-                    <!-- Status change indicator -->
-                    <div v-if="log.old_status && log.new_status" class="mb-2">
-                      <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-full">
-                        {{ formatStatus(log.old_status) }} → {{ formatStatus(log.new_status) }}
-                      </span>
-                    </div>
-                    
-                    <!-- Changes list -->
-                    <div v-if="log.metadata && log.metadata.changes" class="mt-2">
-                      <div class="p-2 bg-gray-50 rounded-lg">
-                        <h4 class="mb-1 text-xs font-medium text-gray-700">Cambios:</h4>
-                        <ul class="space-y-1">
-                          <li v-for="change in log.metadata.changes" :key="change" 
-                            class="flex items-start text-xs text-gray-600">
-                            <span class="flex-shrink-0 mt-0.5 mr-1.5 text-green-500">•</span>
-                            <span class="break-words">{{ change }}</span>
+
+                      <!-- Status badge -->
+                      <div v-if="log.old_status && log.new_status && log.old_status !== log.new_status" class="mt-2.5">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-medium rounded-full"
+                          :class="getLogActionClass(log.action)">
+                          {{ formatStatus(log.old_status) }}
+                          <i class="fa-solid fa-arrow-right text-[9px]"></i>
+                          {{ formatStatus(log.new_status) }}
+                        </span>
+                      </div>
+
+                      <!-- Changes list -->
+                      <div v-if="log.metadata && log.metadata.changes" class="mt-3 p-3 bg-white rounded-lg border border-gray-100">
+                        <ul class="space-y-1.5">
+                          <li v-for="change in log.metadata.changes" :key="change"
+                            class="flex items-start gap-1.5 text-xs text-gray-500">
+                            <span class="flex-shrink-0 mt-0.5 text-emerald-400">•</span>
+                            <span>{{ change }}</span>
                           </li>
                         </ul>
                       </div>
                     </div>
                   </div>
-                  
-                  <!-- Desktop layout -->
-                  <div class="hidden sm:block">
-                    <div class="flex justify-between items-start">
-                      <div class="flex-1 min-w-0">
-                        <p class="text-sm font-medium text-gray-900">{{ log.description }}</p>
-                        <p v-if="log.user_name" class="mt-1 text-xs text-gray-500">
-                          Por {{ log.user_name }} ({{ log.user_email }})
-                        </p>
-                        
-                        <!-- Status change indicator -->
-                        <div v-if="log.old_status && log.new_status" class="mt-2">
-                          <span class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-100 rounded-full">
-                            {{ formatStatus(log.old_status) }} → {{ formatStatus(log.new_status) }}
-                          </span>
-                        </div>
-                        
-                        <!-- Changes list -->
-                        <div v-if="log.metadata && log.metadata.changes" class="mt-3">
-                          <div class="p-3 bg-gray-50 rounded-lg">
-                            <h4 class="mb-2 text-xs font-medium text-gray-700">Cambios realizados:</h4>
-                            <ul class="space-y-1">
-                              <li v-for="change in log.metadata.changes" :key="change" 
-                                class="flex items-start text-xs text-gray-600">
-                                <span class="mr-2 text-green-500">•</span>
-                                {{ change }}
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <!-- Date -->
-                      <div class="flex-shrink-0 ml-4 text-xs font-medium text-gray-500">
-                        {{ formatLogDate(log.timestamp) }}
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
-            
-            <!-- No logs message -->
-            <div v-else class="py-8 text-center sm:py-12">
-              <div class="flex flex-col items-center space-y-2 sm:space-y-3">
-                <div class="flex justify-center items-center w-10 h-10 bg-gray-100 rounded-full sm:w-12 sm:h-12">
-                  <i class="text-sm text-gray-400 sm:text-base fa-solid fa-history"></i>
-                </div>
-                <div class="px-4">
-                  <p class="text-xs font-medium text-gray-600 sm:text-sm">No hay registros de actividad</p>
-                  <p class="text-xs text-gray-500">Los cambios aparecerán aquí cuando se realicen</p>
-                </div>
+
+            <!-- Empty state -->
+            <div v-else class="flex flex-col items-center gap-3 py-12 text-center">
+              <div class="flex justify-center items-center w-11 h-11 bg-gray-100 rounded-full">
+                <i class="text-gray-300 fa-solid fa-clock-rotate-left"></i>
               </div>
+              <p class="text-sm font-medium text-gray-500">Sin registros de actividad</p>
+              <p class="text-xs text-gray-400">Los cambios aparecerán aquí cuando se realicen</p>
             </div>
           </div>
         </div>
@@ -3389,6 +3336,7 @@ async function registerCashPayment() {
     toast.success('Pago en efectivo registrado.')
     cashAmount.value = ''
     refetch()
+    refetchOrders()
     refetchLogs()
   } catch (err) {
     toast.error(err?.response?.data?.detail || 'Error al registrar el pago.')
