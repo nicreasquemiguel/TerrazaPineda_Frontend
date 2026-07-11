@@ -531,50 +531,45 @@
         <div class="mb-3 bg-transparent rounded-2xl border-gray-100 border-none -none-md -50">
         <h2 class="mb-2 text-sm font-bold text-gray-700 sm:text-base sm:mb-3">Resumen de Reserva</h2>
         <div class="flex flex-col gap-2 mb-3">
-            <div class="flex flex-col gap-2 p-3 bg-white rounded-2xl border border-gray-200 shadow-sm">
+            <div class="flex flex-col gap-3 p-3 bg-white rounded-2xl border border-gray-200 shadow-sm">
               <!-- Date -->
-              <div class="flex gap-2 items-center">
-                <i class="text-base text-blue-500 fa-regular fa-calendar flex-shrink-0"></i>
-                <div class="flex-1 min-w-0">
-                  <div class="mb-0.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Fecha del Evento</div>
-                  <div class="flex gap-2 items-center">
-                    <div class="text-sm font-bold text-gray-900 sm:text-base">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex gap-2 items-center min-w-0">
+                  <i class="text-base text-blue-500 fa-regular fa-calendar flex-shrink-0"></i>
+                  <div class="min-w-0">
+                    <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Fecha del Evento</div>
+                    <div class="text-sm font-bold text-gray-900">
                       <span v-if="event.start_datetime">{{ formatDate(event.start_datetime) }}</span>
                       <span v-else class="text-gray-500">Fecha no especificada</span>
                     </div>
-                    <button
-                      v-if="!isLocked && (isStaff || event.date_changes_count === 0)"
-                      @click="showDateChangeModal = true; dateChangeError = ''"
-                      class="flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100"
-                    >
-                      <i class="fa-solid fa-pen text-[10px]"></i>
-                      Editar
-                    </button>
                   </div>
                 </div>
+                <button
+                  v-if="!isLocked && (isStaff || event.date_changes_count === 0)"
+                  @click="showDateChangeModal = true; dateChangeError = ''"
+                  class="flex-shrink-0 flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100"
+                >
+                  <i class="fa-solid fa-pen text-[10px]"></i>
+                  Editar
+                </button>
               </div>
               <!-- Time -->
-              <div class="flex gap-2 items-center mt-1">
-                <i class="text-base text-blue-500 fa-regular fa-clock flex-shrink-0"></i>
-                <div class="flex-1 min-w-0">
-                  <div class="mb-0.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Horario</div>
-                  <div v-if="!editingTimes" class="flex gap-2 items-center">
-                    <div class="text-sm font-bold text-gray-900 sm:text-base">
-                      <span v-if="event.start_datetime && event.end_datetime">
-                        {{ formatTime(event.start_datetime) }} - {{ formatTime(event.end_datetime) }}
-                      </span>
-                      <span v-else-if="event.package && event.package.hours">
-                        {{ event.package.hours }}
-                      </span>
-                      <span v-else class="text-gray-500">Horario no especificado</span>
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex gap-2 items-center min-w-0 flex-1">
+                  <i class="text-base text-blue-500 fa-regular fa-clock flex-shrink-0"></i>
+                  <div class="min-w-0 flex-1">
+                    <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Horario</div>
+                    <div v-if="!editingTimes">
+                      <div class="text-sm font-bold text-gray-900">
+                        <span v-if="event.start_datetime && event.end_datetime">
+                          {{ formatTime(event.start_datetime) }} - {{ formatTime(event.end_datetime) }}
+                        </span>
+                        <span v-else-if="event.package && event.package.hours">
+                          {{ event.package.hours }}
+                        </span>
+                        <span v-else class="text-gray-500">Horario no especificado</span>
+                      </div>
                     </div>
-                    <button v-if="isStaff"
-                      @click="openTimeEdit"
-                      class="flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100">
-                      <i class="fa-solid fa-pen text-[10px]"></i>
-                      Editar
-                    </button>
-                  </div>
                   <!-- Staff inline time editor -->
                   <div v-else class="flex flex-wrap gap-2 items-center mt-1">
                     <div>
@@ -599,39 +594,43 @@
                       </button>
                     </div>
                   </div>
-                  
-                  <!-- Description with Read More -->
-                  <div class="mt-2">
-                    <div v-if="event.description" class="text-sm text-gray-600">
-                      <span v-if="!showFullDescription" class="line-clamp-2">
-                        {{ event.description.substring(0, 100) }}{{ event.description.length > 100 ? '...' : '' }}
-                      </span>
-                      <span v-else>{{ event.description }}</span>
-            </div>
-                    <div v-else class="text-sm text-gray-600">
-                      <span v-if="!showFullDescription" class="line-clamp-2">
-                        {{ getDefaultEventSummary() }}
-                      </span>
-                      <span v-else>{{ getDefaultEventSummary() }}</span>
-                    </div>
-                    <button 
-                      v-if="(event.description && event.description.length > 100) || (!event.description && getDefaultEventSummary().length > 100)"
-                      @click="showFullDescription = !showFullDescription"
-                      class="mt-1 text-xs font-medium text-blue-600 transition-colors hover:text-blue-800"
-                    >
-                      {{ showFullDescription ? 'Leer menos' : 'Leer más' }}
-                    </button>
                   </div>
-            </div>
+                </div>
+                <button v-if="isStaff && !editingTimes"
+                  @click="openTimeEdit"
+                  class="flex-shrink-0 flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100">
+                  <i class="fa-solid fa-pen text-[10px]"></i>
+                  Editar
+                </button>
+              </div>
+              <!-- Description -->
+              <div v-if="event.description || getDefaultEventSummary()" class="flex gap-2 items-start">
+                <i class="text-base text-blue-500 fa-regular fa-file-lines flex-shrink-0 mt-0.5"></i>
+                <div class="min-w-0 flex-1">
+                  <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Descripción</div>
+                  <div class="text-sm text-gray-600">
+                    <span v-if="!showFullDescription">
+                      {{ (event.description || getDefaultEventSummary()).substring(0, 100) }}{{ (event.description || getDefaultEventSummary()).length > 100 ? '...' : '' }}
+                    </span>
+                    <span v-else>{{ event.description || getDefaultEventSummary() }}</span>
+                  </div>
+                  <button
+                    v-if="(event.description || getDefaultEventSummary()).length > 100"
+                    @click="showFullDescription = !showFullDescription"
+                    class="mt-0.5 text-xs font-medium text-blue-600 transition-colors hover:text-blue-800"
+                  >
+                    {{ showFullDescription ? 'Leer menos' : 'Leer más' }}
+                  </button>
+                </div>
               </div>
             </div>
             <!-- Package & People Card -->
             <div class="mb-3">
-              <div class="flex justify-between items-center mb-2">
+              <div class="flex justify-between items-center mb-2 pl-1">
                 <div class="text-sm font-bold text-gray-900">Paquete</div>
-                <button v-if="!isLocked" @click="showPackageModal = true" class="flex gap-1 items-center px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100">
-                  <i class="fa-solid fa-edit"></i>
-                  Cambiar
+                <button v-if="!isLocked" @click="showPackageModal = true" class="flex-shrink-0 flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100">
+                  <i class="fa-solid fa-pen text-[10px]"></i>
+                  Editar
                 </button>
               </div>
               <div class="flex gap-2 items-center p-3 bg-white rounded-2xl border border-gray-200 shadow-sm">
@@ -642,29 +641,25 @@
                   <div class="text-sm font-bold text-gray-900">{{ event.package ? event.package.n_people : 0 }} personas</div>
                   <div class="mt-1 text-sm text-gray-500">{{ event.package ? event.package.description : '' }}</div>
             </div>
-                <div class="ml-2 text-base font-bold text-right text-gray-900">
+                <div class="ml-2 text-sm font-bold text-right text-gray-900">
                   ${{ packageBookedPrice.toLocaleString() }}
             </div>
             </div>
           </div>
         </div>
         <div class="mb-3">
-          <div class="flex justify-between items-center mb-2">
+          <div class="flex justify-between items-center mb-2 pl-1">
             <div class="text-sm font-bold text-gray-900">Extras</div>
             <!-- Add Extra Button -->
             <div class="flex gap-2">
-              <button v-if="!isLocked" @click="showExtrasModal = true" class="flex gap-1 items-center px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100">
-                <i class="fa-solid fa-plus"></i>
+              <button v-if="!isLocked" @click="showExtrasModal = true" class="flex-shrink-0 flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100">
+                <i class="fa-solid fa-plus text-[10px]"></i>
                 Agregar
               </button>
             </div>
           </div>
-          <div class="p-2 bg-white rounded-lg">
+          <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
             <div v-if="localExtras && localExtras.length">
-              <div class="flex px-2 py-1 text-xs font-semibold text-gray-400 border-b border-gray-100">
-                <div class="flex-1">Extra</div>
-                <div class="w-24 text-right">Precio</div>
-              </div>
               <div v-for="(extra, i) in localExtras" :key="i" class="relative h-14 select-none"
                 @touchstart="!isLocked && onTouchStart(i, $event)"
                 @touchmove="!isLocked && onTouchMove(i, $event)"
@@ -680,7 +675,7 @@
                   </button>
                 </div>
                 <!-- Sliding card -->
-                <div class="flex relative z-30 items-center px-2 bg-white rounded-xl border-b border-gray-100 transition-all duration-300 last:border-b-0"
+                <div class="flex relative z-30 items-center px-4 bg-white rounded-xl border-b border-gray-100 transition-all duration-300 last:border-b-0"
                   :style="{
                     transform: `translateX(${extra.translateX}px)`,
                     opacity: extra.deleting ? 0 : 1,
@@ -691,7 +686,7 @@
                 >
                   <i class="mr-2 text-cyan-500 fa-solid fa-gift"></i>
                   <div class="flex-1 font-semibold text-gray-900">{{ typeof extra.data === 'string' ? extra.data : extra.data.name }}</div>
-                  <div class="w-24 text-base font-semibold text-right text-gray-900">
+                  <div class="w-24 text-sm font-semibold text-right text-gray-900">
                     ${{ parseFloat(extra.bookedPrice ?? (typeof extra.data === 'object' ? extra.data.price : 0) ?? 0).toLocaleString() }}
                   </div>
                   <!-- Small X button -->
@@ -704,7 +699,7 @@
             <div v-else class="px-2 py-2 text-sm text-gray-400">Sin extras</div>
           </div>
         </div>
-        <div class="p-3 text-sm bg-white rounded-lg">
+        <div class="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
           <div class="flex justify-between mb-1">
             <span class="text-xs text-gray-500">Total</span>
               <span class="text-sm font-semibold text-gray-900">${{ (parseFloat(event.total_price) || 0).toLocaleString() }}</span>
@@ -962,7 +957,7 @@
         </div><!-- /Share Confirmation Card -->
 
       <!-- Client Information for Staff -->
-      <div v-if="isStaff" class="p-3 bg-white rounded-2xl border border-gray-200 shadow-sm">
+      <div v-if="isStaff" class="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
         <h3 class="mb-2 text-sm font-bold text-gray-700">Información del Cliente</h3>
         <div class="grid grid-cols-2 gap-2">
           <div class="flex items-center gap-2">
@@ -1010,9 +1005,9 @@
 
         <!-- Payment Methods Section (shown when reservation is accepted and not locked) -->
         <div v-if="event && !isLocked && (event.status === 'aceptacion' || event.status === 'apartado' || event.status === 'liquidado' || event.status === 'entregado' || event.status === 'finalizado')" class="mt-6">
-          <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-lg">
+          <div class="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
             <div class="flex justify-between items-center mb-4">
-              <h2 class="text-lg font-bold text-primary-700">Métodos de Pago</h2>
+              <h2 class="text-sm font-bold text-gray-700">Métodos de Pago</h2>
               <div class="flex items-center space-x-2">
                 <i class="text-green-500 fa-solid fa-credit-card"></i>
                 <span class="text-sm font-medium text-gray-600">Disponibles</span>
@@ -1572,13 +1567,13 @@
         </div>
 
         <!-- Payment History -->
-        <div v-if="ordersLoading" class="mt-6 p-4 text-sm text-center text-gray-400 bg-white rounded-2xl border border-gray-100 shadow-sm">
+        <div v-if="ordersLoading" class="mt-6 p-4 text-sm text-center text-gray-400 bg-white rounded-2xl border border-gray-200 shadow-sm">
           <div class="inline-block mr-2 w-4 h-4 rounded-full border-2 border-gray-400 animate-spin border-t-transparent"></div>
           Cargando historial de pagos...
         </div>
         <div v-else-if="allPayments.length > 0" class="mt-6">
-          <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-lg">
-            <h2 class="mb-4 text-lg font-bold text-gray-900">Historial de Pagos</h2>
+          <div class="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
+            <h2 class="mb-3 text-sm font-bold text-gray-700">Historial de Pagos</h2>
             <div class="divide-y divide-gray-100">
               <div v-for="payment in allPayments" :key="payment.id" class="py-4 first:pt-0 last:pb-0">
                 <div class="flex gap-3 items-start">
@@ -1640,9 +1635,9 @@
 
         <!-- Review & Rating (shown after steps when finalizado) -->
         <div v-if="event && (event.status === 'finalizado' || event.status_display === 'Finalizado')" class="mt-4">
-          <div class="p-5 bg-white rounded-2xl border border-gray-100 shadow-lg">
+          <div class="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
             <div class="flex justify-between items-center mb-3">
-              <h2 class="text-lg font-bold text-primary-700">Tu reseña</h2>
+              <h2 class="text-sm font-bold text-gray-700">{{ isStaff ? 'Reseña del cliente' : 'Tu reseña' }}</h2>
               <span v-if="reviewLoading" class="text-xs text-gray-500">Cargando…</span>
             </div>
 
@@ -1807,8 +1802,8 @@
         <!-- RIGHT COLUMN (steps — sticky on desktop) -->
         <div class="flex flex-col gap-3 order-2 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-24">
           <!-- Steps Progress -->
-          <div class="p-3 bg-white rounded-2xl border border-gray-100 shadow-sm sm:p-4">
-            <h2 class="mb-3 text-base font-bold text-primary-700 sm:text-lg">Pasos a seguir</h2>
+          <div class="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
+            <h2 class="mb-3 text-sm font-bold text-gray-700">Pasos a seguir</h2>
 
             <!-- Cancelado banner -->
             <div v-if="event.status === 'cancelado'"
@@ -1935,7 +1930,7 @@
 
           <!-- Cancellation Policy + Cancel Button -->
           <div v-if="!isLocked"
-            class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+            class="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
             <h3 class="mb-3 text-sm font-bold text-gray-700">
               <i class="mr-1.5 text-gray-400 fa-solid fa-file-contract"></i>
               Política de Cancelación y Cambios
@@ -2013,7 +2008,7 @@
           <div class="px-5 py-4 border-b border-gray-100 bg-gray-50/60">
             <div class="flex justify-between items-center">
               <div>
-                <h2 class="text-lg font-bold text-gray-900">Registro de Actividad</h2>
+                <h2 class="text-sm font-bold text-gray-700">Registro de Actividad</h2>
                 <p class="text-xs text-gray-400">{{ logsData?.length || 0 }} eventos</p>
               </div>
               <button
