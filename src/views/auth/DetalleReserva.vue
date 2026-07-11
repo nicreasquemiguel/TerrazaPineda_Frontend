@@ -1575,7 +1575,8 @@
             <h2 class="mb-3 text-sm font-bold text-gray-700">Historial de Pagos</h2>
             <div class="divide-y divide-gray-100">
               <div v-for="payment in allPayments" :key="payment.id" class="py-2.5 first:pt-0 last:pb-0">
-                <div class="flex gap-2.5 items-center">
+                <!-- Clickable row -->
+                <div class="flex gap-2.5 items-center cursor-pointer select-none" @click="togglePaymentDetail(payment.id)">
                   <div class="flex flex-shrink-0 justify-center items-center w-8 h-8 bg-gray-50 rounded-lg text-gray-400">
                     <i :class="['text-sm', getPaymentIcon(payment.gateway)]"></i>
                   </div>
@@ -1587,7 +1588,11 @@
                           {{ getPaymentStatusText(payment.status) }}
                         </span>
                       </div>
-                      <span class="flex-shrink-0 text-sm font-bold text-gray-900">${{ parseFloat(payment.amount || 0).toLocaleString() }}</span>
+                      <div class="flex items-center gap-1.5 flex-shrink-0">
+                        <span class="text-sm font-bold text-gray-900">${{ parseFloat(payment.amount || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 }) }}</span>
+                        <i class="text-gray-300 text-[10px] fa-solid fa-chevron-down transition-transform duration-200"
+                          :class="expandedPaymentId === payment.id ? 'rotate-180' : ''"></i>
+                      </div>
                     </div>
                     <div class="flex gap-2 items-center mt-0.5">
                       <span class="text-[10px] text-gray-500">
@@ -1598,16 +1603,55 @@
                     </div>
                   </div>
                 </div>
-                <!-- Payment photo (collapsed by default) -->
-                <div v-if="getPaymentPhotoUrl(payment)" class="mt-2 ml-10">
-                  <img
-                    :src="getPaymentPhotoUrl(payment)"
-                    alt="Comprobante"
-                    class="object-cover h-28 rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
-                    @click="openPhotoModal(getPaymentPhotoUrl(payment))"
-                    @error="handleImageError"
-                    @load="handleImageLoad"
-                  />
+
+                <!-- Expanded detail panel -->
+                <div v-if="expandedPaymentId === payment.id" class="mt-2 ml-10 p-3 bg-gray-50 rounded-xl border border-gray-100 text-[11px] text-gray-600 space-y-2">
+                  <div class="grid grid-cols-2 gap-x-4 gap-y-1.5">
+                    <div>
+                      <div class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Plataforma</div>
+                      <div class="font-semibold text-gray-700">{{ getGatewayText(payment.gateway) || '—' }}</div>
+                    </div>
+                    <div>
+                      <div class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Método</div>
+                      <div class="font-semibold text-gray-700">{{ getPaymentMethodText(payment.method) || '—' }}</div>
+                    </div>
+                    <div>
+                      <div class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Monto</div>
+                      <div class="font-semibold text-gray-700">${{ parseFloat(payment.amount || 0).toLocaleString('es-MX', { minimumFractionDigits: 2 }) }}</div>
+                    </div>
+                    <div>
+                      <div class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Estado</div>
+                      <div class="font-semibold text-gray-700">{{ getPaymentStatusText(payment.status) }}</div>
+                    </div>
+                    <div v-if="payment.created_at" class="col-span-2">
+                      <div class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Creado</div>
+                      <div class="font-semibold text-gray-700">{{ formatDate(payment.created_at) }} · {{ formatTime(payment.created_at) }}</div>
+                    </div>
+                    <div v-if="payment.paid_at" class="col-span-2">
+                      <div class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Pagado el</div>
+                      <div class="font-semibold text-gray-700">{{ formatDate(payment.paid_at) }} · {{ formatTime(payment.paid_at) }}</div>
+                    </div>
+                    <div v-if="payment.card_last4" class="col-span-2">
+                      <div class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Tarjeta</div>
+                      <div class="font-semibold text-gray-700">•••• •••• •••• {{ payment.card_last4 }}</div>
+                    </div>
+                    <div v-if="payment.id" class="col-span-2">
+                      <div class="text-[9px] font-bold uppercase tracking-wider text-gray-400">ID de Pago</div>
+                      <div class="font-mono text-gray-500 text-[10px] break-all">{{ payment.id }}</div>
+                    </div>
+                  </div>
+                  <!-- Comprobante -->
+                  <div v-if="getPaymentPhotoUrl(payment)" class="pt-1 border-t border-gray-200">
+                    <div class="text-[9px] font-bold uppercase tracking-wider text-gray-400 mb-1.5">Comprobante</div>
+                    <img
+                      :src="getPaymentPhotoUrl(payment)"
+                      alt="Comprobante"
+                      class="h-28 rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition-opacity"
+                      @click.stop="openPhotoModal(getPaymentPhotoUrl(payment))"
+                      @error="handleImageError"
+                      @load="handleImageLoad"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
@@ -2035,23 +2079,23 @@
                   </div>
 
                   <!-- Card -->
-                  <div class="flex-1 min-w-0 rounded-xl border border-gray-100 bg-gray-50/50 px-3 py-2.5">
+                  <div class="flex-1 min-w-0 rounded-xl border border-gray-100 bg-gray-50/50 px-3 py-2.5 sm:px-4 sm:py-3">
                     <!-- Description -->
-                    <p class="text-xs font-semibold leading-snug text-gray-800">{{ log.description }}</p>
+                    <p class="text-xs sm:text-sm font-semibold leading-snug text-gray-800">{{ log.description }}</p>
 
                     <!-- Meta: user + timestamp -->
                     <div class="flex flex-wrap gap-x-2 items-center mt-1">
-                      <span v-if="log.user_name" class="text-[10px] text-gray-400 truncate max-w-[140px]">
+                      <span v-if="log.user_name" class="text-[10px] sm:text-xs text-gray-400 truncate max-w-[160px]">
                         <i class="fa-solid fa-user text-[9px] mr-0.5"></i>{{ log.user_name }}
                       </span>
-                      <span class="text-[10px] text-gray-400 tabular-nums">
+                      <span class="text-[10px] sm:text-xs text-gray-400 tabular-nums">
                         <i class="fa-regular fa-calendar text-[9px] mr-0.5"></i>{{ formatLogDate(log.timestamp) }}
                       </span>
                     </div>
 
                     <!-- Status change -->
                     <div v-if="log.old_status && log.new_status && log.old_status !== log.new_status" class="mt-1.5">
-                      <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full"
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] sm:text-xs font-semibold rounded-full"
                         :class="getLogActionClass(log.action)">
                         {{ formatStatus(log.old_status) }}
                         <i class="fa-solid fa-arrow-right text-[8px]"></i>
@@ -2062,7 +2106,7 @@
                     <!-- Changes list -->
                     <ul v-if="log.metadata && log.metadata.changes" class="mt-2 space-y-1 pl-1">
                       <li v-for="change in log.metadata.changes" :key="change"
-                        class="flex items-start gap-1.5 text-[10px] text-gray-500">
+                        class="flex items-start gap-1.5 text-[10px] sm:text-xs text-gray-500">
                         <span class="flex-shrink-0 text-emerald-400 mt-px">•</span>
                         <span class="break-all">{{ change }}</span>
                       </li>
@@ -2941,6 +2985,8 @@ watch(() => event.value?.extra_services, (newExtras) => {
 const isPaying = ref(false)
 
 const paymentAmount = ref('')
+const expandedPaymentId = ref(null)
+const togglePaymentDetail = (id) => { expandedPaymentId.value = expandedPaymentId.value === id ? null : id }
 
 // Auto-fill $1,000 when booking loads with no advance paid yet
 watch(event, (val) => {
