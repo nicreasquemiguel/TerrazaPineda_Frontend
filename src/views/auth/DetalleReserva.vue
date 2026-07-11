@@ -3337,7 +3337,10 @@ async function submitTransferPayment() {
     const response = await api.post('/api/store/orders/create_and_initiate/', orderData)
 
     if (response.status >= 200 && response.status < 300) {
-      toast.success('¡Pago por transferencia enviado exitosamente! Se procesará en breve.')
+      toast.success(isStaff.value
+        ? '✅ Transferencia registrada y confirmada.'
+        : '¡Pago por transferencia enviado! Se procesará en breve.'
+      )
       
       // Reset form
       uploadedFile.value = null
