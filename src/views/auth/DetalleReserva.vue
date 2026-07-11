@@ -679,7 +679,7 @@
                   </div>
                   <div>
                     <div class="text-sm font-bold text-gray-900">Entrega y cierre del evento</div>
-                    <div class="mt-0.5 text-xs text-gray-500">Gestiona la entrega del lugar y finaliza tu reserva.</div>
+                    <div class="mt-0.5 text-xs text-gray-500">{{ isStaff ? 'Gestiona la entrega del lugar y finaliza la reserva.' : 'Estado de entrega y cierre de tu evento.' }}</div>
                   </div>
                 </div>
                 <span v-if="event.is_entregado || event.status === 'finalizado'"
@@ -736,7 +736,7 @@
                       <i class="fa-solid fa-door-open"></i>
                     </div>
                     <div :class="event.is_entregado ? 'text-cyan-600 font-bold' : 'text-gray-500'" class="text-xs text-center leading-tight">Entrega del lugar</div>
-                    <div class="text-[10px] text-gray-400 text-center mt-0.5 leading-tight">Registra tu llegada y revisa el lugar</div>
+                    <div class="text-[10px] text-gray-400 text-center mt-0.5 leading-tight">{{ isStaff ? 'Confirma que el lugar fue entregado al cliente' : 'El staff confirmará la entrega del lugar' }}</div>
                   </div>
                   <!-- Connector -->
                   <div :class="event.status === 'finalizado' ? 'bg-purple-400' : event.is_entregado ? 'bg-cyan-300' : 'bg-gray-200'"
@@ -748,7 +748,7 @@
                       <i :class="event.status === 'finalizado' ? 'fa-solid fa-check' : 'fa-regular fa-star'"></i>
                     </div>
                     <div :class="event.status === 'finalizado' ? 'text-purple-600 font-bold' : 'text-gray-500'" class="text-xs text-center leading-tight">Finalizado</div>
-                    <div class="text-[10px] text-gray-400 text-center mt-0.5 leading-tight">Cierra el evento y completa tu reserva</div>
+                    <div class="text-[10px] text-gray-400 text-center mt-0.5 leading-tight">{{ isStaff ? 'Cierra el evento y completa la reserva' : 'El staff cerrará el evento al finalizar' }}</div>
                   </div>
                 </div>
               </div>
@@ -767,14 +767,11 @@
                       {{ event.is_entregado ? 'Quitar entregado' : 'Marcar lugar entregado' }}
                     </span>
                   </div>
-                  <p class="text-[10px] text-gray-500 leading-tight">
-                    {{ event.is_entregado ? 'Revierte el estado de entrega del lugar.' : 'Indica que el lugar fue entregado al cliente.' }}
-                  </p>
                   <button @click="toggleEntregado" :disabled="entregadoLoading"
                     :class="event.is_entregado ? 'bg-red-500 hover:bg-red-600' : 'bg-cyan-500 hover:bg-cyan-600'"
-                    class="w-full py-1.5 text-xs font-semibold text-white rounded-lg disabled:opacity-50 transition-colors">
+                    class="w-full py-1.5 text-xs font-semibold text-white rounded-lg disabled:opacity-50 transition-colors mt-1">
                     <i v-if="entregadoLoading" class="fa-solid fa-spinner fa-spin mr-1"></i>
-                    {{ event.is_entregado ? 'Quitar entregado' : 'Registrar llegada' }}
+                    {{ event.is_entregado ? 'Quitar' : 'Confirmar entrega' }}
                   </button>
                 </div>
                 <!-- Finalizar -->
@@ -790,12 +787,12 @@
                     </span>
                   </div>
                   <p class="text-[10px] text-gray-500 leading-tight">
-                    {{ event.status === 'finalizado' ? 'El evento ha sido completado exitosamente.' : 'Cierra el evento y completa la reserva.' }}
+                    {{ event.status === 'finalizado' ? 'El cliente puede dejar su reseña.' : 'El cliente podrá dejar su reseña al finalizar.' }}
                   </p>
                   <button v-if="event.status !== 'finalizado'" @click="finalizarReserva" :disabled="finalizarLoading"
                     class="w-full py-1.5 text-xs font-semibold text-white bg-purple-500 rounded-lg hover:bg-purple-600 disabled:opacity-50 transition-colors">
                     <i v-if="finalizarLoading" class="fa-solid fa-spinner fa-spin mr-1"></i>
-                    Finalizar reserva
+                    Confirmar cierre
                   </button>
                   <div v-else class="w-full py-1.5 text-xs font-semibold text-green-700 bg-green-100 rounded-lg text-center">
                     <i class="fa-solid fa-check mr-1"></i>Completado
@@ -1680,90 +1677,109 @@
               <p v-else class="text-sm text-gray-400 italic">El cliente aún no ha dejado una reseña.</p>
             </template>
 
-            <!-- User: editable form -->
+            <!-- User: review section -->
             <template v-else>
-              <!-- Star rating -->
-              <div class="flex gap-2 items-center mb-3">
-                <button v-for="s in 5" :key="s" type="button"
-                  @click="rating = s"
-                  class="text-2xl focus:outline-none"
-                  :class="s <= (rating || 0) ? 'text-yellow-400' : 'text-gray-300'">
-                  <i :class="s <= (rating || 0) ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
-                </button>
-                <span class="ml-2 text-sm text-gray-500">{{ rating || 0 }}/5</span>
-              </div>
-
-              <!-- Review text -->
-              <textarea v-model="reviewText" rows="4"
-                placeholder="Cuéntanos cómo fue tu experiencia"
-                class="p-3 w-full text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
-
-              <!-- Actions -->
-              <div class="flex gap-2 justify-end items-center mt-3">
-                <button @click="resetReviewForm" type="button"
-                  class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 rounded hover:bg-gray-200">Limpiar</button>
-                <button @click="saveReview" :disabled="savingReview || (rating || 0) === 0"
-                  class="px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg shadow hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">
-                  <span v-if="savingReview" class="flex gap-2 items-center">
-                    <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
-                    Guardando…
-                  </span>
-                  <span v-else>Guardar reseña</span>
-                </button>
-              </div>
-
-              <!-- Existing info -->
-              <div v-if="myReview && (myReview.rating || myReview.review)" class="p-3 mt-4 text-xs bg-gray-50 rounded border border-gray-200">
-                <div class="mb-1 font-semibold text-gray-700">Última reseña guardada</div>
-                <div class="flex gap-2 items-center mb-1">
-                  <span class="text-yellow-400" v-for="s in (myReview.rating || 0)" :key="'rs'+s"><i class="fa-solid fa-star"></i></span>
-                  <span class="text-gray-400" v-for="s in (5 - (myReview.rating || 0))" :key="'re'+s"><i class="fa-regular fa-star"></i></span>
-                  <span class="ml-2 text-gray-500">{{ myReview.rating || 0 }}/5</span>
-                </div>
-                <div class="text-gray-700 whitespace-pre-line">{{ myReview.review }}</div>
-
-              <!-- Share review card -->
-              <div class="mt-4 pt-4 border-t border-gray-200">
-                <p class="font-semibold text-gray-700 mb-2">¡Comparte tu experiencia!</p>
-                <div v-if="reviewCardUrl" class="mb-3">
-                  <img :src="reviewCardUrl" alt="Tarjeta de reseña" class="w-full max-w-xs mx-auto rounded-xl shadow-md" />
-                </div>
-                <div v-else-if="loadingReviewCard" class="flex justify-center py-3">
-                  <svg class="animate-spin h-5 w-5 text-purple-400" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-                  </svg>
-                </div>
-                <div class="flex flex-wrap gap-2">
-                  <button
-                    v-if="!reviewCardUrl && !loadingReviewCard"
-                    @click="loadReviewCard"
-                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-semibold transition"
-                  >
-                    Ver tarjeta
+              <!-- Has review: show read-only + share, with edit toggle -->
+              <template v-if="myReview && (myReview.rating || myReview.review)">
+                <div v-if="!editingReview">
+                  <!-- Read-only display -->
+                  <div class="flex gap-1 items-center mb-2">
+                    <span class="text-yellow-400" v-for="s in (myReview.rating || 0)" :key="'rs'+s"><i class="fa-solid fa-star"></i></span>
+                    <span class="text-gray-300" v-for="s in (5 - (myReview.rating || 0))" :key="'re'+s"><i class="fa-regular fa-star"></i></span>
+                    <span class="ml-2 text-sm text-gray-500">{{ myReview.rating || 0 }}/5</span>
+                  </div>
+                  <p class="text-sm text-gray-700 whitespace-pre-line mb-3">{{ myReview.review }}</p>
+                  <button @click="editingReview = true"
+                    class="text-xs font-semibold text-blue-600 hover:underline mb-4 inline-block">
+                    <i class="fa-solid fa-pen mr-1"></i>Editar reseña
                   </button>
-                  <a
-                    v-if="reviewCardUrl"
-                    :href="reviewCardUrl"
-                    download="terraza-pineda-resena.png"
-                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-semibold transition"
-                  >
-                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                    Descargar para Instagram/TikTok
-                  </a>
-                  <a
-                    v-if="event && myReview"
-                    :href="`https://wa.me/?text=${encodeURIComponent('¡Tuve mi evento en Terraza Pineda! ' + '★'.repeat(myReview.rating || 5) + ' ¡Totalmente recomendado! terrazapineda.com')}`"
-                    target="_blank"
-                    rel="noopener"
-                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#1a9e4a] text-xs font-semibold transition"
-                  >
-                    WhatsApp
-                  </a>
+
+                  <!-- Share -->
+                  <div class="pt-3 border-t border-gray-100">
+                    <p class="text-xs font-semibold text-gray-600 mb-2">¡Comparte tu experiencia!</p>
+                    <div v-if="reviewCardUrl" class="mb-3">
+                      <img :src="reviewCardUrl" alt="Tarjeta de reseña" class="w-full max-w-xs mx-auto rounded-xl shadow-md" />
+                    </div>
+                    <div v-else-if="loadingReviewCard" class="flex justify-center py-3">
+                      <svg class="animate-spin h-5 w-5 text-purple-400" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                      </svg>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                      <button v-if="!reviewCardUrl && !loadingReviewCard" @click="loadReviewCard"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-semibold transition">
+                        Ver tarjeta
+                      </button>
+                      <a v-if="reviewCardUrl" :href="reviewCardUrl" download="terraza-pineda-resena.png"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-semibold transition">
+                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                        Descargar
+                      </a>
+                      <a :href="`https://wa.me/?text=${encodeURIComponent('¡Tuve mi evento en Terraza Pineda! ' + '★'.repeat(myReview.rating || 5) + ' ¡Totalmente recomendado! terrazapineda.com')}`"
+                        target="_blank" rel="noopener"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#1a9e4a] text-xs font-semibold transition">
+                        WhatsApp
+                      </a>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-            </template><!-- /v-else user form -->
+
+                <!-- Edit form (shown when editingReview=true) -->
+                <div v-else>
+                  <div class="flex gap-2 items-center mb-3">
+                    <button v-for="s in 5" :key="s" type="button" @click="rating = s"
+                      class="text-2xl focus:outline-none"
+                      :class="s <= (rating || 0) ? 'text-yellow-400' : 'text-gray-300'">
+                      <i :class="s <= (rating || 0) ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
+                    </button>
+                    <span class="ml-2 text-sm text-gray-500">{{ rating || 0 }}/5</span>
+                  </div>
+                  <textarea v-model="reviewText" rows="4"
+                    placeholder="Cuéntanos cómo fue tu experiencia"
+                    class="p-3 w-full text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                  <div class="flex gap-2 justify-end items-center mt-3">
+                    <button @click="editingReview = false; resetReviewForm()" type="button"
+                      class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 rounded hover:bg-gray-200">Cancelar</button>
+                    <button @click="saveReview" :disabled="savingReview || (rating || 0) === 0"
+                      class="px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg shadow hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                      <span v-if="savingReview" class="flex gap-2 items-center">
+                        <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
+                        Guardando…
+                      </span>
+                      <span v-else>Guardar reseña</span>
+                    </button>
+                  </div>
+                </div>
+              </template>
+
+              <!-- No review yet: show form directly -->
+              <template v-else>
+                <div class="flex gap-2 items-center mb-3">
+                  <button v-for="s in 5" :key="s" type="button" @click="rating = s"
+                    class="text-2xl focus:outline-none"
+                    :class="s <= (rating || 0) ? 'text-yellow-400' : 'text-gray-300'">
+                    <i :class="s <= (rating || 0) ? 'fa-solid fa-star' : 'fa-regular fa-star'"></i>
+                  </button>
+                  <span class="ml-2 text-sm text-gray-500">{{ rating || 0 }}/5</span>
+                </div>
+                <textarea v-model="reviewText" rows="4"
+                  placeholder="Cuéntanos cómo fue tu experiencia"
+                  class="p-3 w-full text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                <div class="flex gap-2 justify-end items-center mt-3">
+                  <button @click="resetReviewForm" type="button"
+                    class="px-4 py-2 text-sm font-semibold text-gray-600 bg-gray-100 rounded hover:bg-gray-200">Limpiar</button>
+                  <button @click="saveReview" :disabled="savingReview || (rating || 0) === 0"
+                    class="px-4 py-2 text-sm font-bold text-white bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg shadow hover:from-cyan-600 hover:to-blue-600 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <span v-if="savingReview" class="flex gap-2 items-center">
+                      <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
+                      Guardando…
+                    </span>
+                    <span v-else>Guardar reseña</span>
+                  </button>
+                </div>
+              </template>
+            </template><!-- /v-else user -->
           </div>
         </div><!-- /Review -->
         </div><!-- /RIGHT BOTTOM -->
@@ -3368,6 +3384,7 @@ function submitReview() {
 const rating = ref(0)
 const reviewText = ref('')
 const savingReview = ref(false)
+const editingReview = ref(false)
 
 // Fetch my review for this booking (returns null if none)
 const { data: myReview, isLoading: reviewLoading, refetch: refetchReview } = useQuery({
@@ -3418,6 +3435,7 @@ async function saveReview() {
       review: reviewText.value?.trim() || ''
     })
     toast.success('¡Gracias por tu reseña!')
+    editingReview.value = false
     await refetchReview()
   } catch (e) {
     console.error('Error guardando reseña', e)
