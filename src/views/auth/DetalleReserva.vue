@@ -2008,83 +2008,74 @@
           </div>
 
           <!-- Content -->
-          <div class="px-6 py-6">
+          <div class="px-3 py-4">
             <!-- Loading state -->
-            <div v-if="logsLoading" class="flex justify-center items-center gap-2 py-12">
+            <div v-if="logsLoading" class="flex justify-center items-center gap-2 py-8">
               <div class="w-4 h-4 rounded-full border-2 border-indigo-500 animate-spin border-t-transparent"></div>
               <span class="text-sm text-gray-400">Cargando historial...</span>
             </div>
 
             <!-- Error state -->
-            <div v-else-if="logsError" class="flex flex-col items-center gap-3 py-12 text-center">
-              <div class="flex justify-center items-center w-11 h-11 bg-red-50 rounded-full">
-                <i class="text-red-400 fa-solid fa-triangle-exclamation"></i>
-              </div>
+            <div v-else-if="logsError" class="flex flex-col items-center gap-2 py-8 text-center">
+              <i class="text-red-400 fa-solid fa-triangle-exclamation"></i>
               <p class="text-sm font-medium text-red-600">Error cargando logs</p>
-              <p class="text-xs text-gray-400">Intenta recargar la página</p>
             </div>
 
             <!-- Logs Timeline -->
             <div v-else-if="logsData && logsData.length > 0" class="relative">
               <!-- Vertical guide line -->
-              <div class="absolute left-[17px] top-0 bottom-0 w-px bg-gray-100"></div>
+              <div class="absolute left-[15px] top-0 bottom-0 w-px bg-gray-100"></div>
 
-              <div class="space-y-3">
-                <div v-for="log in logsData" :key="log.id" class="flex gap-4">
+              <div class="space-y-2">
+                <div v-for="log in logsData" :key="log.id" class="flex gap-3">
                   <!-- Icon dot -->
-                  <div class="relative z-10 flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-full shadow-sm border border-white"
+                  <div class="relative z-10 flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full border border-white shadow-sm"
                     :class="getLogActionClass(log.action)">
-                    <i class="text-xs" :class="getLogIcon(log.action)"></i>
+                    <i class="text-[10px]" :class="getLogIcon(log.action)"></i>
                   </div>
 
                   <!-- Card -->
-                  <div class="flex-1 min-w-0 rounded-xl border border-gray-100 bg-gray-50/50 hover:bg-white hover:border-gray-200 hover:shadow-sm transition-all">
-                    <div class="px-4 py-3.5">
-                      <!-- Top row: description + timestamp -->
-                      <div class="flex justify-between items-start gap-4">
-                        <p class="text-sm font-medium leading-snug text-gray-800">{{ log.description }}</p>
-                        <span class="flex-shrink-0 text-[11px] text-gray-400 tabular-nums pt-0.5">{{ formatLogDate(log.timestamp) }}</span>
-                      </div>
+                  <div class="flex-1 min-w-0 rounded-xl border border-gray-100 bg-gray-50/50 px-3 py-2.5">
+                    <!-- Description -->
+                    <p class="text-xs font-semibold leading-snug text-gray-800">{{ log.description }}</p>
 
-                      <!-- Meta row: user -->
-                      <div v-if="log.user_name" class="flex items-center gap-1.5 mt-2">
-                        <i class="text-[10px] text-gray-300 fa-solid fa-user"></i>
-                        <span class="text-xs text-gray-400">{{ log.user_name }}<span v-if="log.user_email" class="text-gray-300"> · {{ log.user_email }}</span></span>
-                      </div>
-
-                      <!-- Status badge -->
-                      <div v-if="log.old_status && log.new_status && log.old_status !== log.new_status" class="mt-2.5">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[11px] font-medium rounded-full"
-                          :class="getLogActionClass(log.action)">
-                          {{ formatStatus(log.old_status) }}
-                          <i class="fa-solid fa-arrow-right text-[9px]"></i>
-                          {{ formatStatus(log.new_status) }}
-                        </span>
-                      </div>
-
-                      <!-- Changes list -->
-                      <div v-if="log.metadata && log.metadata.changes" class="mt-3 p-3 bg-white rounded-lg border border-gray-100">
-                        <ul class="space-y-1.5">
-                          <li v-for="change in log.metadata.changes" :key="change"
-                            class="flex items-start gap-1.5 text-xs text-gray-500">
-                            <span class="flex-shrink-0 mt-0.5 text-emerald-400">•</span>
-                            <span>{{ change }}</span>
-                          </li>
-                        </ul>
-                      </div>
+                    <!-- Meta: user + timestamp -->
+                    <div class="flex flex-wrap gap-x-2 items-center mt-1">
+                      <span v-if="log.user_name" class="text-[10px] text-gray-400 truncate max-w-[140px]">
+                        <i class="fa-solid fa-user text-[9px] mr-0.5"></i>{{ log.user_name }}
+                      </span>
+                      <span class="text-[10px] text-gray-400 tabular-nums">
+                        <i class="fa-regular fa-calendar text-[9px] mr-0.5"></i>{{ formatLogDate(log.timestamp) }}
+                      </span>
                     </div>
+
+                    <!-- Status change -->
+                    <div v-if="log.old_status && log.new_status && log.old_status !== log.new_status" class="mt-1.5">
+                      <span class="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-semibold rounded-full"
+                        :class="getLogActionClass(log.action)">
+                        {{ formatStatus(log.old_status) }}
+                        <i class="fa-solid fa-arrow-right text-[8px]"></i>
+                        {{ formatStatus(log.new_status) }}
+                      </span>
+                    </div>
+
+                    <!-- Changes list -->
+                    <ul v-if="log.metadata && log.metadata.changes" class="mt-2 space-y-1 pl-1">
+                      <li v-for="change in log.metadata.changes" :key="change"
+                        class="flex items-start gap-1.5 text-[10px] text-gray-500">
+                        <span class="flex-shrink-0 text-emerald-400 mt-px">•</span>
+                        <span class="break-all">{{ change }}</span>
+                      </li>
+                    </ul>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Empty state -->
-            <div v-else class="flex flex-col items-center gap-3 py-12 text-center">
-              <div class="flex justify-center items-center w-11 h-11 bg-gray-100 rounded-full">
-                <i class="text-gray-300 fa-solid fa-clock-rotate-left"></i>
-              </div>
-              <p class="text-sm font-medium text-gray-500">Sin registros de actividad</p>
-              <p class="text-xs text-gray-400">Los cambios aparecerán aquí cuando se realicen</p>
+            <div v-else class="flex flex-col items-center gap-2 py-8 text-center">
+              <i class="text-gray-300 text-xl fa-solid fa-clock-rotate-left"></i>
+              <p class="text-xs text-gray-400">Sin registros de actividad</p>
             </div>
           </div>
         </div>
