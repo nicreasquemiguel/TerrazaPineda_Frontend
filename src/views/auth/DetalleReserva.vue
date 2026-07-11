@@ -1932,28 +1932,32 @@
             class="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
             <h3 class="mb-3 text-sm font-bold text-gray-700">
               <i class="mr-1.5 text-gray-400 fa-solid fa-file-contract"></i>
-              Política de Cancelación y Cambios
+              Política del Evento
             </h3>
             <div class="space-y-2.5 text-xs text-gray-600">
               <div class="flex gap-2 items-start">
-                <i class="mt-0.5 flex-shrink-0 text-yellow-500 fa-solid fa-coins"></i>
+                <i class="mt-0.5 flex-shrink-0 text-gray-400 fa-solid fa-coins"></i>
                 <p><span class="font-semibold text-gray-700">Anticipo de reserva:</span> se requiere un anticipo de <span class="font-semibold text-gray-900">$1,000 MXN</span> para apartar la fecha. Este monto no es reembolsable salvo las excepciones descritas a continuación.</p>
               </div>
               <div class="flex gap-2 items-start">
-                <i class="mt-0.5 flex-shrink-0 text-orange-500 fa-solid fa-triangle-exclamation"></i>
+                <i class="mt-0.5 flex-shrink-0 text-gray-400 fa-solid fa-triangle-exclamation"></i>
                 <p><span class="font-semibold text-gray-700">Pago total:</span> el monto total del evento debe quedar <span class="font-semibold text-gray-900">liquidado antes del inicio del evento</span>. No se entrega el lugar si no está pagado por completo.</p>
               </div>
               <div class="flex gap-2 items-start">
-                <i class="mt-0.5 flex-shrink-0 text-green-500 fa-solid fa-circle-check"></i>
+                <i class="mt-0.5 flex-shrink-0 text-gray-400 fa-solid fa-circle-check"></i>
                 <p><span class="font-semibold text-gray-700">Más de 45 días de anticipación:</span> se devuelve el 50% del anticipo. El resto se retiene por gastos administrativos.</p>
               </div>
               <div class="flex gap-2 items-start">
-                <i class="mt-0.5 flex-shrink-0 text-red-500 fa-solid fa-circle-xmark"></i>
+                <i class="mt-0.5 flex-shrink-0 text-gray-400 fa-solid fa-circle-xmark"></i>
                 <p><span class="font-semibold text-gray-700">45 días o menos:</span> el anticipo no es reembolsable bajo ninguna circunstancia.</p>
               </div>
               <div class="flex gap-2 items-start">
-                <i class="mt-0.5 flex-shrink-0 text-blue-400 fa-solid fa-calendar-days"></i>
+                <i class="mt-0.5 flex-shrink-0 text-gray-400 fa-solid fa-calendar-days"></i>
                 <p><span class="font-semibold text-gray-700">Cambios de fecha:</span> con al menos 3 semanas de anticipación, sujeto a disponibilidad. Solo se permite un cambio por evento.</p>
+              </div>
+              <div class="flex gap-2 items-start">
+                <i class="mt-0.5 flex-shrink-0 text-purple-400 fa-solid fa-credit-card"></i>
+                <p><span class="font-semibold text-gray-700">Comisiones de plataformas de pago:</span> las comisiones e importes adicionales cobrados por plataformas externas (MercadoPago, Stripe, transferencia bancaria, etc.) <span class="font-semibold text-gray-900">no están incluidos en el costo total de la reserva</span> y corren por cuenta del cliente.</p>
               </div>
             </div>
             <router-link to="/reglamento"
@@ -1961,22 +1965,22 @@
               <i class="fa-solid fa-book-open"></i>
               Ver reglamento completo
             </router-link>
-            <div class="flex flex-col gap-2 mt-4">
+            <div class="flex gap-2 mt-4">
               <!-- Reschedule button — staff bypass the 1-change limit -->
               <button v-if="isStaff || event.date_changes_count === 0"
                 @click="showDateChangeModal = true; dateChangeError = ''"
-                class="w-full px-4 py-2.5 text-sm font-semibold text-blue-600 bg-blue-50 rounded-xl border border-blue-200 transition hover:bg-blue-100">
-                <i class="mr-2 fa-solid fa-calendar-days"></i>
+                class="flex-1 py-2 text-xs font-semibold text-white bg-cyan-500 rounded-xl hover:bg-cyan-600 transition-colors">
+                <i class="mr-1 fa-solid fa-calendar-days"></i>
                 Cambiar Fecha
               </button>
-              <div v-else class="flex gap-2 items-center px-3 py-2 text-xs text-gray-500 bg-gray-50 rounded-xl border border-gray-200">
+              <div v-else class="flex-1 flex gap-2 items-center justify-center px-3 py-2 text-xs text-gray-500 bg-gray-50 rounded-xl border border-gray-200">
                 <i class="fa-solid fa-calendar-xmark text-gray-400"></i>
-                Ya utilizaste el cambio de fecha permitido para este evento.
+                Sin cambios disponibles
               </div>
 
               <button @click="showCancelModal = true"
-                class="w-full px-4 py-2.5 text-sm font-semibold text-red-600 bg-red-50 rounded-xl border border-red-200 transition hover:bg-red-100">
-                <i class="mr-2 fa-solid fa-ban"></i>
+                class="flex-1 py-2 text-xs font-semibold text-white bg-red-500 rounded-xl hover:bg-red-600 transition-colors">
+                <i class="mr-1 fa-solid fa-ban"></i>
                 Cancelar Reserva
               </button>
             </div>
@@ -2417,11 +2421,18 @@ const submitDateChange = async () => {
     const dateStr = newEventDate.value instanceof Date
       ? newEventDate.value.toISOString().split('T')[0]
       : newEventDate.value
-    const originalTime = event.value.start_datetime
-      ? new Date(event.value.start_datetime).toTimeString().slice(0, 5)
-      : '00:00'
+    const origStart = new Date(event.value.start_datetime)
+    const origEnd = new Date(event.value.end_datetime)
+    const durationMs = origEnd - origStart
+    const originalStartTime = origStart.toTimeString().slice(0, 5)
+    const newStart = new Date(`${dateStr}T${originalStartTime}:00`)
+    const newEnd = new Date(newStart.getTime() + durationMs)
+    // If end crosses midnight, the date part will be the next day — keep the time
+    const newEndDateStr = newEnd.toISOString().split('T')[0]
+    const newEndTime = newEnd.toTimeString().slice(0, 5)
     await api.patch(`/api/bookings/bookings/${event.value.id}/`, {
-      start_datetime: `${dateStr}T${originalTime}:00`
+      start_datetime: `${dateStr}T${originalStartTime}:00`,
+      end_datetime: `${newEndDateStr}T${newEndTime}:00`
     })
     showDateChangeModal.value = false
     newEventDate.value = null
