@@ -730,7 +730,7 @@
                 <i class="fa-solid fa-flag-checkered text-purple-500 text-xl"></i>
               </div>
               <div>
-                <div class="text-sm font-bold text-gray-900">Entrega y cierre del evento</div>
+                <div class="text-sm font-bold text-gray-900">Proceso de entrega y finalización</div>
                 <div class="mt-0.5 text-xs text-gray-500">{{ isStaff ? 'Gestiona la entrega del lugar y finaliza la reserva.' : 'Estado de entrega y cierre de tu evento.' }}</div>
               </div>
             </div>
@@ -758,17 +758,10 @@
               </div>
               <div v-if="showStaffMenu" @click="showStaffMenu = false" class="fixed inset-0 z-10"></div>
             </div>
-            <!-- Non-staff or not yet finalizado: show badge -->
-            <span v-else-if="event.is_entregado || event.status === 'finalizado'"
-              :class="event.status === 'finalizado' ? 'text-green-600 border-green-300 bg-green-50' : 'text-cyan-600 border-cyan-300 bg-cyan-50'"
-              class="ml-2 flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full border whitespace-nowrap flex-shrink-0">
-              <i :class="event.status === 'finalizado' ? 'fa-solid fa-check' : 'fa-solid fa-door-open'"></i>
-              {{ event.status === 'finalizado' ? 'Finalizado' : 'Entregado' }}
-            </span>
           </div>
 
           <!-- Hora de llegada (only shown when entregado) -->
-          <div v-if="event.is_entregado" class="mx-4 mb-3 flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+          <div v-if="event.is_entregado" class="mx-6 mb-3 flex items-center justify-between p-3 bg-gray-50 rounded-xl">
             <div class="flex items-center gap-3">
               <div class="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-full flex-shrink-0">
                 <i class="fa-regular fa-clock text-purple-500 text-sm"></i>
@@ -800,13 +793,13 @@
           </div>
 
           <!-- Progress track -->
-          <div class="mx-4 mb-4">
-            <div class="flex items-center gap-1.5 mb-3">
-              <i class="fa-solid fa-location-dot text-purple-400 text-xs"></i>
-              <span class="text-xs font-semibold text-gray-600">Progreso de entrega</span>
-            </div>
-            <div class="flex items-start">
-              <div class="flex flex-col items-center flex-1">
+          <div class="mx-6 mb-4">
+            <div class="relative flex justify-between">
+              <!-- Connector line: from center of circle 1 to center of circle 2 -->
+              <div :class="event.status === 'finalizado' ? 'bg-purple-400' : event.is_entregado ? 'bg-cyan-300' : 'bg-gray-200'"
+                class="absolute left-[56px] right-[56px] top-[17px] h-0.5 transition-all"></div>
+              <!-- Step 1: Entregado -->
+              <div class="flex flex-col items-center w-28 z-10">
                 <div :class="event.is_entregado ? 'bg-cyan-500 border-cyan-500 text-white shadow-md shadow-cyan-200' : 'bg-white border-gray-300 text-gray-400'"
                   class="w-9 h-9 rounded-full border-2 flex items-center justify-center text-sm mb-1.5 transition-all">
                   <i class="fa-solid fa-door-open"></i>
@@ -814,9 +807,8 @@
                 <div :class="event.is_entregado ? 'text-cyan-600 font-bold' : 'text-gray-500'" class="text-xs text-center leading-tight">Entrega del lugar</div>
                 <div class="text-[10px] text-gray-400 text-center mt-0.5 leading-tight">{{ isStaff ? 'Confirma que el lugar fue entregado al cliente' : 'El staff confirmará la entrega del lugar' }}</div>
               </div>
-              <div :class="event.status === 'finalizado' ? 'bg-purple-400' : event.is_entregado ? 'bg-cyan-300' : 'bg-gray-200'"
-                class="h-0.5 flex-1 mt-4 mx-1 transition-all"></div>
-              <div class="flex flex-col items-center flex-1">
+              <!-- Step 2: Finalizado -->
+              <div class="flex flex-col items-center w-28 z-10">
                 <div :class="event.status === 'finalizado' ? 'bg-purple-500 border-purple-500 text-white shadow-md shadow-purple-200' : 'bg-white border-gray-300 text-gray-400'"
                   class="w-9 h-9 rounded-full border-2 flex items-center justify-center text-sm mb-1.5 transition-all">
                   <i :class="event.status === 'finalizado' ? 'fa-solid fa-check' : 'fa-regular fa-star'"></i>
@@ -827,46 +819,21 @@
             </div>
           </div>
 
-          <!-- Action cards (staff only, hidden when fully finalizado) -->
-          <div v-if="isStaff && event.status !== 'finalizado'" class="grid grid-cols-2 gap-2 mx-4 mb-4">
-            <div :class="event.is_entregado ? 'bg-red-50 border-red-200' : 'bg-cyan-50 border-cyan-200'"
-              class="rounded-xl border p-3 flex flex-col gap-2">
-              <div class="flex items-center gap-2">
-                <div :class="event.is_entregado ? 'bg-red-100' : 'bg-cyan-100'"
-                  class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <i :class="event.is_entregado ? 'fa-solid fa-door-closed text-red-500' : 'fa-solid fa-door-open text-cyan-600'" class="text-sm"></i>
-                </div>
-                <span :class="event.is_entregado ? 'text-red-700' : 'text-cyan-700'" class="text-xs font-bold leading-tight">
-                  {{ event.is_entregado ? 'Quitar entregado' : 'Marcar lugar entregado' }}
-                </span>
-              </div>
-              <button @click="toggleEntregado" :disabled="entregadoLoading"
-                :class="event.is_entregado ? 'bg-red-500 hover:bg-red-600' : 'bg-cyan-500 hover:bg-cyan-600'"
-                class="w-full py-1.5 text-xs font-semibold text-white rounded-lg disabled:opacity-50 transition-colors mt-1">
-                <i v-if="entregadoLoading" class="fa-solid fa-spinner fa-spin mr-1"></i>
-                {{ event.is_entregado ? 'Quitar' : 'Confirmar entrega' }}
-              </button>
-            </div>
-            <div :class="event.status === 'finalizado' ? 'bg-green-50 border-green-200' : 'bg-purple-50 border-purple-200'"
-              class="rounded-xl border p-3 flex flex-col gap-2">
-              <div class="flex items-center gap-2">
-                <div :class="event.status === 'finalizado' ? 'bg-green-100' : 'bg-purple-100'"
-                  class="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <i :class="event.status === 'finalizado' ? 'fa-solid fa-check text-green-500' : 'fa-regular fa-star text-purple-500'" class="text-sm"></i>
-                </div>
-                <span :class="event.status === 'finalizado' ? 'text-green-700' : 'text-purple-700'" class="text-xs font-bold leading-tight">
-                  {{ event.status === 'finalizado' ? 'Reserva finalizada' : 'Finalizar reserva' }}
-                </span>
-              </div>
-              <button v-if="event.status !== 'finalizado'" @click="finalizarReserva" :disabled="finalizarLoading"
-                class="w-full py-1.5 text-xs font-semibold text-white bg-purple-500 rounded-lg hover:bg-purple-600 disabled:opacity-50 transition-colors">
-                <i v-if="finalizarLoading" class="fa-solid fa-spinner fa-spin mr-1"></i>
-                Confirmar cierre
-              </button>
-              <div v-else class="w-full py-1.5 text-xs font-semibold text-green-700 bg-green-100 rounded-lg text-center">
-                <i class="fa-solid fa-check mr-1"></i>Completado
-              </div>
-            </div>
+          <!-- Action buttons (staff only, hidden when fully finalizado) -->
+          <div v-if="isStaff && event.status !== 'finalizado'" class="grid grid-cols-2 gap-2 mx-6 mb-4">
+            <button @click="toggleEntregado" :disabled="entregadoLoading"
+              :class="event.is_entregado ? 'bg-red-500 hover:bg-red-600' : 'bg-cyan-500 hover:bg-cyan-600'"
+              class="py-2 text-xs font-semibold text-white rounded-xl disabled:opacity-50 transition-colors">
+              <i v-if="entregadoLoading" class="fa-solid fa-spinner fa-spin mr-1"></i>
+              <i v-else :class="event.is_entregado ? 'fa-solid fa-door-closed' : 'fa-solid fa-door-open'" class="mr-1"></i>
+              {{ event.is_entregado ? 'Quitar entregado' : 'Marcar entregado' }}
+            </button>
+            <button @click="finalizarReserva" :disabled="finalizarLoading"
+              class="py-2 text-xs font-semibold text-white bg-purple-500 rounded-xl hover:bg-purple-600 disabled:opacity-50 transition-colors">
+              <i v-if="finalizarLoading" class="fa-solid fa-spinner fa-spin mr-1"></i>
+              <i v-else class="fa-regular fa-star mr-1"></i>
+              Finalizar reserva
+            </button>
           </div>
 
         </div><!-- /Entrega y cierre -->
