@@ -527,23 +527,34 @@
         </div>
       </div>
 
+      <!-- Mobile-only compact status strip -->
+      <div class="flex items-center gap-2 px-3 py-2 mb-3 bg-white rounded-xl border border-gray-200 shadow-sm lg:hidden">
+        <i class="text-xs text-blue-400 fa-regular fa-calendar flex-shrink-0"></i>
+        <span class="text-xs text-gray-500 truncate">
+          {{ event.start_datetime ? formatDate(event.start_datetime) : 'Sin fecha' }}
+        </span>
+        <span :class="statusBadge(event.is_entregado && event.status !== 'finalizado' ? 'entregado' : event.status)" class="ml-auto flex-shrink-0">
+          {{ visibleSteps.find(s => s.key === (event.is_entregado && event.status !== 'finalizado' ? 'entregado' : event.status))?.label || event.status }}
+        </span>
+      </div>
+
       <!-- Two-column layout: left=steps, right=summary+payment -->
-      <div class="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
+      <div class="flex flex-col gap-3 lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
         <!-- RIGHT TOP: summary + share (mobile: 1st, desktop: col-1 row-1) -->
-        <div class="flex flex-col gap-4 min-w-0 order-1 lg:col-start-1 lg:row-start-1">
+        <div class="flex flex-col gap-3 min-w-0 order-1 lg:col-start-1 lg:row-start-1">
 
       <!-- Event Overview (Order Summary Style, with real event data) -->
-        <div class="mb-6 bg-transparent rounded-2xl border-gray-100 border-none -none-md -50">
-        <h2 class="mb-4 text-lg font-bold text-gray-900">Resumen de Reserva</h2>
-        <div class="flex flex-col gap-3 mb-4">
-            <div class="flex flex-col gap-2 p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
+        <div class="mb-3 bg-transparent rounded-2xl border-gray-100 border-none -none-md -50">
+        <h2 class="mb-2 text-sm font-bold text-gray-700 sm:text-base sm:mb-3">Resumen de Reserva</h2>
+        <div class="flex flex-col gap-2 mb-3">
+            <div class="flex flex-col gap-2 p-3 bg-white rounded-2xl border border-gray-200 shadow-sm">
               <!-- Date -->
-              <div class="flex gap-3 items-center">
-                <i class="text-xl text-blue-500 fa-regular fa-calendar"></i>
-                <div class="flex-1">
-                  <div class="mb-1 font-semibold text-gray-400">Fecha del Evento</div>
+              <div class="flex gap-2 items-center">
+                <i class="text-base text-blue-500 fa-regular fa-calendar flex-shrink-0"></i>
+                <div class="flex-1 min-w-0">
+                  <div class="mb-0.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Fecha del Evento</div>
                   <div class="flex gap-2 items-center">
-                    <div class="text-lg font-bold text-gray-900">
+                    <div class="text-sm font-bold text-gray-900 sm:text-base">
                       <span v-if="event.start_datetime">{{ formatDate(event.start_datetime) }}</span>
                       <span v-else class="text-gray-500">Fecha no especificada</span>
                     </div>
@@ -559,12 +570,12 @@
                 </div>
               </div>
               <!-- Time -->
-              <div class="flex gap-3 items-center mt-2">
-                <i class="text-xl text-blue-500 fa-regular fa-clock"></i>
-                <div class="flex-1">
-                  <div class="mb-1 font-semibold text-gray-400">Horario</div>
+              <div class="flex gap-2 items-center mt-1">
+                <i class="text-base text-blue-500 fa-regular fa-clock flex-shrink-0"></i>
+                <div class="flex-1 min-w-0">
+                  <div class="mb-0.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Horario</div>
                   <div v-if="!editingTimes" class="flex gap-2 items-center">
-                    <div class="text-lg font-bold text-gray-900">
+                    <div class="text-sm font-bold text-gray-900 sm:text-base">
                       <span v-if="event.start_datetime && event.end_datetime">
                         {{ formatTime(event.start_datetime) }} - {{ formatTime(event.end_datetime) }}
                       </span>
@@ -789,20 +800,20 @@
             </div>
 
             <!-- Package & People Card -->
-            <div class="mb-4">
+            <div class="mb-3">
               <div class="flex justify-between items-center mb-2">
-                <div class="font-bold text-gray-900">Paquete</div>
+                <div class="text-sm font-bold text-gray-900">Paquete</div>
                 <button v-if="!isLocked" @click="showPackageModal = true" class="flex gap-1 items-center px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100">
                   <i class="fa-solid fa-edit"></i>
                   Cambiar
                 </button>
               </div>
-              <div class="flex gap-3 items-center p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
-                <div v-if="event.package && event.package.icon" class="mr-1 text-2xl text-blue-500">
+              <div class="flex gap-2 items-center p-3 bg-white rounded-2xl border border-gray-200 shadow-sm">
+                <div v-if="event.package && event.package.icon" class="text-xl text-blue-500 flex-shrink-0">
                   <Icon :icon="event.package.icon" />
           </div>
-                <div class="flex flex-col flex-1">
-                  <div class="text-lg font-bold text-gray-900">{{ event.package ? event.package.n_people : 0 }} personas</div>
+                <div class="flex flex-col flex-1 min-w-0">
+                  <div class="text-sm font-bold text-gray-900">{{ event.package ? event.package.n_people : 0 }} personas</div>
                   <div class="mt-1 text-sm text-gray-500">{{ event.package ? event.package.description : '' }}</div>
             </div>
                 <div class="ml-2 text-base font-bold text-right text-gray-900">
@@ -815,9 +826,9 @@
               <div class="text-gray-900 whitespace-pre-line">{{ event.description }}</div>
           </div>
         </div>
-        <div class="mb-4">
+        <div class="mb-3">
           <div class="flex justify-between items-center mb-2">
-            <div class="font-bold text-gray-900">Extras</div>
+            <div class="text-sm font-bold text-gray-900">Extras</div>
             <!-- Add Extra Button -->
             <div class="flex gap-2">
               <button v-if="!isLocked" @click="showExtrasModal = true" class="flex gap-1 items-center px-2 py-1 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 transition hover:bg-blue-100">
@@ -871,18 +882,18 @@
             <div v-else class="px-2 py-2 text-sm text-gray-400">Sin extras</div>
           </div>
         </div>
-        <div class="p-4 text-sm bg-white rounded-lg">
+        <div class="p-3 text-sm bg-white rounded-lg">
           <div class="flex justify-between mb-1">
-            <span class="text-gray-500">Total</span>
-              <span class="text-base font-semibold text-gray-900">${{ (parseFloat(event.total_price) || 0).toLocaleString() }}</span>
+            <span class="text-xs text-gray-500">Total</span>
+              <span class="text-sm font-semibold text-gray-900">${{ (parseFloat(event.total_price) || 0).toLocaleString() }}</span>
           </div>
           <div class="flex justify-between mb-1">
-            <span class="text-gray-500">Anticipo</span>
-              <span class="text-base font-semibold text-green-600">${{ (parseFloat(event.advance_paid) || 0).toLocaleString() }}</span>
+            <span class="text-xs text-gray-500">Anticipo</span>
+              <span class="text-sm font-semibold text-green-600">${{ (parseFloat(event.advance_paid) || 0).toLocaleString() }}</span>
           </div>
-          <div class="flex justify-between pt-2 mt-2 border-t">
-            <span class="font-bold text-gray-900">Restante</span>
-              <span class="text-base font-bold text-indigo-600">${{ ((parseFloat(event.total_price) || 0) - (parseFloat(event.advance_paid) || 0)).toLocaleString() }}</span>
+          <div class="flex justify-between pt-2 mt-1 border-t">
+            <span class="text-sm font-bold text-gray-900">Restante</span>
+              <span class="text-sm font-bold text-indigo-600">${{ ((parseFloat(event.total_price) || 0) - (parseFloat(event.advance_paid) || 0)).toLocaleString() }}</span>
           </div>
         </div>
         
@@ -1009,37 +1020,37 @@
         </div><!-- /Share Confirmation Card -->
 
       <!-- Client Information for Staff -->
-      <div v-if="isStaff" class="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
-        <h3 class="mb-3 text-lg font-bold text-gray-900">Información del Cliente</h3>
-        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <div class="flex items-center space-x-3">
-            <i class="text-blue-500 fa-solid fa-user"></i>
-            <div>
-              <div class="text-sm text-gray-500">Nombre</div>
-              <div class="font-semibold text-gray-900">
+      <div v-if="isStaff" class="p-3 bg-white rounded-2xl border border-gray-200 shadow-sm">
+        <h3 class="mb-2 text-sm font-bold text-gray-700">Información del Cliente</h3>
+        <div class="grid grid-cols-2 gap-2">
+          <div class="flex items-center gap-2">
+            <i class="text-blue-400 text-sm fa-solid fa-user flex-shrink-0"></i>
+            <div class="min-w-0">
+              <div class="text-[10px] text-gray-400">Nombre</div>
+              <div class="text-xs font-semibold text-gray-900 truncate">
                 {{ event.user?.first_name || event.user_name || 'N/A' }} {{ event.user?.last_name || '' }}
               </div>
             </div>
           </div>
-          <div class="flex items-center space-x-3">
-            <i class="text-blue-500 fa-solid fa-envelope"></i>
-            <div>
-              <div class="text-sm text-gray-500">Email</div>
-              <div class="font-semibold text-gray-900">{{ event.user?.email || 'N/A' }}</div>
+          <div class="flex items-center gap-2">
+            <i class="text-blue-400 text-sm fa-solid fa-envelope flex-shrink-0"></i>
+            <div class="min-w-0">
+              <div class="text-[10px] text-gray-400">Email</div>
+              <div class="text-xs font-semibold text-gray-900 truncate">{{ event.user?.email || 'N/A' }}</div>
             </div>
           </div>
-          <div v-if="event.user?.phone" class="flex items-center space-x-3">
-            <i class="text-blue-500 fa-solid fa-phone"></i>
-            <div>
-              <div class="text-sm text-gray-500">Teléfono</div>
-              <div class="font-semibold text-gray-900">{{ event.user.phone }}</div>
+          <div v-if="event.user?.phone" class="flex items-center gap-2">
+            <i class="text-blue-400 text-sm fa-solid fa-phone flex-shrink-0"></i>
+            <div class="min-w-0">
+              <div class="text-[10px] text-gray-400">Teléfono</div>
+              <div class="text-xs font-semibold text-gray-900">{{ event.user.phone }}</div>
             </div>
           </div>
-          <div class="flex items-center space-x-3">
-            <i class="text-blue-500 fa-solid fa-calendar"></i>
-            <div>
-              <div class="text-sm text-gray-500">Fecha de Creación</div>
-              <div class="font-semibold text-gray-900">{{ formatDate(event.created_at) }}</div>
+          <div class="flex items-center gap-2">
+            <i class="text-blue-400 text-sm fa-solid fa-calendar flex-shrink-0"></i>
+            <div class="min-w-0">
+              <div class="text-[10px] text-gray-400">Fecha de Creación</div>
+              <div class="text-xs font-semibold text-gray-900">{{ formatDate(event.created_at) }}</div>
             </div>
           </div>
         </div>
@@ -1048,7 +1059,7 @@
         </div><!-- /RIGHT TOP -->
 
         <!-- RIGHT BOTTOM: payment + history + review (mobile: 3rd, desktop: col-1 row-2) -->
-        <div class="flex flex-col gap-4 min-w-0 order-3 lg:col-start-1 lg:row-start-2">
+        <div class="flex flex-col gap-3 min-w-0 order-3 lg:col-start-1 lg:row-start-2">
 
         <!-- Payment Methods Section (shown when reservation is accepted and not locked) -->
         <div v-if="event && !isLocked && (event.status === 'aceptacion' || event.status === 'apartado' || event.status === 'liquidado' || event.status === 'entregado' || event.status === 'finalizado')" class="mt-6">
@@ -1847,9 +1858,9 @@
         </div><!-- /RIGHT BOTTOM -->
 
         <!-- RIGHT COLUMN (steps — sticky on desktop) -->
-        <div class="flex flex-col gap-4 order-2 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-24">
+        <div class="flex flex-col gap-3 order-2 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-24">
           <!-- Steps Progress -->
-          <div class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
+          <div class="p-3 bg-white rounded-2xl border border-gray-100 shadow-sm sm:p-4">
             <h2 class="mb-3 text-base font-bold text-primary-700 sm:text-lg">Pasos a seguir</h2>
 
             <!-- Cancelado banner -->
@@ -2033,12 +2044,12 @@
       </div><!-- /grid -->
 
         <!-- Staff Card -->
-        <div v-if="event.staff" class="flex flex-col gap-4 items-center p-5 mt-2 mb-8 bg-white rounded-2xl border border-blue-100 shadow md:flex-row">
-          <img :src="event.staff.profile?.image || 'https://ui-avatars.com/api/?name=' + (event.staff.first_name || '') + '+' + (event.staff.last_name || '') + '&background=0D8ABC&color=fff'" alt="Staff profile" class="object-cover w-16 h-16 rounded-full border-2 border-blue-200" />
-          <div class="flex-1">
-            <div class="mb-1 text-xs font-semibold text-gray-400">¿Quién te atendió?</div>
-            <div class="text-lg font-bold text-gray-900">{{ event.staff.first_name }} {{ event.staff.last_name }}</div>
-            <div class="text-sm text-gray-600">{{ event.staff.email }}</div>
+        <div v-if="event.staff" class="flex gap-3 items-center p-3 mt-2 mb-6 bg-white rounded-2xl border border-blue-100 shadow sm:p-4 md:flex-row">
+          <img :src="event.staff.profile?.image || 'https://ui-avatars.com/api/?name=' + (event.staff.first_name || '') + '+' + (event.staff.last_name || '') + '&background=0D8ABC&color=fff'" alt="Staff profile" class="object-cover flex-shrink-0 w-12 h-12 rounded-full border-2 border-blue-200 sm:w-16 sm:h-16" />
+          <div class="flex-1 min-w-0">
+            <div class="mb-0.5 text-[10px] font-semibold text-gray-400 uppercase tracking-wide">¿Quién te atendió?</div>
+            <div class="text-sm font-bold text-gray-900 sm:text-base">{{ event.staff.first_name }} {{ event.staff.last_name }}</div>
+            <div class="text-xs text-gray-600 truncate">{{ event.staff.email }}</div>
             <div v-if="event.staff.phone" class="mt-1">
               <a :href="'tel:' + event.staff.phone" class="inline-flex gap-1 items-center font-semibold text-blue-600 hover:underline">
                 <i class="fa-solid fa-phone"></i>
