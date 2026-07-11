@@ -1377,40 +1377,96 @@
                     </div>
                   </div>
 
+                  <!-- Deposit method toggle -->
+                  <div class="mb-4">
+                    <div class="text-xs font-semibold text-gray-500 mb-1.5">¿Cómo vas a depositar?</div>
+                    <div class="flex gap-2">
+                      <!-- SPEI button -->
+                      <button @click="transferDepositMethod = 'spei'"
+                        :class="['flex-1 flex gap-1.5 items-center justify-center py-2 px-2 text-xs font-semibold rounded border transition',
+                          transferDepositMethod === 'spei' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-600 border-gray-300 hover:border-green-400']">
+                        <i class="fa-solid fa-money-bill-transfer"></i> SPEI
+                      </button>
+                      <!-- Store deposit button -->
+                      <button @click="transferDepositMethod = 'oxxo'"
+                        :class="['flex-1 flex flex-wrap gap-1 items-center justify-center py-2 px-1 rounded border transition',
+                          transferDepositMethod === 'oxxo' ? 'bg-orange-500 text-white border-orange-500' : 'bg-white border-gray-300 hover:border-orange-400']">
+                        <!-- Brand chips -->
+                        <span class="px-1.5 py-0.5 rounded text-[9px] font-black tracking-tight"
+                          :class="transferDepositMethod === 'oxxo' ? 'bg-white/20 text-white' : 'bg-red-600 text-white'">OXXO</span>
+                        <span class="px-1.5 py-0.5 rounded text-[9px] font-black tracking-tight"
+                          :class="transferDepositMethod === 'oxxo' ? 'bg-white/20 text-white' : 'bg-green-700 text-white'">7-ELEVEn</span>
+                        <span class="px-1.5 py-0.5 rounded text-[9px] font-black tracking-tight"
+                          :class="transferDepositMethod === 'oxxo' ? 'bg-white/20 text-white' : 'bg-blue-600 text-white'">Walmart</span>
+                        <span class="px-1.5 py-0.5 rounded text-[9px] font-black tracking-tight"
+                          :class="transferDepositMethod === 'oxxo' ? 'bg-white/20 text-white' : 'bg-red-700 text-white'">Fcia. GDL</span>
+                      </button>
+                    </div>
+                  </div>
+
                   <!-- Bank Account -->
                   <div class="mb-4">
                     <div class="mb-2 text-sm font-semibold text-gray-700">Datos de la cuenta:</div>
-                    <div class="relative p-4 text-white bg-gradient-to-br from-blue-700 to-blue-900 rounded-xl shadow-md">
-                      <div class="flex justify-between items-start mb-3">
+                    <!-- Card: click copies card number -->
+                    <div class="relative aspect-[1.586/1] p-4 flex flex-col justify-between text-white bg-gradient-to-br from-blue-700 to-blue-900 rounded-xl shadow-md cursor-pointer active:opacity-90 transition-opacity select-none" @click="copyCardNumber">
+                      <div class="flex justify-between items-start">
                         <div>
                           <div class="text-[10px] font-semibold tracking-widest uppercase opacity-70">Banco</div>
                           <div class="text-sm font-bold">BBVA Bancomer</div>
                         </div>
                         <i class="text-2xl opacity-40 fa-solid fa-building-columns"></i>
                       </div>
-                      <div class="mb-2">
+                      <div>
+                        <div class="mb-2">
+                          <div class="text-[10px] font-semibold tracking-widest uppercase opacity-70">Número de tarjeta</div>
+                          <div class="text-base font-bold tracking-[0.2em] font-mono">4152 3144 4172 4641</div>
+                        </div>
                         <div class="text-[10px] font-semibold tracking-widest uppercase opacity-70">Titular</div>
                         <div class="text-sm font-bold">Christopher Pineda</div>
                       </div>
-                      <div class="mb-1">
-                        <div class="text-[10px] font-semibold tracking-widest uppercase opacity-70">CLABE interbancaria</div>
-                        <div class="flex items-center gap-2 mt-0.5">
-                          <span class="text-base font-bold tracking-widest font-mono">0123 2001 5086 5040 05</span>
-                          <button @click="copyClabe" class="flex items-center gap-1 px-2 py-0.5 text-[10px] font-bold text-blue-900 bg-white rounded opacity-80 hover:opacity-100 transition">
-                            <i class="fa-solid fa-copy text-[10px]"></i>
-                            Copiar
-                          </button>
-                        </div>
+                      <div class="flex items-center gap-1 text-[10px] font-bold text-white/60">
+                        <i class="fa-solid fa-copy text-[10px]"></i>
+                        Toca para copiar número de tarjeta
                       </div>
                     </div>
+                    <!-- CLABE copy button below card -->
+                    <button @click="copyClabe" class="mt-2 w-full flex items-center justify-between px-3 py-2 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800 hover:bg-blue-100 transition">
+                      <div>
+                        <span class="text-[10px] font-semibold uppercase tracking-wider text-blue-500 block">CLABE interbancaria</span>
+                        <span class="font-mono font-bold tracking-wider">0123 2001 5086 5040 05</span>
+                      </div>
+                      <span class="flex items-center gap-1 font-semibold text-blue-600 flex-shrink-0 ml-2">
+                        <i class="fa-solid fa-copy"></i> Copiar
+                      </span>
+                    </button>
 
-                    <!-- Instructions -->
-                    <div class="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-gray-700 space-y-1.5">
-                      <div class="font-semibold text-blue-700 mb-1">¿Cómo realizar tu transferencia?</div>
-                      <div class="flex gap-2 items-start"><span class="text-blue-500 font-bold flex-shrink-0">1.</span> Abre tu app bancaria o ve a una sucursal / OXXO Pay.</div>
+                    <!-- Instructions SPEI -->
+                    <div v-if="transferDepositMethod === 'spei'" class="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-gray-700 space-y-1.5">
+                      <div class="font-semibold text-blue-700 mb-1">¿Cómo realizar tu transferencia SPEI?</div>
+                      <div class="flex gap-2 items-start"><span class="text-blue-500 font-bold flex-shrink-0">1.</span> Abre tu app bancaria o banca en línea.</div>
                       <div class="flex gap-2 items-start"><span class="text-blue-500 font-bold flex-shrink-0">2.</span> Elige "Transferencia SPEI" e ingresa la CLABE de arriba.</div>
                       <div class="flex gap-2 items-start"><span class="text-blue-500 font-bold flex-shrink-0">3.</span> Ingresa el monto exacto que pusiste arriba.</div>
                       <div class="flex gap-2 items-start"><span class="text-blue-500 font-bold flex-shrink-0">4.</span> Sube el comprobante aquí abajo para confirmar tu pago.</div>
+                    </div>
+
+                    <!-- Instructions Oxxo / Walmart -->
+                    <div v-else class="mt-3 p-3 bg-orange-50 border border-orange-100 rounded-xl text-xs text-gray-700 space-y-1.5">
+                      <div class="font-semibold text-orange-600 mb-1 flex gap-1.5 items-center">
+                        <i class="fa-solid fa-store"></i> ¿Cómo depositar en tienda?
+                      </div>
+                      <div class="flex gap-2 items-start">
+                        <span class="text-orange-500 font-bold flex-shrink-0">1.</span>
+                        <span class="flex flex-wrap gap-1 items-center">Ve a cualquier
+                          <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-red-600 text-white">OXXO</span>
+                          <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-green-700 text-white">7-ELEVEn</span>
+                          <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-blue-600 text-white">Walmart</span>
+                          <span class="px-1.5 py-0.5 rounded text-[9px] font-black bg-red-700 text-white">Fcia. GDL</span>
+                        </span>
+                      </div>
+                      <div class="flex gap-2 items-start"><span class="text-orange-500 font-bold flex-shrink-0">2.</span> Pide un <strong>depósito con número de tarjeta</strong>.</div>
+                      <div class="flex gap-2 items-start"><span class="text-orange-500 font-bold flex-shrink-0">3.</span> Proporciona el número de tarjeta <span class="font-mono font-bold">4152 3144 4172 4641</span> y el monto exacto.</div>
+                      <div class="flex gap-2 items-start"><span class="text-orange-500 font-bold flex-shrink-0">4.</span> Guarda tu ticket y súbelo como comprobante aquí abajo.</div>
+                      <div class="flex gap-2 items-start text-orange-500 font-semibold"><i class="fa-solid fa-triangle-exclamation flex-shrink-0 mt-px"></i> Puede haber una comisión de $10–$15 MXN por parte de la tienda, no incluida en el total.</div>
                     </div>
                   </div>
 
@@ -3305,6 +3361,10 @@ function copyClabe() {
   copyToClipboard('012320015086504005')
 }
 
+function copyCardNumber() {
+  copyToClipboard('4152314441724641')
+}
+
 async function submitTransferPayment() {
   if (!uploadedFile.value) {
     toast.error('Por favor selecciona un comprobante de pago')
@@ -3384,6 +3444,7 @@ const editEndTime = ref('')
 const savingTimes = ref(false)
 
 const transferAmount = ref('')
+const transferDepositMethod = ref('spei') // 'spei' | 'oxxo'
 
 // Watch transferAmount to limit it to remainingAmount
 watch(transferAmount, (newValue) => {
