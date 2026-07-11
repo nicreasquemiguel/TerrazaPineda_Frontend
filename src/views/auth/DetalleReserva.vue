@@ -721,7 +721,7 @@
         
         <!-- Entrega y cierre del evento -->
         <div v-if="event && ['aceptacion','apartado','liquidado','liquidado_entregado','entregado','finalizado'].includes(event.status)"
-          class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+          class="mt-4 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
 
           <!-- Header -->
           <div class="flex items-start justify-between p-4 pb-3">
