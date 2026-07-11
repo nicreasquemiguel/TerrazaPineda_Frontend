@@ -529,45 +529,8 @@
 
       <!-- Two-column layout: left=steps, right=summary+payment -->
       <div class="flex flex-col gap-4 lg:grid lg:grid-cols-2 lg:gap-8 lg:items-start">
-        <!-- RIGHT TOP: summary + share (mobile: 1st, desktop: col-2 row-1) -->
-        <div class="flex flex-col gap-4 min-w-0 order-1 lg:col-start-2 lg:row-start-1">
-
-      <!-- Client Information for Staff -->
-      <div v-if="isStaff" class="p-4 mb-6 bg-white rounded-2xl border border-gray-200 shadow-sm">
-        <h3 class="mb-3 text-lg font-bold text-gray-900">Información del Cliente</h3>
-        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-          <div class="flex items-center space-x-3">
-            <i class="text-blue-500 fa-solid fa-user"></i>
-            <div>
-              <div class="text-sm text-gray-500">Nombre</div>
-              <div class="font-semibold text-gray-900">
-                {{ event.user?.first_name || event.user_name || 'N/A' }} {{ event.user?.last_name || '' }}
-              </div>
-            </div>
-          </div>
-          <div class="flex items-center space-x-3">
-            <i class="text-blue-500 fa-solid fa-envelope"></i>
-            <div>
-              <div class="text-sm text-gray-500">Email</div>
-              <div class="font-semibold text-gray-900">{{ event.user?.email || 'N/A' }}</div>
-            </div>
-          </div>
-          <div v-if="event.user?.phone" class="flex items-center space-x-3">
-            <i class="text-blue-500 fa-solid fa-phone"></i>
-            <div>
-              <div class="text-sm text-gray-500">Teléfono</div>
-              <div class="font-semibold text-gray-900">{{ event.user.phone }}</div>
-            </div>
-          </div>
-          <div class="flex items-center space-x-3">
-            <i class="text-blue-500 fa-solid fa-calendar"></i>
-            <div>
-              <div class="text-sm text-gray-500">Fecha de Creación</div>
-              <div class="font-semibold text-gray-900">{{ formatDate(event.created_at) }}</div>
-            </div>
-          </div>
-        </div>
-      </div>
+        <!-- RIGHT TOP: summary + share (mobile: 1st, desktop: col-1 row-1) -->
+        <div class="flex flex-col gap-4 min-w-0 order-1 lg:col-start-1 lg:row-start-1">
 
       <!-- Event Overview (Order Summary Style, with real event data) -->
         <div class="mb-6 bg-transparent rounded-2xl border-gray-100 border-none -none-md -50">
@@ -1044,10 +1007,48 @@
             </div>
           </div>
         </div><!-- /Share Confirmation Card -->
+
+      <!-- Client Information for Staff -->
+      <div v-if="isStaff" class="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
+        <h3 class="mb-3 text-lg font-bold text-gray-900">Información del Cliente</h3>
+        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+          <div class="flex items-center space-x-3">
+            <i class="text-blue-500 fa-solid fa-user"></i>
+            <div>
+              <div class="text-sm text-gray-500">Nombre</div>
+              <div class="font-semibold text-gray-900">
+                {{ event.user?.first_name || event.user_name || 'N/A' }} {{ event.user?.last_name || '' }}
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <i class="text-blue-500 fa-solid fa-envelope"></i>
+            <div>
+              <div class="text-sm text-gray-500">Email</div>
+              <div class="font-semibold text-gray-900">{{ event.user?.email || 'N/A' }}</div>
+            </div>
+          </div>
+          <div v-if="event.user?.phone" class="flex items-center space-x-3">
+            <i class="text-blue-500 fa-solid fa-phone"></i>
+            <div>
+              <div class="text-sm text-gray-500">Teléfono</div>
+              <div class="font-semibold text-gray-900">{{ event.user.phone }}</div>
+            </div>
+          </div>
+          <div class="flex items-center space-x-3">
+            <i class="text-blue-500 fa-solid fa-calendar"></i>
+            <div>
+              <div class="text-sm text-gray-500">Fecha de Creación</div>
+              <div class="font-semibold text-gray-900">{{ formatDate(event.created_at) }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
         </div><!-- /RIGHT TOP -->
 
-        <!-- RIGHT BOTTOM: payment + history + review (mobile: 3rd, desktop: col-2 row-2) -->
-        <div class="flex flex-col gap-4 min-w-0 order-3 lg:col-start-2 lg:row-start-2">
+        <!-- RIGHT BOTTOM: payment + history + review (mobile: 3rd, desktop: col-1 row-2) -->
+        <div class="flex flex-col gap-4 min-w-0 order-3 lg:col-start-1 lg:row-start-2">
 
         <!-- Payment Methods Section (shown when reservation is accepted and not locked) -->
         <div v-if="event && !isLocked && (event.status === 'aceptacion' || event.status === 'apartado' || event.status === 'liquidado' || event.status === 'entregado' || event.status === 'finalizado')" class="mt-6">
@@ -1845,8 +1846,8 @@
         </div><!-- /Review -->
         </div><!-- /RIGHT BOTTOM -->
 
-        <!-- LEFT COLUMN (steps — sticky on desktop) -->
-        <div class="flex flex-col gap-4 order-2 lg:col-start-1 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-24">
+        <!-- RIGHT COLUMN (steps — sticky on desktop) -->
+        <div class="flex flex-col gap-4 order-2 lg:col-start-2 lg:row-start-1 lg:row-span-2 lg:sticky lg:top-24">
           <!-- Steps Progress -->
           <div class="p-4 bg-white rounded-2xl border border-gray-100 shadow-sm">
             <h2 class="mb-3 text-base font-bold text-primary-700 sm:text-lg">Pasos a seguir</h2>
@@ -2415,9 +2416,12 @@ const confirmCancelReservation = async () => {
   }
 }
 
-const isLocked = computed(() =>
-  ['cancelado', 'rechazado', 'finalizado'].includes(event.value?.status)
-)
+const isLocked = computed(() => {
+  const alwaysLocked = ['cancelado', 'rechazado']
+  const userLocked = ['finalizado']
+  return alwaysLocked.includes(event.value?.status) ||
+    (!isStaff.value && userLocked.includes(event.value?.status))
+})
 
 const openTimeEdit = () => {
   editStartTime.value = event.value?.start_datetime
