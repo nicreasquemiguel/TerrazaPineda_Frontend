@@ -682,7 +682,33 @@
                     <div class="mt-0.5 text-xs text-gray-500">{{ isStaff ? 'Gestiona la entrega del lugar y finaliza la reserva.' : 'Estado de entrega y cierre de tu evento.' }}</div>
                   </div>
                 </div>
-                <span v-if="event.is_entregado || event.status === 'finalizado'"
+                <!-- Staff + finalizado: three-dot menu instead of badge -->
+                <div v-if="isStaff && event.status === 'finalizado'" class="relative ml-2 flex-shrink-0">
+                  <button @click="showStaffMenu = !showStaffMenu"
+                    class="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 transition">
+                    <i class="fa-solid fa-ellipsis-vertical text-sm"></i>
+                  </button>
+                  <div v-if="showStaffMenu"
+                    class="absolute right-0 top-9 z-20 w-48 bg-white rounded-xl border border-gray-200 shadow-lg overflow-hidden">
+                    <button @click="toggleEntregado(); showStaffMenu = false" :disabled="entregadoLoading"
+                      class="flex items-center gap-2 w-full px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 disabled:opacity-50 transition">
+                      <i v-if="entregadoLoading" class="fa-solid fa-spinner fa-spin w-4"></i>
+                      <i v-else class="fa-solid fa-door-closed w-4"></i>
+                      Quitar entregado
+                    </button>
+                    <div class="border-t border-gray-100"></div>
+                    <button @click="quitarFinalizado(); showStaffMenu = false" :disabled="quitarFinalizadoLoading"
+                      class="flex items-center gap-2 w-full px-4 py-2.5 text-xs font-semibold text-orange-600 hover:bg-orange-50 disabled:opacity-50 transition">
+                      <i v-if="quitarFinalizadoLoading" class="fa-solid fa-spinner fa-spin w-4"></i>
+                      <i v-else class="fa-regular fa-star w-4"></i>
+                      Quitar finalizado
+                    </button>
+                  </div>
+                  <!-- Click outside to close -->
+                  <div v-if="showStaffMenu" @click="showStaffMenu = false" class="fixed inset-0 z-10"></div>
+                </div>
+                <!-- Non-staff or not yet finalizado: show badge -->
+                <span v-else-if="event.is_entregado || event.status === 'finalizado'"
                   :class="event.status === 'finalizado' ? 'text-green-600 border-green-300 bg-green-50' : 'text-cyan-600 border-cyan-300 bg-cyan-50'"
                   class="ml-2 flex items-center gap-1 px-2.5 py-1 text-xs font-semibold rounded-full border whitespace-nowrap flex-shrink-0">
                   <i :class="event.status === 'finalizado' ? 'fa-solid fa-check' : 'fa-solid fa-door-open'"></i>
@@ -753,8 +779,8 @@
                 </div>
               </div>
 
-              <!-- Action cards (staff only) -->
-              <div v-if="isStaff" class="grid grid-cols-2 gap-2 mx-4 mb-4">
+              <!-- Action cards (staff only, hidden when fully finalizado) -->
+              <div v-if="isStaff && event.status !== 'finalizado'" class="grid grid-cols-2 gap-2 mx-4 mb-4">
                 <!-- Marcar entregado -->
                 <div :class="event.is_entregado ? 'bg-red-50 border-red-200' : 'bg-cyan-50 border-cyan-200'"
                   class="rounded-xl border p-3 flex flex-col gap-2">
@@ -1694,33 +1720,71 @@
                     <i class="fa-solid fa-pen mr-1"></i>Editar reseña
                   </button>
 
-                  <!-- Share -->
-                  <div class="pt-3 border-t border-gray-100">
-                    <p class="text-xs font-semibold text-gray-600 mb-2">¡Comparte tu experiencia!</p>
+                  <!-- Share — same style as confirmation card -->
+                  <div class="mt-4 p-4 bg-gradient-to-br from-[#1a0533] to-[#0a021e] rounded-2xl border border-purple-900/40">
+                    <div class="flex items-center gap-2 mb-1">
+                      <span class="text-base">⭐</span>
+                      <h3 class="text-sm font-bold text-white">¡Comparte tu experiencia!</h3>
+                    </div>
+                    <p class="text-xs text-purple-300 mb-3">Genera tu tarjeta y compártela con todos.</p>
+
+                    <!-- Card preview -->
                     <div v-if="reviewCardUrl" class="mb-3">
                       <img :src="reviewCardUrl" alt="Tarjeta de reseña" class="w-full max-w-xs mx-auto rounded-xl shadow-md" />
+                      <div class="flex justify-center mt-2">
+                        <button @click="loadReviewCard" :disabled="loadingReviewCard"
+                          class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-purple-300 text-xs font-medium transition disabled:opacity-50">
+                          <svg :class="['h-3.5 w-3.5', loadingReviewCard && 'animate-spin']" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                          </svg>
+                          {{ loadingReviewCard ? 'Generando...' : 'Nueva tarjeta' }}
+                        </button>
+                      </div>
                     </div>
-                    <div v-else-if="loadingReviewCard" class="flex justify-center py-3">
-                      <svg class="animate-spin h-5 w-5 text-purple-400" fill="none" viewBox="0 0 24 24">
+                    <div v-else-if="loadingReviewCard" class="flex justify-center py-4">
+                      <svg class="animate-spin h-6 w-6 text-purple-400" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                       </svg>
                     </div>
-                    <div class="flex flex-wrap gap-2">
-                      <button v-if="!reviewCardUrl && !loadingReviewCard" @click="loadReviewCard"
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-semibold transition">
-                        Ver tarjeta
+
+                    <!-- Generate button -->
+                    <button v-if="!reviewCardUrl && !loadingReviewCard" @click="loadReviewCard"
+                      class="flex items-center gap-2 px-4 py-2 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition mb-2">
+                      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                      Generar tarjeta
+                    </button>
+
+                    <!-- Share buttons -->
+                    <div v-if="reviewCardUrl" class="flex flex-col gap-2">
+                      <button v-if="canNativeShare"
+                        @click="nativeShareCard(reviewCardApiUrl, '¡Tuve mi evento en Terraza Pineda! ' + '★'.repeat(myReview.rating || 5) + ' ¡Totalmente recomendado!')"
+                        class="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-gradient-to-r from-[#7c3aed] to-[#22d3ee] text-white text-sm font-bold shadow transition hover:opacity-90">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"/></svg>
+                        Compartir imagen
                       </button>
-                      <a v-if="reviewCardUrl" :href="reviewCardUrl" download="terraza-pineda-resena.png"
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-semibold transition">
-                        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
-                        Descargar
-                      </a>
-                      <a :href="`https://wa.me/?text=${encodeURIComponent('¡Tuve mi evento en Terraza Pineda! ' + '★'.repeat(myReview.rating || 5) + ' ¡Totalmente recomendado! terrazapineda.com')}`"
-                        target="_blank" rel="noopener"
-                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 text-[#1a9e4a] text-xs font-semibold transition">
-                        WhatsApp
-                      </a>
+                      <div class="flex gap-2">
+                        <a :href="`https://wa.me/?text=${encodeURIComponent('¡Tuve mi evento en Terraza Pineda! ' + '★'.repeat(myReview.rating || 5) + ' ¡Totalmente recomendado! terrazapineda.com')}`"
+                          target="_blank" rel="noopener"
+                          class="flex flex-1 items-center justify-center gap-1.5 py-2 rounded-lg bg-[#25D366] hover:bg-[#1ebe5a] text-white text-sm font-semibold transition">
+                          <svg class="h-4 w-4 flex-shrink-0" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.374 0 0 5.374 0 12c0 2.117.547 4.103 1.504 5.829L.057 23.882l6.233-1.635A11.934 11.934 0 0012 24c6.626 0 12-5.374 12-12 0-6.627-5.374-12-12-12zm0 21.818a9.818 9.818 0 01-4.999-1.369l-.358-.213-3.706.973.989-3.611-.234-.371A9.818 9.818 0 012.182 12C2.182 6.57 6.57 2.182 12 2.182c5.43 0 9.818 4.389 9.818 9.818 0 5.43-4.389 9.818-9.818 9.818z"/></svg>
+                          WhatsApp
+                        </a>
+                        <button @click="copyCardLink(reviewCardUrl)"
+                          class="flex flex-1 items-center justify-center gap-1.5 py-2 rounded-lg bg-[#1877F2] hover:bg-[#1565d8] text-white text-sm font-semibold transition">
+                          <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                          Copiar
+                        </button>
+                        <button @click="downloadCard(reviewCardApiUrl, 'terraza-pineda-resena.png')"
+                          class="flex flex-1 items-center justify-center gap-1.5 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-semibold transition">
+                          <svg class="h-4 w-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+                          Guardar
+                        </button>
+                      </div>
+                      <div class="text-xs text-purple-400 text-center pt-1 space-y-0.5">
+                        <p v-if="canNativeShare">📲 "Compartir imagen" abre Instagram, Facebook y más desde tu cel.</p>
+                        <p v-else>📲 En tu cel: usa "Compartir imagen" para subir directo a redes.</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -2134,6 +2198,8 @@ const isStaff = computed(() => {
 
 const entregadoLoading = ref(false)
 const finalizarLoading = ref(false)
+const quitarFinalizadoLoading = ref(false)
+const showStaffMenu = ref(false)
 const editingHoraEntrega = ref(false)
 const horaEntregaInput = ref('')
 const horaEntregaLoading = ref(false)
@@ -2180,6 +2246,21 @@ const finalizarReserva = async () => {
     toast.error('Error al finalizar la reserva')
   } finally {
     finalizarLoading.value = false
+  }
+}
+
+const quitarFinalizado = async () => {
+  if (!event.value) return
+  quitarFinalizadoLoading.value = true
+  try {
+    await api.post(`/api/bookings/bookings/${event.value.id}/quitar_finalizado/`)
+    await refetch()
+    refetchLogs()
+    toast.success('Finalización removida')
+  } catch {
+    toast.error('Error al quitar el finalizado')
+  } finally {
+    quitarFinalizadoLoading.value = false
   }
 }
 
