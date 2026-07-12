@@ -184,7 +184,7 @@ const statusOptions = [
   { value: 'apartado',            label: 'Apartado',   dot: 'bg-amber-400',  chip: 'bg-amber-100 text-amber-700', badge: 'bg-amber-100 text-amber-600', activeBg: 'bg-amber-400',  activeText: 'text-white' },
   { value: 'liquidado',           label: 'Liquidado',  dot: 'bg-green-400',  chip: 'bg-green-100 text-green-700', badge: 'bg-green-100 text-green-600', activeBg: 'bg-green-500',  activeText: 'text-white' },
   { value: 'liquidado_entregado', label: 'Entregado',  dot: 'bg-teal-400',   chip: 'bg-teal-100 text-teal-700',   badge: 'bg-teal-100 text-teal-600',   activeBg: 'bg-teal-500',   activeText: 'text-white' },
-  { value: 'finalizado',          label: 'Finalizado', dot: 'bg-slate-300',  chip: 'bg-slate-100 text-slate-600', badge: 'bg-slate-100 text-slate-500', activeBg: 'bg-slate-400',  activeText: 'text-white' },
+  { value: 'finalizado',          label: 'Finalizado', dot: 'bg-purple-400',  chip: 'bg-purple-50 text-purple-700', badge: 'bg-purple-100 text-purple-600', activeBg: 'bg-purple-500',  activeText: 'text-white' },
   { value: 'cancelado',           label: 'Cancelado',  dot: 'bg-red-400',    chip: 'bg-red-100 text-red-700',     badge: 'bg-red-100 text-red-600',     activeBg: 'bg-red-500',    activeText: 'text-white' },
 ]
 

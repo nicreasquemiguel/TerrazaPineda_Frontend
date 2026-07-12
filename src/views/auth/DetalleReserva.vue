@@ -718,7 +718,7 @@
                   <div class="flex items-center justify-between">
                     <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Descripción</div>
                     <button v-if="isStaff && !editingDescription"
-                      @click="editingDescription = true; editDescriptionValue = event.description || ''"
+                      @click="editingDescription = true; editDescriptionValue = cleanDescription(event.description) || ''"
                       class="flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 hover:bg-blue-100 transition">
                       <i class="fa-solid fa-pen text-[10px]"></i>
                       Editar
@@ -3791,8 +3791,10 @@ const savingDescription = ref(false)
 async function saveDescription() {
   savingDescription.value = true
   try {
-    await api.patch(`/api/bookings/bookings/${event.value.id}/`, { description: editDescriptionValue.value })
-    event.value.description = editDescriptionValue.value
+    const wasGCal = event.value.description?.startsWith('[GCal]\n')
+    const toSave = wasGCal ? `[GCal]\n${editDescriptionValue.value}` : editDescriptionValue.value
+    await api.patch(`/api/bookings/bookings/${event.value.id}/`, { description: toSave })
+    event.value.description = toSave
     editingDescription.value = false
   } catch (e) {
     console.error(e)
