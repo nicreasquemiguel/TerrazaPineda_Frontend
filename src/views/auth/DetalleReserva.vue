@@ -222,7 +222,7 @@
             :class="['flex-1 py-2.5 text-xs font-bold transition', discountTab === 'coupon' ? 'text-green-700 border-b-2 border-green-500' : 'text-gray-400']">
             <i class="fa-solid fa-ticket mr-1"></i>Código de cupón
           </button>
-          <button @click="discountTab = 'manual'"
+          <button v-if="isStaff" @click="discountTab = 'manual'"
             :class="['flex-1 py-2.5 text-xs font-bold transition', discountTab === 'manual' ? 'text-green-700 border-b-2 border-green-500' : 'text-gray-400']">
             <i class="fa-solid fa-pen mr-1"></i>Descuento manual
           </button>
@@ -890,9 +890,9 @@
                 <i class="fa-solid fa-plus text-[10px]"></i>
                 Cargo
               </button>
-              <button v-if="isStaff" @click="openDiscountModal" class="flex-shrink-0 flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 transition hover:bg-green-100">
-                <i class="fa-solid fa-tag text-[10px]"></i>
-                Descuento
+              <button @click="openDiscountModal" class="flex-shrink-0 flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 transition hover:bg-green-100">
+                <i class="fa-solid fa-ticket text-[10px]"></i>
+                Cupón
               </button>
             </div>
           </div>

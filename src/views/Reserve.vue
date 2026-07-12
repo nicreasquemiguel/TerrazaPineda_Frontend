@@ -227,9 +227,43 @@
                   Acepto los <a href="#" class="text-blue-500 underline" @click.prevent="showTermsModal = true">términos y condiciones</a>
                 </label>
               </div>
+              <!-- Cupón de descuento -->
+              <div class="flex flex-col gap-2">
+                <div class="font-bold text-gray-700">Cupón de descuento</div>
+                <div class="flex gap-2">
+                  <div class="flex flex-1 items-center gap-2 px-3 py-2 bg-white rounded-lg border text-sm">
+                    <i class="fa-solid fa-ticket text-gray-300"></i>
+                    <input v-model="couponCode" type="text" placeholder="CODIGO2026"
+                      @input="couponPreview = null; couponError = null"
+                      class="flex-1 bg-transparent outline-none uppercase placeholder-gray-400 text-gray-900" />
+                  </div>
+                  <button @click="validateCoupon" :disabled="!couponCode.trim() || validatingCoupon"
+                    class="px-3 py-2 text-xs font-bold text-white bg-green-600 rounded-lg hover:bg-green-700 disabled:opacity-40 transition">
+                    <i v-if="validatingCoupon" class="fa-solid fa-spinner fa-spin"></i>
+                    <span v-else>Verificar</span>
+                  </button>
+                </div>
+                <div v-if="couponError" class="text-xs text-red-600 font-semibold">
+                  <i class="fa-solid fa-circle-xmark mr-1"></i>{{ couponError }}
+                </div>
+                <div v-if="couponPreview" class="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
+                  <i class="fa-solid fa-circle-check text-green-500 text-sm flex-shrink-0"></i>
+                  <div class="flex-1">
+                    <div class="text-sm font-bold text-green-800">{{ couponPreview.label }}</div>
+                    <div class="text-xs text-green-600">-${{ Math.round(parseFloat(couponPreview.computed_discount)).toLocaleString() }}</div>
+                  </div>
+                  <button @click="couponPreview = null; couponCode = ''" class="text-gray-400 hover:text-gray-600">
+                    <i class="fa-solid fa-xmark text-xs"></i>
+                  </button>
+                </div>
+              </div>
               <!-- Resumen de costos -->
               <div>
                 <div class="mb-2 font-bold text-gray-700">Resumen de costos</div>
+                <div v-if="couponPreview" class="flex justify-between items-center text-sm text-green-700 mb-1">
+                  <span class="font-semibold"><i class="fa-solid fa-ticket mr-1 text-xs"></i>{{ couponPreview.label }}</span>
+                  <span class="font-bold">-${{ Math.round(parseFloat(couponPreview.computed_discount)) }}</span>
+                </div>
                 <div class="flex items-center mt-2">
                   <span class="text-base font-bold">Total</span>
                   <span class="flex-1"></span>
@@ -401,6 +435,10 @@ const customCharges = ref([]);
 const showCustomChargeModal = ref(false);
 const customChargeDescription = ref('');
 const customChargePrice = ref('');
+const couponCode = ref('');
+const couponPreview = ref(null);
+const couponError = ref(null);
+const validatingCoupon = ref(false);
 const currentStep = ref(1);
 const steps = [
   'Fecha',
@@ -432,9 +470,15 @@ const extrasTotal = computed(() => {
 const customChargesTotal = computed(() => {
   return customCharges.value.reduce((sum, c) => sum + (Number(c.price) || 0), 0);
 });
-const totalCost = computed(() => {
+const subtotalCost = computed(() => {
   const pkg = selectedPackage.value?.price ? Number(selectedPackage.value.price) : 0;
   return pkg + extrasTotal.value + customChargesTotal.value;
+});
+const couponDiscount = computed(() => {
+  return couponPreview.value ? parseFloat(couponPreview.value.computed_discount) || 0 : 0;
+});
+const totalCost = computed(() => {
+  return Math.max(0, subtotalCost.value - couponDiscount.value);
 });
 const totalCostNoDecimals = computed(() => {
   return Math.round(totalCost.value);
@@ -451,6 +495,24 @@ function addLocalCharge() {
 }
 function removeLocalCharge(index) {
   customCharges.value.splice(index, 1);
+}
+
+async function validateCoupon() {
+  if (!couponCode.value.trim()) return;
+  validatingCoupon.value = true;
+  couponPreview.value = null;
+  couponError.value = null;
+  try {
+    const res = await api.post('/api/bookings/bookings/validate_coupon_code/', {
+      code: couponCode.value.trim(),
+      subtotal: subtotalCost.value,
+    });
+    couponPreview.value = res.data;
+  } catch (e) {
+    couponError.value = e?.response?.data?.detail || 'Cupón no válido.';
+  } finally {
+    validatingCoupon.value = false;
+  }
 }
 
 async function sendRequest() {
@@ -475,6 +537,13 @@ async function sendRequest() {
           });
         } catch {}
       }
+    }
+    if (bookingId && couponPreview.value) {
+      try {
+        await api.post(`/api/bookings/bookings/${bookingId}/apply_coupon/`, {
+          code: couponCode.value.trim(),
+        });
+      } catch {}
     }
     localStorage.removeItem('reserveCart')
     toast.success('¡Solicitud enviada con éxito!')
