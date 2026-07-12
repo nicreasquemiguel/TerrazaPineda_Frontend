@@ -615,7 +615,7 @@
         <nav class="text-xs text-gray-500">
           <router-link to="/dashboard" class="hover:underline">Dashboard</router-link>
           <span class="mx-2">/</span>
-          <router-link :to="isStaff ? '/mis-reservas' : '/mis-reservas'" class="hover:underline">
+          <router-link :to="isStaff ? '/reservas' : '/mis-reservas'" class="hover:underline">
             {{ isStaff ? 'Reservas' : 'Mis Reservas' }}
           </router-link>
           <span class="mx-2">/</span>
@@ -712,23 +712,47 @@
                 </button>
               </div>
               <!-- Description -->
-              <div v-if="event.description || getDefaultEventSummary()" class="flex gap-2 items-start">
+              <div class="flex gap-2 items-start">
                 <i class="text-base text-blue-500 fa-regular fa-file-lines flex-shrink-0 mt-0.5"></i>
                 <div class="min-w-0 flex-1">
-                  <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Descripción</div>
-                  <div class="text-sm text-gray-600">
-                    <span v-if="!showFullDescription">
-                      {{ (event.description || getDefaultEventSummary()).substring(0, 100) }}{{ (event.description || getDefaultEventSummary()).length > 100 ? '...' : '' }}
-                    </span>
-                    <span v-else>{{ event.description || getDefaultEventSummary() }}</span>
+                  <div class="flex items-center justify-between">
+                    <div class="text-[10px] font-semibold text-gray-400 uppercase tracking-wide">Descripción</div>
+                    <button v-if="isStaff && !editingDescription"
+                      @click="editingDescription = true; editDescriptionValue = event.description || ''"
+                      class="flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-blue-700 bg-blue-50 rounded border border-blue-200 hover:bg-blue-100 transition">
+                      <i class="fa-solid fa-pen text-[10px]"></i>
+                      Editar
+                    </button>
                   </div>
-                  <button
-                    v-if="(event.description || getDefaultEventSummary()).length > 100"
-                    @click="showFullDescription = !showFullDescription"
-                    class="mt-0.5 text-xs font-medium text-blue-600 transition-colors hover:text-blue-800"
-                  >
-                    {{ showFullDescription ? 'Leer menos' : 'Leer más' }}
-                  </button>
+                  <!-- Edit mode -->
+                  <div v-if="editingDescription" class="mt-1">
+                    <textarea v-model="editDescriptionValue" rows="4"
+                      class="w-full px-3 py-2 text-sm rounded-xl border border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 outline-none resize-none transition"
+                      placeholder="Descripción del evento..."></textarea>
+                    <div class="flex gap-1.5 mt-1.5">
+                      <button @click="saveDescription" :disabled="savingDescription"
+                        class="px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50">
+                        <i v-if="savingDescription" class="fa-solid fa-spinner fa-spin"></i>
+                        <span v-else>Guardar</span>
+                      </button>
+                      <button @click="editingDescription = false"
+                        class="px-3 py-1.5 text-xs font-semibold text-gray-600 bg-gray-100 rounded-lg hover:bg-gray-200">
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                  <!-- View mode -->
+                  <div v-else-if="event.description || getDefaultEventSummary()" class="text-sm text-gray-600 mt-0.5">
+                    <span class="whitespace-pre-wrap" v-if="!showFullDescription">{{ (cleanDescription(event.description) || getDefaultEventSummary()).substring(0, 100) }}{{ (cleanDescription(event.description) || getDefaultEventSummary()).length > 100 ? '...' : '' }}</span>
+                    <span class="whitespace-pre-wrap" v-else>{{ cleanDescription(event.description) || getDefaultEventSummary() }}</span>
+                    <button
+                      v-if="(cleanDescription(event.description) || getDefaultEventSummary()).length > 100"
+                      @click="showFullDescription = !showFullDescription"
+                      class="ml-1 text-xs font-medium text-blue-600 transition-colors hover:text-blue-800">
+                      {{ showFullDescription ? 'Leer menos' : 'Leer más' }}
+                    </button>
+                  </div>
+                  <div v-else-if="isStaff" class="text-xs text-gray-400 italic mt-0.5">Sin descripción</div>
                 </div>
               </div>
             </div>
@@ -1085,7 +1109,14 @@
 
       <!-- Client Information for Staff -->
       <div v-if="isStaff" class="p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
-        <h3 class="mb-2 text-sm font-bold text-gray-700">Información del Cliente</h3>
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-bold text-gray-700">Información del Cliente</h3>
+          <button @click="openUserPicker"
+            class="flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-indigo-700 bg-indigo-50 rounded border border-indigo-200 hover:bg-indigo-100 transition">
+            <i class="fa-solid fa-pen text-[10px]"></i>
+            Cambiar
+          </button>
+        </div>
         <div class="grid grid-cols-2 gap-2">
           <div class="flex items-center gap-2">
             <i class="text-blue-400 text-sm fa-solid fa-user flex-shrink-0"></i>
@@ -1121,6 +1152,87 @@
                 WhatsApp
               </a>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Picker Modal (staff only) -->
+      <div v-if="showUserPickerModal"
+        class="flex fixed inset-0 z-50 justify-center items-end sm:items-center bg-black/50 backdrop-blur-sm"
+        @click.self="showUserPickerModal = false">
+        <div class="w-full max-w-md bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden">
+          <!-- Header -->
+          <div class="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-gray-100">
+            <div class="flex justify-center items-center w-10 h-10 bg-indigo-100 rounded-2xl flex-shrink-0">
+              <i class="fa-solid fa-user-pen text-indigo-500 text-base"></i>
+            </div>
+            <div class="flex-1">
+              <div class="text-base font-bold text-gray-900">Asignar cliente</div>
+              <div class="text-xs text-gray-400">Busca y selecciona un usuario</div>
+            </div>
+            <button @click="showUserPickerModal = false"
+              class="flex justify-center items-center w-8 h-8 bg-gray-100 rounded-full text-gray-400 hover:bg-gray-200 transition">
+              <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+          </div>
+          <!-- Search -->
+          <div class="px-5 pt-4 pb-2">
+            <div class="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 focus-within:border-indigo-300 focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
+              <i class="fa-solid fa-magnifying-glass text-gray-300 text-sm flex-shrink-0"></i>
+              <input v-model="userPickerQuery" type="text" placeholder="Nombre o email..."
+                class="flex-1 text-sm bg-transparent outline-none text-gray-900 placeholder-gray-400"
+                @input="searchUsers" autofocus />
+              <button v-if="userPickerQuery" @click="userPickerQuery = ''; searchUsers()"
+                class="text-gray-300 hover:text-gray-500">
+                <i class="fa-solid fa-xmark text-xs"></i>
+              </button>
+            </div>
+          </div>
+          <!-- Results -->
+          <div class="px-5 py-2 max-h-72 overflow-y-auto">
+            <div v-if="userPickerLoading" class="py-8 text-center text-sm text-gray-400">
+              <i class="fa-solid fa-spinner fa-spin mr-2"></i>Buscando...
+            </div>
+            <div v-else-if="userPickerResults.length === 0" class="py-8 text-center text-sm text-gray-400">
+              Sin resultados
+            </div>
+            <div v-else class="flex flex-col gap-1.5">
+              <button v-for="u in userPickerResults" :key="u.id"
+                @click="selectUser(u)"
+                :class="['flex items-center gap-3 p-3 rounded-2xl border-2 text-left w-full transition-all',
+                  pickedUser?.id === u.id
+                    ? 'border-indigo-400 bg-indigo-50'
+                    : 'border-gray-100 bg-gray-50 hover:border-gray-200 hover:bg-white']">
+                <div class="flex justify-center items-center w-9 h-9 rounded-xl flex-shrink-0 bg-indigo-100 text-indigo-600 font-bold text-sm">
+                  {{ (u.first_name?.[0] || u.email?.[0] || '?').toUpperCase() }}
+                </div>
+                <div class="flex-1 min-w-0">
+                  <div class="text-sm font-bold text-gray-900 truncate">
+                    {{ u.first_name }} {{ u.last_name }}
+                    <span v-if="!u.first_name && !u.last_name" class="text-gray-400">Sin nombre</span>
+                  </div>
+                  <div class="text-xs text-gray-400 truncate">{{ u.email }}</div>
+                  <div v-if="u.phone" class="text-xs text-gray-400">{{ u.phone }}</div>
+                </div>
+                <div v-if="pickedUser?.id === u.id"
+                  class="flex justify-center items-center w-5 h-5 rounded-full bg-indigo-500 flex-shrink-0">
+                  <i class="fa-solid fa-check text-white text-[9px]"></i>
+                </div>
+              </button>
+            </div>
+          </div>
+          <!-- Footer -->
+          <div class="px-5 pb-6 pt-3 border-t border-gray-100">
+            <button @click="saveUserChange"
+              :disabled="!pickedUser || savingUser"
+              class="w-full py-3 text-sm font-bold text-white bg-indigo-500 rounded-2xl hover:bg-indigo-600 disabled:opacity-40 transition-colors shadow-sm">
+              <span v-if="savingUser"><i class="fa-solid fa-spinner fa-spin mr-2"></i>Guardando...</span>
+              <span v-else>Asignar cliente</span>
+            </button>
+            <button @click="showUserPickerModal = false"
+              class="mt-2.5 w-full py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors">
+              Cancelar
+            </button>
           </div>
         </div>
       </div>
@@ -3010,6 +3122,56 @@ const formatTime12 = (dateString) => {
 const showPackageModal = ref(false)
 const selectedPackageId = ref(null)
 
+// User picker (staff)
+const showUserPickerModal = ref(false)
+const userPickerQuery = ref('')
+const userPickerResults = ref([])
+const userPickerLoading = ref(false)
+const pickedUser = ref(null)
+const savingUser = ref(false)
+let userSearchTimer = null
+
+function openUserPicker() {
+  pickedUser.value = null
+  userPickerQuery.value = ''
+  userPickerResults.value = []
+  showUserPickerModal.value = true
+  searchUsers()
+}
+
+async function searchUsers() {
+  clearTimeout(userSearchTimer)
+  userSearchTimer = setTimeout(async () => {
+    userPickerLoading.value = true
+    try {
+      const res = await api.get('/api/users/list/', { params: { q: userPickerQuery.value } })
+      userPickerResults.value = res.data
+    } catch (e) {
+      console.error(e)
+    } finally {
+      userPickerLoading.value = false
+    }
+  }, 250)
+}
+
+function selectUser(u) {
+  pickedUser.value = u
+}
+
+async function saveUserChange() {
+  if (!pickedUser.value) return
+  savingUser.value = true
+  try {
+    const res = await api.patch(`/api/bookings/bookings/${event.value.id}/`, { user_id: pickedUser.value.id })
+    event.value.user = pickedUser.value
+    showUserPickerModal.value = false
+  } catch (e) {
+    console.error(e)
+  } finally {
+    savingUser.value = false
+  }
+}
+
 // Extras modal variables
 const showExtrasModal = ref(false)
 const selectedExtras = ref([])
@@ -3622,6 +3784,23 @@ const editStartTime = ref('')
 const editEndTime = ref('')
 const savingTimes = ref(false)
 
+const editingDescription = ref(false)
+const editDescriptionValue = ref('')
+const savingDescription = ref(false)
+
+async function saveDescription() {
+  savingDescription.value = true
+  try {
+    await api.patch(`/api/bookings/bookings/${event.value.id}/`, { description: editDescriptionValue.value })
+    event.value.description = editDescriptionValue.value
+    editingDescription.value = false
+  } catch (e) {
+    console.error(e)
+  } finally {
+    savingDescription.value = false
+  }
+}
+
 const transferAmount = ref('')
 const transferDepositMethod = ref('spei') // 'spei' | 'oxxo'
 
@@ -3850,6 +4029,14 @@ function fileToBase64(file) {
 }
 
 // Function to generate default event summary when no description is provided
+function cleanDescription(desc) {
+  if (!desc) return desc
+  if (desc.startsWith('[GCal]\n')) {
+    return desc.split('\n').slice(1).join('\n').trim()
+  }
+  return desc
+}
+
 function getDefaultEventSummary() {
   if (!event.value) return ''
   

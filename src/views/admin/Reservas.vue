@@ -209,13 +209,16 @@ async function fetchBookings() {
     // For list view or when calendar has a search, fetch broader
     const params = new URLSearchParams()
     if (view.value === 'calendar') {
+      // Use a wide window so bookings that START before the month but END in it are included
       params.set('start_from', from.toISOString())
       params.set('start_to',   to.toISOString())
     }
     if (searchQuery.value) params.set('search', searchQuery.value)
+    params.set('page_size', '200')
 
     const res = await api.get(`/api/bookings/bookings/?${params}`)
-    bookings.value = Array.isArray(res.data) ? res.data : (res.data.results || [])
+    const data = res.data
+    bookings.value = Array.isArray(data) ? data : (data.results || [])
   } catch (e) {
     console.error(e)
   } finally {
@@ -297,17 +300,23 @@ function isToday(date) {
 }
 
 function bookingsOnDay(date) {
-  const ds = date.toDateString()
-  return filteredBookings.value.filter(b => new Date(b.start_datetime).toDateString() === ds)
+  const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)
+  const dayEnd   = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999)
+  return filteredBookings.value.filter(b => {
+    const bStart = new Date(b.start_datetime)
+    const bEnd   = new Date(b.end_datetime)
+    return bStart <= dayEnd && bEnd > dayStart
+  })
 }
 
 // ── labels ─────────────────────────────────────────────────────────────────
 function bookingLabel(b) {
+  if (b.description?.startsWith('[GCal]\n')) {
+    return b.description.split('\n')[1]?.trim() || 'Sin nombre'
+  }
   if (b.user?.first_name || b.user?.last_name) {
     return `${b.user.first_name} ${b.user.last_name}`.trim()
   }
-  // Imported GCal bookings store name in description: "[GCal] Name"
-  if (b.description?.startsWith('[GCal] ')) return b.description.slice(7)
   if (b.description) return b.description.slice(0, 30)
   return 'Sin nombre'
 }
