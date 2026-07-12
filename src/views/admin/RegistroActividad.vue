@@ -1,9 +1,8 @@
 <template>
-  <div class="min-h-screen bg-white">
-    <!-- Desktop Sidebar -->
+  <div class="min-h-screen bg-white pt-14 md:pt-0">
+    <AdminSidebar />
+    <!-- Desktop Layout -->
     <div class="hidden md:block">
-      <AdminSidebar />
-
       <!-- Desktop Main Content -->
       <div class="p-6 min-h-screen" style="margin-left: 16rem;">
         <div class="max-w-6xl mx-auto">

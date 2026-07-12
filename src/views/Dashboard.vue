@@ -1,9 +1,8 @@
 <template>
-  <div class="min-h-screen bg-white">
+  <div class="min-h-screen bg-white pt-14 md:pt-0">
+    <AdminSidebar />
     <!-- Desktop Layout (md and larger) -->
     <div class="hidden md:block">
-      <AdminSidebar />
-
       <!-- Desktop Main Content -->
       <div class="p-6 bg-white min-h-screen" style="margin-left: 16rem;">
         <div class="max-w-6xl" style="margin-left: max(0px, calc((100vw - 72rem) / 2 - 16rem)); margin-right: auto;">

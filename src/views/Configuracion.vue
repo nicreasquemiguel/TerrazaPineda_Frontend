@@ -1,9 +1,6 @@
 <template>
-  <div class="min-h-screen bg-gray-50">
-    <!-- Desktop sidebar -->
-    <div class="hidden md:block">
-      <AdminSidebar />
-    </div>
+  <div class="min-h-screen bg-gray-50 pt-14 md:pt-0">
+    <AdminSidebar />
     <div class="md:ml-64">
   <div class="py-8 px-4 mx-auto max-w-lg">
     <div class="mb-6">
