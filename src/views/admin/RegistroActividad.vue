@@ -4,8 +4,8 @@
     <!-- Desktop Layout -->
     <div class="hidden md:block">
       <!-- Desktop Main Content -->
-      <div class="p-6 min-h-screen" style="margin-left: 16rem;">
-        <div class="max-w-6xl mx-auto">
+      <div class="p-6 min-h-screen md:ml-64">
+        <div>
           <h1 class="text-3xl font-bold text-gray-800 mb-6">Registro de Actividad</h1>
           <template v-if="logsStore.activitySummary">
             <div class="grid grid-cols-4 gap-4 mb-6">

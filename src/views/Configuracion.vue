@@ -2,62 +2,68 @@
   <div class="min-h-screen bg-gray-50 pt-14 md:pt-0">
     <AdminSidebar />
     <div class="md:ml-64">
-  <div class="py-8 px-4 mx-auto max-w-lg">
-    <div class="mb-6">
-      <h1 class="text-2xl font-bold text-gray-900">Configuración</h1>
-      <p class="mt-1 text-sm text-gray-500">Ajustes generales del sistema. Solo accesible para staff.</p>
-    </div>
+      <!-- Page header -->
+      <div class="px-6 py-5 border-b border-gray-200 bg-white">
+        <h1 class="text-2xl font-bold text-gray-900">Configuración</h1>
+        <p class="mt-1 text-sm text-gray-500">Ajustes generales del sistema. Solo accesible para staff.</p>
+      </div>
 
-    <div v-if="loading" class="py-12 text-center text-gray-500">Cargando...</div>
+      <div class="px-6 py-6">
+        <div v-if="loading" class="py-12 text-center text-gray-500">Cargando...</div>
 
-    <div v-else class="p-6 bg-white rounded-2xl border border-gray-200 shadow-sm">
-      <h2 class="mb-1 text-base font-bold text-gray-800">
-        <i class="mr-2 text-blue-500 fa-solid fa-clock"></i>
-        Horario del Lugar
-      </h2>
-      <p class="mb-5 text-xs text-gray-500">
-        Estos horarios se aplican automáticamente a nuevas reservas cuando el cliente no especifica una hora.
-      </p>
+        <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6 max-w-5xl">
+          <!-- Horario del Lugar -->
+          <div class="p-6 bg-white rounded-2xl border border-gray-200 shadow-sm">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50 flex-shrink-0">
+                <i class="text-blue-500 fa-solid fa-clock"></i>
+              </div>
+              <div>
+                <h2 class="text-base font-bold text-gray-800">Horario del Lugar</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Horario por defecto para nuevas reservas</p>
+              </div>
+            </div>
 
-      <div class="flex gap-4 mb-6">
-        <div class="flex-1">
-          <label class="block mb-1.5 text-sm font-semibold text-gray-700">Hora de apertura</label>
-          <input
-            v-model="form.open_time"
-            type="time"
-            class="p-3 w-full text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
+            <div class="space-y-4 mb-5">
+              <div>
+                <label class="block mb-1.5 text-sm font-semibold text-gray-700">Hora de apertura</label>
+                <input
+                  v-model="form.open_time"
+                  type="time"
+                  class="p-3 w-full text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+              <div>
+                <label class="block mb-1.5 text-sm font-semibold text-gray-700">Hora de cierre</label>
+                <input
+                  v-model="form.close_time"
+                  type="time"
+                  class="p-3 w-full text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            <div v-if="error" class="p-3 mb-4 text-xs text-red-700 bg-red-50 rounded-lg border border-red-200">
+              <i class="mr-1 fa-solid fa-circle-xmark"></i>{{ error }}
+            </div>
+            <div v-if="saved" class="p-3 mb-4 text-xs text-green-700 bg-green-50 rounded-lg border border-green-200">
+              <i class="mr-1 fa-solid fa-circle-check"></i>Configuración guardada correctamente.
+            </div>
+
+            <button
+              @click="save"
+              :disabled="saving"
+              class="w-full px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg transition hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span v-if="saving" class="flex gap-2 items-center justify-center">
+                <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
+                Guardando...
+              </span>
+              <span v-else>Guardar cambios</span>
+            </button>
+          </div>
         </div>
-        <div class="flex-1">
-          <label class="block mb-1.5 text-sm font-semibold text-gray-700">Hora de cierre</label>
-          <input
-            v-model="form.close_time"
-            type="time"
-            class="p-3 w-full text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          />
-        </div>
       </div>
-
-      <div v-if="error" class="p-3 mb-4 text-xs text-red-700 bg-red-50 rounded-lg border border-red-200">
-        <i class="mr-1 fa-solid fa-circle-xmark"></i>{{ error }}
-      </div>
-      <div v-if="saved" class="p-3 mb-4 text-xs text-green-700 bg-green-50 rounded-lg border border-green-200">
-        <i class="mr-1 fa-solid fa-circle-check"></i>Configuración guardada correctamente.
-      </div>
-
-      <button
-        @click="save"
-        :disabled="saving"
-        class="px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg transition hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        <span v-if="saving" class="flex gap-2 items-center">
-          <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
-          Guardando...
-        </span>
-        <span v-else>Guardar cambios</span>
-      </button>
-    </div>
-  </div>
     </div><!-- end md:ml-64 -->
   </div>
 </template>

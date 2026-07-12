@@ -2,10 +2,10 @@
   <div class="min-h-screen bg-white pt-14 md:pt-0">
     <AdminSidebar />
     <!-- Desktop Layout (md and larger) -->
-    <div class="hidden md:block">
+    <div class="hidden md:block md:ml-64">
       <!-- Desktop Main Content -->
-      <div class="p-6 bg-white min-h-screen" style="margin-left: 16rem;">
-        <div class="max-w-6xl" style="margin-left: max(0px, calc((100vw - 72rem) / 2 - 16rem)); margin-right: auto;">
+      <div class="p-6 bg-white min-h-screen">
+        <div>
           <!-- Header -->
           <div class="flex justify-between items-center mb-6">
             <h1 class="text-3xl font-bold text-gray-800">Panel de Administración de Reservas</h1>
@@ -297,7 +297,7 @@
                     class="px-4 py-2 text-sm font-semibold rounded-md transition-all duration-200"
                     :class="activeTab === 'bookings' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-800'"
                   >
-                    Reservas
+                    Solicitudes de Reserva
                     <span v-if="eventsData?.total_requests" class="ml-1.5 px-1.5 py-0.5 text-xs bg-blue-100 text-blue-700 rounded-full">
                       {{ eventsData.total_requests }}
                     </span>
@@ -695,7 +695,7 @@
               class="relative z-10 flex-1 py-3 text-base font-bold rounded-xl transition-colors duration-300"
               :class="activeTab === 'bookings' ? 'text-white' : 'text-black'"
             >
-              Reservas
+              Solicitudes de Reservas
             </button>
             <button
               @click="activeTab = 'payments'"
