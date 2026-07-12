@@ -1,51 +1,49 @@
 <template>
   <div class="min-h-screen">
     <!-- Hero Section -->
-    <section class="relative bg-white text-gray-900 overflow-hidden bg-cover bg-center min-h-[60vh]"
+    <section class="relative overflow-hidden bg-black bg-cover bg-center min-h-[55vh] flex items-center"
       style="background-image: url('/hero.jpg')">
-      <div class="absolute inset-0 bg-black opacity-50"></div>
-      <div class="relative max-w-4xl px-4 pt-8 pb-12 mx-auto text-center sm:px-6 lg:px-8">
-        <img src="/tp-white.svg" alt="Terraza Pineda Logo" class="w-16 h-16 mx-auto mb-4" />
-        <h1 class="mb-4 text-4xl font-bold text-white md:text-5xl">Precios y Paquetes</h1>
-        <p class="max-w-2xl mx-auto text-xl text-white/80">
-          Eche un vistazo a los paquetes hechos para cualquier ocasión y no dude en contactarnos si tiene alguna duda.
+      <div class="absolute inset-0" style="background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.72) 100%);"></div>
+      <div class="relative w-full px-6 py-20 mx-auto max-w-4xl text-center">
+        <img src="/tp-white.svg" alt="Terraza Pineda" class="mx-auto mb-8 w-16 h-16 sm:w-20 sm:h-20 lg:w-28 lg:h-28 opacity-90" />
+        <h1 class="mb-4 text-5xl font-bold tracking-tight text-white sm:text-6xl lg:text-7xl">Precios y Paquetes</h1>
+        <p class="mx-auto max-w-xl text-base text-white/70 sm:text-lg">
+          Paquetes hechos para cualquier ocasión. Contáctanos si tienes alguna duda.
         </p>
       </div>
     </section>
 
     <!-- Carousel Section -->
-    <section class="py-8 bg-white">
-      <div class="max-w-3xl px-4 mx-auto">
-        <div class="relative group">
+    <section class="py-10 bg-white">
+      <div class="max-w-5xl px-4 mx-auto">
+        <div class="relative overflow-hidden rounded-2xl shadow-lg group">
           <img
             :src="slides[currentSlide]"
-            class="object-cover w-full h-48 transition-all duration-700 border border-gray-200 shadow-md rounded-xl"
+            class="object-cover w-full h-64 sm:h-80 lg:h-96 transition-all duration-700"
             :alt="`Slide ${currentSlide + 1}`"
           />
           <!-- Left arrow -->
           <button
             @click="prevSlide"
-            class="absolute z-10 p-2 text-gray-700 transition -translate-y-1/2 rounded-full shadow left-2 top-1/2 bg-white/80 hover:bg-white"
-            style="backdrop-filter: blur(4px);"
+            class="absolute z-10 p-2.5 text-gray-700 transition -translate-y-1/2 rounded-full shadow-md left-3 top-1/2 bg-white/90 hover:bg-white"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
           </button>
           <!-- Right arrow -->
           <button
             @click="nextSlide"
-            class="absolute z-10 p-2 text-gray-700 transition -translate-y-1/2 rounded-full shadow right-2 top-1/2 bg-white/80 hover:bg-white"
-            style="backdrop-filter: blur(4px);"
+            class="absolute z-10 p-2.5 text-gray-700 transition -translate-y-1/2 rounded-full shadow-md right-3 top-1/2 bg-white/90 hover:bg-white"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
           </button>
           <!-- Dots -->
-          <div class="absolute z-10 flex gap-2 -translate-x-1/2 bottom-2 left-1/2">
+          <div class="absolute z-10 flex gap-2 -translate-x-1/2 bottom-3 left-1/2">
             <button
               v-for="(img, i) in slides"
               :key="i"
               @click="goToSlide(i)"
-              class="w-2 h-2 transition-colors duration-200 rounded-full"
-              :class="currentSlide === i ? 'bg-[#7c3aed]' : 'bg-gray-300'"
+              class="w-2 h-2 transition-all duration-200 rounded-full"
+              :class="currentSlide === i ? 'bg-white scale-125' : 'bg-white/50'"
             />
           </div>
         </div>
@@ -55,9 +53,7 @@
     <!-- Packages Section -->
     <section class="py-12 bg-white">
       <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
-        <h2 class="mb-8 text-3xl font-bold text-center text-transparent text-gray-900 bg-clip-text bg-gradient-to-r from-purple-500 to-cyan-400 md:text-4xl">
-          Paquetes
-        </h2>
+        <h2 class="mb-8 text-3xl font-bold text-center text-gray-900 md:text-4xl">Paquetes</h2>
         <div v-if="paquetesLoading">Cargando paquetes...</div>
         <div v-else-if="paquetesError">Error: {{ paquetesError.message }}</div>
         <div v-else-if="!paquetes.length">No hay paquetes disponibles.</div>

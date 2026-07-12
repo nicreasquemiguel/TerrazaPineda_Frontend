@@ -258,12 +258,14 @@
                       class="text-center calendar-day"
                       :data-date="date.toISOString()"
                     >
-                      <div 
-                        class="mb-2 text-sm font-medium text-center text-gray-500"
-                        :class="isToday(date) ? 'text-blue-600' : ''"
-                      >
-                        {{ formatWeekDate(date).charAt(0).toUpperCase() }}
+                      <div class="mb-2 text-center">
+                        <div class="text-sm font-medium text-gray-500" :class="isToday(date) ? 'text-blue-600' : ''">
+                          {{ formatWeekDate(date).charAt(0).toUpperCase() }}
                         </div>
+                        <div class="text-[10px] text-gray-400 leading-none" :class="isToday(date) ? 'text-blue-400' : ''">
+                          {{ date.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '') }}
+                        </div>
+                      </div>
                       <div class="flex justify-center">
                         <button 
                           class="flex justify-center items-center w-12 h-12 text-lg font-medium rounded-full transition-transform cursor-pointer calendar-day hover:scale-110 active:scale-95"
@@ -501,8 +503,13 @@
           </button>
           <div class="grid grid-cols-7 gap-1 px-2 mb-2">
             <div v-for="date in getWeekDates" :key="date.toISOString()" class="text-center calendar-day" :data-date="date.toISOString()">
-              <div class="mb-1 text-xs font-medium text-gray-500" :class="isToday(date) ? 'text-blue-600' : ''">
-                {{ formatWeekDate(date).charAt(0).toUpperCase() }}
+              <div class="mb-1 text-center">
+                <div class="text-xs font-medium text-gray-500" :class="isToday(date) ? 'text-blue-600' : ''">
+                  {{ formatWeekDate(date).charAt(0).toUpperCase() }}
+                </div>
+                <div class="text-[9px] text-gray-400 leading-none" :class="isToday(date) ? 'text-blue-400' : ''">
+                  {{ date.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '') }}
+                </div>
               </div>
               <div class="flex justify-center">
                 <button
@@ -2071,13 +2078,17 @@ const getDayStatus = (date) => {
     return null
   }
   
-  // Priority order: rechazado > pendiente > solicitud > aceptacion > cancelado
+  // Priority order: most urgent first
   if (dayData.bookings.some(b => b.status === 'rechazado')) return 'rechazado'
-  if (dayData.bookings.some(b => b.status === 'pendiente')) return 'pendiente'
+  if (dayData.bookings.some(b => b.status === 'cancelado')) return 'cancelado'
   if (dayData.bookings.some(b => b.status === 'solicitud')) return 'solicitud'
   if (dayData.bookings.some(b => b.status === 'aceptacion')) return 'aceptacion'
-  if (dayData.bookings.some(b => b.status === 'cancelado')) return 'cancelado'
-  
+  if (dayData.bookings.some(b => b.status === 'apartado')) return 'apartado'
+  if (dayData.bookings.some(b => b.status === 'liquidado')) return 'liquidado'
+  if (dayData.bookings.some(b => b.status === 'liquidado_entregado')) return 'liquidado_entregado'
+  if (dayData.bookings.some(b => b.status === 'entregado')) return 'entregado'
+  if (dayData.bookings.some(b => b.status === 'finalizado')) return 'finalizado'
+
   return null
 }
 
@@ -2085,24 +2096,31 @@ const getDayStatus = (date) => {
 const getDayStatusClasses = (date) => {
   const status = getDayStatus(date)
   const isTodayDate = isToday(date)
-  
-  if (isTodayDate) {
+
+  if (isTodayDate && !status) {
     return 'bg-blue-600 text-white'
   }
-  
+
   switch (status) {
+    case 'solicitud':
+      return 'bg-gray-200 text-gray-800 border-2 border-gray-400'
     case 'aceptacion':
-      return 'bg-green-100 text-green-800 border-2 border-green-300'
-    case 'pendiente':
-      return 'bg-yellow-100 text-yellow-800 border-2 border-yellow-300'
+      return 'bg-blue-100 text-blue-800 border-2 border-blue-400'
+    case 'apartado':
+      return 'bg-orange-100 text-orange-800 border-2 border-orange-400'
+    case 'liquidado':
+    case 'liquidado_entregado':
+      return 'bg-green-100 text-green-800 border-2 border-green-400'
+    case 'entregado':
+      return 'bg-teal-100 text-teal-800 border-2 border-teal-400'
+    case 'finalizado':
+      return 'bg-purple-100 text-purple-800 border-2 border-purple-400'
     case 'rechazado':
       return 'bg-red-100 text-red-800 border-2 border-red-300'
     case 'cancelado':
-      return 'bg-gray-100 text-gray-800 border-2 border-gray-300'
-    case 'solicitud':
-      return 'bg-blue-100 text-blue-800 border-2 border-blue-300'
+      return 'bg-gray-100 text-gray-500 border-2 border-gray-300'
     default:
-      return 'bg-gray-100 text-gray-700'
+      return isTodayDate ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
   }
 }
 
