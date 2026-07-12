@@ -106,7 +106,7 @@
           <!-- Step 1: Date -->
           <div v-if="currentStep === 1" class="flex flex-col gap-4 items-center w-full">
             <h2 class="mb-1 text-2xl font-extrabold text-gray-900">Selecciona tu fecha</h2>
-            <CalendarPicker v-model="date" />
+            <CalendarPicker v-model="date" :is-staff="!!authStore.user?.is_staff" />
             <div class="flex flex-col items-center mt-6 w-full">
               <template v-if="date">
                 <SplitText

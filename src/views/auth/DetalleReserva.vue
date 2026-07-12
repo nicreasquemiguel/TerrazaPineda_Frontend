@@ -545,7 +545,7 @@
 
         <div class="mb-4">
           <label class="block mb-2 text-sm font-semibold text-gray-700">Nueva fecha:</label>
-          <CalendarPicker v-model="newEventDate" />
+          <CalendarPicker v-model="newEventDate" :is-staff="!!isStaff" />
         </div>
 
         <!-- API error -->

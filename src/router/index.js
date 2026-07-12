@@ -86,7 +86,7 @@ const routes = [
   },
   {
     path: '/mis-reservas',
-    name: 'Reservas',
+    name: 'MisReservasAlt',
     component: MisReservas,
     meta: { title: 'Reservas', requiresAuth: true }
   },
@@ -136,6 +136,12 @@ const routes = [
     name: 'RegistroActividad',
     component: () => import('@/views/admin/RegistroActividad.vue'),
     meta: { title: 'Registro de Actividad', requiresStaff: true }
+  },
+  {
+    path: '/reservas',
+    name: 'Reservas',
+    component: () => import('@/views/admin/Reservas.vue'),
+    meta: { title: 'Reservas', requiresStaff: true }
   }
 ]
 

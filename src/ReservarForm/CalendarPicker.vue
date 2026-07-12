@@ -1,14 +1,16 @@
 <template>
-  <div class="calendar-wrapper">
+  <div class="calendar-wrapper" :class="{ 'staff-calendar': isStaff }">
     <v-date-picker
       class="my-calendar"
       v-model="internalDate"
       :min-date="minDate"
       :max-date="maxDate"
+      :initial-page="initialPage"
       :attributes="calendarAttributes"
-      :disabled-dates="disabledDates"
+      :disabled-dates="[]"
       is-inline
       locale="es"
+      @dayclick="onDayClick"
     />
     <!-- Leyenda -->
     <div class="flex gap-4 justify-center mt-3 text-xs text-gray-500">
@@ -17,7 +19,7 @@
         Seleccionada
       </span>
       <span class="flex gap-1.5 items-center">
-        <span class="inline-block w-3 h-3 rounded-full bg-red-300"></span>
+        <span class="inline-block w-3 h-3 rounded-full bg-red-600"></span>
         Ocupada
       </span>
       <span class="flex gap-1.5 items-center">
@@ -29,13 +31,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch, toRef, defineProps, defineEmits } from 'vue'
+import { ref, onMounted, computed, watch, nextTick, defineProps, defineEmits } from 'vue'
+import { useRouter } from 'vue-router'
 import api from '@/services/api'
 import SplitText from '@/components/SplitText.vue'
 
 const props = defineProps({
-  modelValue: { type: [Date, String, null], default: null }
+  modelValue: { type: [Date, String, null], default: null },
+  isStaff:    { type: Boolean, default: false },
 })
+
+const router = useRouter()
 const emit = defineEmits(['update:modelValue'])
 
 function toDate(val) {
@@ -58,20 +64,18 @@ const internalDate = ref(toDate(props.modelValue))
 const occupiedDates = ref([])
 const minDate = new Date()
 const maxDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+const today = new Date()
+const initialPage = { month: today.getMonth() + 1, year: today.getFullYear() }
 
-// Create a map for quick lookup of user initials by date
+// Map date → { user_initials, booking_id, label }
 const occupiedDatesMap = computed(() => {
   const map = new Map()
   occupiedDates.value.forEach(item => {
-    map.set(item.date.toDateString(), item.user_initials)
+    map.set(item.date.toDateString(), item)
   })
   return map
 })
 
-// Computed property for disabled dates
-const disabledDates = computed(() => {
-  return occupiedDates.value.map(item => item.date)
-})
 
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('es-ES', {
@@ -87,11 +91,13 @@ const fetchOccupiedEvents = async () => {
     // Store the full data for popover display
     occupiedDates.value = bookedDates.map(item => {
       const [year, month, day] = item.date.split('-').map(Number)
-      const date = new Date(year, month - 1, day) // month is 0-indexed
-      date.setHours(0, 0, 0, 0) // Normalize to midnight
+      const date = new Date(year, month - 1, day)
+      date.setHours(0, 0, 0, 0)
       return {
-        date: date,
-        user_initials: item.user_initials
+        date,
+        user_initials: item.user_initials,
+        booking_id:    item.booking_id || null,
+        label:         item.label || item.user_initials,
       }
     })
   } catch (e) {
@@ -110,9 +116,12 @@ const calendarAttributes = computed(() => {
       highlight: {
         color: 'red',
         fillMode: 'solid',
+        contentClass: 'vc-occupied',
       },
       popover: {
-        label: `Ocupado — ${item.user_initials}`,
+        label: props.isStaff && item.label
+          ? `${item.label} — ver reserva`
+          : `Ocupado — ${item.user_initials}`,
         visibility: 'hover',
       },
       order: 0,
@@ -130,11 +139,14 @@ const calendarAttributes = computed(() => {
   return attributes
 })
 
-// Function to get user initials for a specific date
-const getUserInitials = (date) => {
-  const dateString = date.toDateString()
-  const initials = occupiedDatesMap.value.get(dateString)
-  return initials ? `Ocupado por ${initials}` : 'Ocupado'
+function onDayClick({ date }) {
+  const ds = date.toDateString()
+  const entry = occupiedDatesMap.value.get(ds)
+  if (props.isStaff && entry?.booking_id) {
+    router.push(`/detalle-reserva/${entry.booking_id}`)
+    return
+  }
+  // non-staff: occupied dates are disabled; free dates handled by v-model watcher
 }
 
 // Watch internal date changes from v-calendar (AFTER occupiedDatesMap is defined)
@@ -154,11 +166,10 @@ watch(internalDate, (newVal, oldVal) => {
   const normalized = new Date(newVal);
   normalized.setHours(0, 0, 0, 0);
   
-  // Check if the selected date is reserved
+  // Block selecting an occupied date (staff navigate via onDayClick instead)
   const dateString = normalized.toDateString()
   if (occupiedDatesMap.value.has(dateString)) {
-    console.log('[Calendar] ❌ Blocked reserved date selection:', dateString)
-    // Don't emit, calendar will stay on previous selection
+    nextTick(() => { internalDate.value = toDate(props.modelValue) })
     return
   }
   
@@ -233,8 +244,9 @@ onMounted(fetchOccupiedEvents)
   color: #0e7490 !important;
   background: none !important;
   text-transform: capitalize !important;
+  pointer-events: none !important;
+  cursor: default !important;
 }
-:deep(.my-calendar .vc-title:hover) { color: #06b6d4 !important; }
 
 /* ── Nav arrows ── */
 :deep(.my-calendar .vc-arrow) {
@@ -284,10 +296,16 @@ onMounted(fetchOccupiedEvents)
   font-weight: 800 !important;
   background: #f0fdff !important;
 }
+/* Today that is also occupied: red takes priority, no today border */
+:deep(.my-calendar .vc-day.is-today .vc-day-content.vc-occupied) {
+  border: none !important;
+  background: #dc2626 !important;
+  color: #fff !important;
+}
 
-/* ── Disabled / past dates ── */
-:deep(.my-calendar .vc-day-content[disabled]),
-:deep(.my-calendar .vc-day.vc-disabled .vc-day-content) {
+/* ── Disabled / past dates (v-calendar v3: class on vc-day-content) ── */
+:deep(.my-calendar .vc-day-content.vc-disabled),
+:deep(.my-calendar .vc-day-content[disabled]) {
   background: #f8fafc !important;
   color: #d1d5db !important;
   cursor: not-allowed !important;
@@ -295,42 +313,43 @@ onMounted(fetchOccupiedEvents)
   pointer-events: none !important;
 }
 
-/* ── Days outside current month (blank cells) ── */
-:deep(.my-calendar .vc-day:not(.in-month) .vc-day-content),
-:deep(.my-calendar .vc-day.is-not-in-month .vc-day-content) {
+/* ── Days outside current month ── */
+/* v-calendar v3 hides ALL children of .is-not-in-month with opacity:0 */
+/* Restore at 50% for non-occupied padding days */
+:deep(.my-calendar .vc-day.is-not-in-month) {
+  pointer-events: auto !important;
+}
+:deep(.my-calendar .vc-day.is-not-in-month .vc-day-content:not(.vc-occupied)) {
+  opacity: 0.5 !important;
+  color: #94a3b8 !important;
+  font-weight: 400 !important;
   background: transparent !important;
-  color: #e2e8f0 !important;
-  pointer-events: none !important;
+  pointer-events: auto !important;
 }
 
-/* ── Selected date highlight (cyan gradient) ── */
-:deep(.my-calendar .vc-highlight) {
-  border-radius: 0.65rem !important;
-}
-:deep(.my-calendar .vc-highlight.vc-cyan),
-:deep(.my-calendar .vc-highlight.vc-blue) {
-  background: linear-gradient(135deg, #22d3ee, #06b6d4) !important;
-  border-radius: 0.65rem !important;
-}
-
-/* Text color inside selected (cyan) highlight */
-:deep(.my-calendar .vc-day .vc-highlight ~ .vc-day-content),
-:deep(.my-calendar .vc-day .vc-highlights + .vc-day-content) {
+/* ── Occupied dates: red on the day content (covers highlight bg underneath) ── */
+/* .vc-highlight-bg-solid has z-index:-1; .vc-day-content is on top and covers it */
+:deep(.my-calendar .vc-day-content.vc-occupied) {
+  background: #dc2626 !important;
   color: #fff !important;
   font-weight: 800 !important;
-}
-
-/* ── Occupied (reserved) — red ── */
-:deep(.my-calendar .vc-highlight.vc-red) {
-  background: #fca5a5 !important;
-  border-radius: 0.65rem !important;
-}
-/* Text on red highlight */
-:deep(.my-calendar .vc-day:has(.vc-highlight.vc-red) .vc-day-content) {
-  color: #7f1d1d !important;
+  opacity: 1 !important;
   cursor: not-allowed !important;
   pointer-events: none !important;
-  font-weight: 700 !important;
+  width: 30px !important;
+  height: 30px !important;
+}
+
+/* ── Selection highlight: cyan gradient ── */
+:deep(.my-calendar .vc-highlight-bg-solid) {
+  background: linear-gradient(135deg, #22d3ee, #06b6d4) !important;
+  border-radius: 0.65rem !important;
+  width: 36px !important;
+  height: 36px !important;
+}
+/* Occupied highlight bg: hide it — red comes from .vc-day-content.vc-occupied */
+:deep(.my-calendar .vc-day-layer.vc-red .vc-highlight-bg-solid) {
+  display: none !important;
 }
 
 /* ── Row spacing ── */
@@ -338,4 +357,14 @@ onMounted(fetchOccupiedEvents)
 
 /* ── Focus ring off ── */
 :deep(.my-calendar .vc-day-content:focus) { box-shadow: none !important; outline: none !important; }
+
+/* ── Staff mode: occupied dates are clickable ── */
+.staff-calendar :deep(.my-calendar .vc-day-content.vc-occupied) {
+  cursor: pointer !important;
+  pointer-events: auto !important;
+}
+.staff-calendar :deep(.my-calendar .vc-day-content.vc-occupied:hover) {
+  opacity: 0.8 !important;
+  transform: scale(1.08) !important;
+}
 </style> 

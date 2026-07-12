@@ -667,6 +667,8 @@ const authenticatedNavigationItems = [
   { name: 'Reservar', path: '/reservar' },
   { name: 'Reservas', path: '/mis-reservas' },
   { name: 'Dashboard', path: '/dashboard', condition: 'staff' },
+  { name: 'Reservas', path: '/reservas', condition: 'staff' },
+  { name: 'Actividad', path: '/actividad', condition: 'staff' },
 ]
 
 // Get user from auth store and localStorage
