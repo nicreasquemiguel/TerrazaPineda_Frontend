@@ -2,60 +2,58 @@
   <div class="min-h-screen">
     <!-- Hero Section -->
     <section
-      class="overflow-hidden relative min-h-[calc(100vh-4rem)] flex items-center text-gray-900 bg-white bg-center bg-cover"
+      class="overflow-hidden relative min-h-[calc(100vh-4rem)] flex items-center bg-black bg-center bg-cover"
       style="background-image: url('/hero.jpg')"
     >
-      <div class="absolute inset-0 bg-black opacity-50"></div>
-      <div class="relative px-4 py-12 mx-auto max-w-7xl sm:px-6 lg:px-32 lg:py-32 w-full">
-        <div class="grid gap-12 items-center lg:grid-cols-2">
-          <div class="space-y-8 text-center lg:text-left">
-            <img src="/tp-white.svg" alt="Terraza Pineda Logo" class="block mx-auto mb-6 w-20 h-20 md:hidden" />
-            <h1 class="text-4xl font-bold leading-tight md:text-6xl">
-              <SplitText
-                text="¡CELEBRA "
-                splitType="words"
-                :delay="150"
-                :duration="0.8"
-                :from="{ opacity: 0, y: 50 }"
-                :to="{ opacity: 1, y: 0 }"
-                class="text-white uppercase"
-              />
-              <span class="block h-16 uppercase text-white-300">
-                <span v-html="gradientTypingText"></span><span class="animate-pulse">|</span>
-              </span>
-            </h1>
-            <div class="flex flex-col gap-4 justify-center sm:flex-row lg:justify-start">
-              <router-link
-                to="/reservar"
-                class="relative w-full flex-1 min-w-[140px] px-6 py-3 md:py-4 text-lg md:text-xl font-semibold uppercase rounded-[20px] bg-white/30 border border-white/30 backdrop-blur-md shadow-lg text-black hover:bg-white/50 transition group overflow-hidden whitespace-nowrap"
-              >
-                <span class="animated-gradient-text">RESERVAR</span>
-                <span class="absolute inset-0 pointer-events-none group-hover:button-gradient-shadow"></span>
-              </router-link>
-              <router-link
-                to="/precios"
-                class="relative w-full flex-1 min-w-[140px] px-6 py-3 md:py-4 text-lg md:text-xl font-semibold uppercase rounded-[20px] bg-white/30 border border-white/30 backdrop-blur-md shadow-lg text-black hover:bg-white/50 transition group overflow-hidden whitespace-nowrap"
-              >
-                <span class="text-black">PRECIOS</span>
-                <span class="absolute inset-0 pointer-events-none group-hover:button-gradient-shadow"></span>
-              </router-link>
-              <router-link
-                to="/login"
-                class="relative w-full flex-1 min-w-[140px] px-6 py-3 md:py-4 text-lg md:text-xl font-semibold uppercase rounded-[20px] bg-white/30 border border-white/30 backdrop-blur-md shadow-lg text-black hover:bg-white/50 transition group overflow-hidden whitespace-nowrap"
-              >
-                <span class="text-black">MI CUENTA</span>
-                <span class="absolute inset-0 pointer-events-none group-hover:button-gradient-shadow"></span>
-              </router-link>
-            </div>
-          </div>
-          <div class="hidden lg:block">
-            <div class="relative w-[24rem] h-[24rem] bg-white/10 rounded-full border border-white/30 flex items-center justify-center mx-auto backdrop-blur-xl shadow-2xl">
-              <img src="/tp-white.svg" alt="Terraza Pineda Logo" class="z-10 w-32 h-32" />
-              <div class="absolute -top-6 left-1/2 w-32 h-32 rounded-full opacity-80 -translate-x-1/2 animate-circle1" style="background: linear-gradient(90deg, #7c3aed, #22d3ee);"></div>
-              <div class="absolute bottom-8 -left-8 w-24 h-24 rounded-full opacity-80 animate-circle2" style="background: linear-gradient(90deg, #f472b6, #fbbf24);"></div>
-              <div class="absolute -right-8 bottom-8 w-24 h-24 rounded-full opacity-80 animate-circle3" style="background: linear-gradient(90deg, #34d399, #a3e635);"></div>
-            </div>
-          </div>
+      <!-- Gradient overlay: darker at edges, lighter in centre so the venue is visible -->
+      <div class="absolute inset-0" style="background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.35) 50%, rgba(0,0,0,0.70) 100%);"></div>
+
+      <div class="relative w-full px-6 py-24 mx-auto max-w-4xl text-center sm:px-10 lg:py-40">
+        <!-- Logo -->
+        <img src="/tp-white.svg" alt="Terraza Pineda" class="mx-auto mb-10 w-16 h-16 sm:w-24 sm:h-24 lg:w-32 lg:h-32 opacity-90" />
+
+        <!-- Headline -->
+        <h1 class="mb-4 text-5xl font-bold leading-tight tracking-tight text-white sm:text-6xl lg:text-7xl">
+          <SplitText
+            text="¡CELEBRA "
+            splitType="words"
+            :delay="150"
+            :duration="0.8"
+            :from="{ opacity: 0, y: 50 }"
+            :to="{ opacity: 1, y: 0 }"
+            class="text-white uppercase"
+          />
+          <span class="block uppercase">
+            <span v-html="gradientTypingText"></span><span class="animate-pulse text-white">|</span>
+          </span>
+        </h1>
+
+        <!-- Subline -->
+        <p class="mx-auto mb-12 max-w-xl text-base text-white/70 sm:text-lg">
+          El lugar perfecto para tu evento en Zapopan. Terraza privada, alberca y todo lo que necesitas.
+        </p>
+
+        <!-- CTA buttons -->
+        <div class="flex flex-wrap gap-4 justify-center">
+          <router-link
+            to="/reservar"
+            class="relative px-8 py-3.5 text-base font-semibold uppercase tracking-wide text-white rounded-full bg-white/20 border border-white/30 backdrop-blur-md hover:bg-white/30 transition-all shadow-lg whitespace-nowrap group overflow-hidden"
+          >
+            <span class="animated-gradient-text">Reservar ahora</span>
+            <span class="absolute inset-0 pointer-events-none group-hover:button-gradient-shadow"></span>
+          </router-link>
+          <router-link
+            to="/precios"
+            class="relative px-8 py-3.5 text-base font-semibold uppercase tracking-wide text-white rounded-full bg-white/10 border border-white/20 backdrop-blur-md hover:bg-white/20 transition-all whitespace-nowrap"
+          >
+            Ver precios
+          </router-link>
+          <router-link
+            to="/login"
+            class="relative px-8 py-3.5 text-base font-semibold uppercase tracking-wide text-white rounded-full bg-white/10 border border-white/20 backdrop-blur-md hover:bg-white/20 transition-all whitespace-nowrap"
+          >
+            Mi cuenta
+          </router-link>
         </div>
       </div>
     </section>
