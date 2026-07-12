@@ -1024,8 +1024,8 @@
             </div>
           </div>
 
-          <!-- Hora de llegada (only shown when entregado) -->
-          <div v-if="event.is_entregado" class="mx-6 mb-3 flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+          <!-- Hora de entrega (always visible in this section) -->
+          <div class="mx-6 mb-3 flex items-center justify-between p-3 bg-gray-50 rounded-xl">
             <div class="flex items-center gap-3">
               <div class="flex items-center justify-center w-8 h-8 bg-purple-100 rounded-full flex-shrink-0">
                 <i class="fa-regular fa-clock text-purple-500 text-sm"></i>

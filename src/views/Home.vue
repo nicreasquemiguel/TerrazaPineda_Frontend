@@ -27,22 +27,29 @@
             <div class="flex flex-col gap-4 justify-center sm:flex-row lg:justify-start">
               <router-link
                 to="/reservar"
-                class="w-full flex-1 min-w-[140px] px-6 py-3 md:py-4 text-lg md:text-xl font-semibold uppercase rounded-[20px] bg-white/30 border border-white/30 backdrop-blur-md shadow-lg text-black hover:bg-white/50 transition group overflow-hidden"
+                class="relative w-full flex-1 min-w-[140px] px-6 py-3 md:py-4 text-lg md:text-xl font-semibold uppercase rounded-[20px] bg-white/30 border border-white/30 backdrop-blur-md shadow-lg text-black hover:bg-white/50 transition group overflow-hidden whitespace-nowrap"
               >
                 <span class="animated-gradient-text">RESERVAR</span>
                 <span class="absolute inset-0 pointer-events-none group-hover:button-gradient-shadow"></span>
               </router-link>
               <router-link
                 to="/precios"
-                class="w-full flex-1 min-w-[140px] px-6 py-3 md:py-4 text-lg md:text-xl font-semibold uppercase rounded-[20px] bg-white/30 border border-white/30 backdrop-blur-md shadow-lg text-black hover:bg-white/50 transition group overflow-hidden"
+                class="relative w-full flex-1 min-w-[140px] px-6 py-3 md:py-4 text-lg md:text-xl font-semibold uppercase rounded-[20px] bg-white/30 border border-white/30 backdrop-blur-md shadow-lg text-black hover:bg-white/50 transition group overflow-hidden whitespace-nowrap"
               >
                 <span class="text-black">PRECIOS</span>
+                <span class="absolute inset-0 pointer-events-none group-hover:button-gradient-shadow"></span>
+              </router-link>
+              <router-link
+                to="/login"
+                class="relative w-full flex-1 min-w-[140px] px-6 py-3 md:py-4 text-lg md:text-xl font-semibold uppercase rounded-[20px] bg-white/30 border border-white/30 backdrop-blur-md shadow-lg text-black hover:bg-white/50 transition group overflow-hidden whitespace-nowrap"
+              >
+                <span class="text-black">MI CUENTA</span>
                 <span class="absolute inset-0 pointer-events-none group-hover:button-gradient-shadow"></span>
               </router-link>
             </div>
           </div>
           <div class="hidden lg:block">
-            <div class="relative w-[24rem] h-[24rem] bg-white/10 rounded-2xl border border-white/30 flex items-center justify-center mx-auto backdrop-blur-xl shadow-2xl">
+            <div class="relative w-[24rem] h-[24rem] bg-white/10 rounded-full border border-white/30 flex items-center justify-center mx-auto backdrop-blur-xl shadow-2xl">
               <img src="/tp-white.svg" alt="Terraza Pineda Logo" class="z-10 w-32 h-32" />
               <div class="absolute -top-6 left-1/2 w-32 h-32 rounded-full opacity-80 -translate-x-1/2 animate-circle1" style="background: linear-gradient(90deg, #7c3aed, #22d3ee);"></div>
               <div class="absolute bottom-8 -left-8 w-24 h-24 rounded-full opacity-80 animate-circle2" style="background: linear-gradient(90deg, #f472b6, #fbbf24);"></div>
