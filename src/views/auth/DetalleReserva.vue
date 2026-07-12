@@ -199,6 +199,104 @@
       </div>
     </div>
 
+    <!-- Discount Modal -->
+    <div v-if="showDiscountModal"
+      class="flex fixed inset-0 z-50 justify-center items-end sm:items-center bg-black/50 backdrop-blur-sm"
+      @click.self="closeDiscountModal">
+      <div class="w-full max-w-sm bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden">
+        <div class="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-gray-100">
+          <div class="flex justify-center items-center w-10 h-10 bg-green-100 rounded-2xl flex-shrink-0">
+            <i class="fa-solid fa-tag text-green-600 text-base"></i>
+          </div>
+          <div class="flex-1">
+            <div class="text-base font-bold text-gray-900">Aplicar descuento</div>
+            <div class="text-xs text-gray-400">Cupón o descuento manual</div>
+          </div>
+          <button @click="closeDiscountModal" class="flex justify-center items-center w-8 h-8 bg-gray-100 rounded-full text-gray-400 hover:bg-gray-200 transition">
+            <i class="fa-solid fa-xmark text-sm"></i>
+          </button>
+        </div>
+        <!-- Tabs -->
+        <div class="flex border-b border-gray-100">
+          <button @click="discountTab = 'coupon'"
+            :class="['flex-1 py-2.5 text-xs font-bold transition', discountTab === 'coupon' ? 'text-green-700 border-b-2 border-green-500' : 'text-gray-400']">
+            <i class="fa-solid fa-ticket mr-1"></i>Código de cupón
+          </button>
+          <button @click="discountTab = 'manual'"
+            :class="['flex-1 py-2.5 text-xs font-bold transition', discountTab === 'manual' ? 'text-green-700 border-b-2 border-green-500' : 'text-gray-400']">
+            <i class="fa-solid fa-pen mr-1"></i>Descuento manual
+          </button>
+        </div>
+        <!-- Coupon tab -->
+        <div v-if="discountTab === 'coupon'" class="flex flex-col gap-4 px-5 py-5">
+          <div>
+            <label class="mb-1.5 block text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Código</label>
+            <div class="flex gap-2">
+              <div class="flex flex-1 items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-xl border border-gray-200 focus-within:border-green-300 focus-within:ring-2 focus-within:ring-green-100 transition-all">
+                <i class="fa-solid fa-ticket text-gray-300 text-sm flex-shrink-0"></i>
+                <input v-model="discountCode" type="text" placeholder="CODIGO2026" @input="couponPreview = null; couponError = null"
+                  class="flex-1 text-sm bg-transparent outline-none text-gray-900 placeholder-gray-400 uppercase" />
+              </div>
+              <button @click="validateCoupon" :disabled="!discountCode.trim() || validatingCoupon"
+                class="px-3 py-2 text-xs font-bold text-white bg-green-600 rounded-xl hover:bg-green-700 disabled:opacity-40 transition-colors">
+                <i v-if="validatingCoupon" class="fa-solid fa-spinner fa-spin"></i>
+                <span v-else>Verificar</span>
+              </button>
+            </div>
+          </div>
+          <div v-if="couponError" class="flex items-center gap-2 px-3 py-2.5 bg-red-50 border border-red-100 rounded-xl text-xs text-red-600 font-semibold">
+            <i class="fa-solid fa-circle-xmark"></i> {{ couponError }}
+          </div>
+          <div v-if="couponPreview" class="flex items-center gap-3 px-3 py-2.5 bg-green-50 border border-green-200 rounded-xl">
+            <i class="fa-solid fa-circle-check text-green-500 text-sm flex-shrink-0"></i>
+            <div class="flex-1">
+              <div class="text-sm font-bold text-green-800">{{ couponPreview.label }}</div>
+              <div class="text-xs text-green-600">Ahorro: -${{ parseFloat(couponPreview.computed_discount).toLocaleString() }}</div>
+            </div>
+          </div>
+          <button @click="applyCoupon" :disabled="!couponPreview || applyingDiscount"
+            class="w-full py-3 text-sm font-bold text-white bg-green-600 rounded-2xl hover:bg-green-700 disabled:opacity-40 transition-colors shadow-sm">
+            {{ applyingDiscount ? 'Aplicando...' : 'Aplicar cupón' }}
+          </button>
+        </div>
+        <!-- Manual tab -->
+        <div v-if="discountTab === 'manual'" class="flex flex-col gap-4 px-5 py-5">
+          <div>
+            <label class="mb-1.5 block text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Descripción</label>
+            <div class="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-xl border border-gray-200 focus-within:border-green-300 focus-within:ring-2 focus-within:ring-green-100 transition-all">
+              <i class="fa-solid fa-tag text-gray-300 text-sm flex-shrink-0"></i>
+              <input v-model="discountDescription" type="text" placeholder="Ej. Descuento familiar, promoción..."
+                class="flex-1 text-sm bg-transparent outline-none text-gray-900 placeholder-gray-400" />
+            </div>
+          </div>
+          <div>
+            <label class="mb-1.5 block text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Monto a descontar</label>
+            <div class="flex items-center gap-2 px-3 py-2.5 bg-gray-50 rounded-xl border border-gray-200 focus-within:border-green-300 focus-within:ring-2 focus-within:ring-green-100 transition-all">
+              <span class="text-sm font-bold text-gray-300">$</span>
+              <input v-model="discountAmount" type="number" inputmode="decimal" placeholder="0"
+                class="flex-1 text-sm bg-transparent outline-none text-gray-900 placeholder-gray-400" />
+              <span class="text-xs text-gray-300 font-medium">MXN</span>
+            </div>
+          </div>
+          <transition name="fade">
+            <div v-if="discountDescription || discountAmount"
+              class="flex items-center gap-3 px-3 py-2.5 bg-green-50 border border-green-100 rounded-xl">
+              <i class="fa-solid fa-tag text-green-500 text-sm flex-shrink-0"></i>
+              <div class="flex-1 text-sm font-semibold text-gray-800 truncate">{{ discountDescription || 'Descripción...' }}</div>
+              <div class="text-sm font-bold text-green-600">-${{ discountAmount ? parseFloat(discountAmount).toLocaleString() : '0' }}</div>
+            </div>
+          </transition>
+          <button @click="applyManualDiscount" :disabled="applyingDiscount || !discountDescription.trim() || !discountAmount"
+            class="w-full py-3 text-sm font-bold text-white bg-green-600 rounded-2xl hover:bg-green-700 disabled:opacity-40 transition-colors shadow-sm">
+            {{ applyingDiscount ? 'Aplicando...' : 'Aplicar descuento' }}
+          </button>
+        </div>
+        <div class="px-5 pb-5">
+          <button @click="closeDiscountModal" class="w-full py-1.5 text-xs font-semibold text-gray-400 hover:text-gray-600 transition-colors">Cancelar</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal de Pago -->
     <div v-if="showPaymentModal" class="flex fixed inset-0 z-50 justify-center items-center bg-black/40">
       <div class="relative p-6 w-full max-w-md bg-white rounded-2xl shadow-xl">
@@ -792,6 +890,10 @@
                 <i class="fa-solid fa-plus text-[10px]"></i>
                 Cargo
               </button>
+              <button v-if="isStaff" @click="openDiscountModal" class="flex-shrink-0 flex gap-1 items-center px-2 py-0.5 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 transition hover:bg-green-100">
+                <i class="fa-solid fa-tag text-[10px]"></i>
+                Descuento
+              </button>
             </div>
           </div>
           <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
@@ -845,6 +947,22 @@
                   :disabled="removingChargeId === charge.id"
                   class="flex justify-center items-center w-5 h-5 text-xs text-red-400 rounded-full transition hover:text-red-600 disabled:opacity-40">
                   <i class="fa-solid fa-xmark"></i>
+                </button>
+              </div>
+            </div>
+            <!-- Discounts (item_type === 'discount') -->
+            <div v-if="event.line_items && event.line_items.filter(li => li.item_type === 'discount').length > 0"
+              class="border-t border-gray-100">
+              <div v-for="disc in event.line_items.filter(li => li.item_type === 'discount')" :key="disc.id"
+                class="flex items-center px-4 h-14 border-b border-gray-100 last:border-b-0">
+                <i class="mr-2 text-green-500 fa-solid fa-tag"></i>
+                <div class="flex-1 text-sm font-semibold text-gray-700">{{ disc.description }}</div>
+                <div class="mr-3 text-sm font-semibold text-green-600">-${{ Math.abs(parseFloat(disc.unit_price)).toLocaleString() }}</div>
+                <button v-if="isStaff" @click="removeDiscount(disc.id)"
+                  :disabled="removingDiscountId === disc.id"
+                  class="flex justify-center items-center w-5 h-5 text-xs text-red-400 rounded-full transition hover:text-red-600 disabled:opacity-40">
+                  <i v-if="removingDiscountId === disc.id" class="fa-solid fa-spinner fa-spin"></i>
+                  <i v-else class="fa-solid fa-xmark"></i>
                 </button>
               </div>
             </div>
@@ -1944,6 +2062,18 @@
                       <i v-if="approvingPaymentId === payment.id" class="fa-solid fa-spinner fa-spin mr-1"></i>
                       <i v-else class="fa-solid fa-circle-check mr-1"></i>
                       {{ approvingPaymentId === payment.id ? 'Aprobando...' : 'Aprobar pago' }}
+                    </button>
+                  </div>
+                  <!-- Staff delete button (cash/transfer only) -->
+                  <div v-if="isStaff && ['cash','transfer'].includes(payment.method)" class="pt-2 border-t border-gray-200">
+                    <button
+                      @click.stop="deletePayment(payment.id)"
+                      :disabled="deletingPaymentId === payment.id"
+                      class="w-full py-2 text-xs font-bold text-white bg-red-500 rounded-xl hover:bg-red-600 disabled:opacity-50 transition-colors"
+                    >
+                      <i v-if="deletingPaymentId === payment.id" class="fa-solid fa-spinner fa-spin mr-1"></i>
+                      <i v-else class="fa-solid fa-trash mr-1"></i>
+                      {{ deletingPaymentId === payment.id ? 'Eliminando...' : 'Eliminar pago' }}
                     </button>
                   </div>
                 </div>
@@ -3214,6 +3344,93 @@ async function removeCustomCharge(lineItemId) {
   }
 }
 
+// ── Discount modal ─────────────────────────────────────────────────────────
+const showDiscountModal = ref(false)
+const discountTab = ref('coupon')
+const discountCode = ref('')
+const couponPreview = ref(null)
+const couponError = ref(null)
+const validatingCoupon = ref(false)
+const discountDescription = ref('')
+const discountAmount = ref('')
+const applyingDiscount = ref(false)
+const removingDiscountId = ref(null)
+
+function openDiscountModal() {
+  discountTab.value = 'coupon'
+  discountCode.value = ''
+  couponPreview.value = null
+  couponError.value = null
+  discountDescription.value = ''
+  discountAmount.value = ''
+  showDiscountModal.value = true
+}
+
+function closeDiscountModal() {
+  showDiscountModal.value = false
+}
+
+async function validateCoupon() {
+  if (!discountCode.value.trim()) return
+  validatingCoupon.value = true
+  couponPreview.value = null
+  couponError.value = null
+  try {
+    const res = await api.post(`/api/bookings/bookings/${event.value.id}/validate_coupon/`, { code: discountCode.value.trim() })
+    couponPreview.value = res.data
+  } catch (e) {
+    couponError.value = e?.response?.data?.detail || 'Cupón no válido.'
+  } finally {
+    validatingCoupon.value = false
+  }
+}
+
+async function applyCoupon() {
+  if (!couponPreview.value) return
+  applyingDiscount.value = true
+  try {
+    const res = await api.post(`/api/bookings/bookings/${event.value.id}/apply_coupon/`, { code: discountCode.value.trim() })
+    event.value = res.data
+    toast.success(`Cupón ${couponPreview.value.code} aplicado.`)
+    closeDiscountModal()
+  } catch (e) {
+    toast.error(e?.response?.data?.detail || 'Error al aplicar cupón.')
+  } finally {
+    applyingDiscount.value = false
+  }
+}
+
+async function applyManualDiscount() {
+  if (!discountDescription.value.trim() || !discountAmount.value) return
+  applyingDiscount.value = true
+  try {
+    const res = await api.post(`/api/bookings/bookings/${event.value.id}/add_discount/`, {
+      description: discountDescription.value.trim(),
+      amount: parseFloat(discountAmount.value),
+    })
+    event.value = res.data
+    toast.success('Descuento aplicado.')
+    closeDiscountModal()
+  } catch (e) {
+    toast.error(e?.response?.data?.detail || 'Error al aplicar descuento.')
+  } finally {
+    applyingDiscount.value = false
+  }
+}
+
+async function removeDiscount(lineItemId) {
+  removingDiscountId.value = lineItemId
+  try {
+    const res = await api.delete(`/api/bookings/bookings/${event.value.id}/remove_discount/${lineItemId}/`)
+    event.value = res.data
+    toast.success('Descuento eliminado.')
+  } catch (e) {
+    toast.error(e?.response?.data?.detail || 'Error al eliminar descuento.')
+  } finally {
+    removingDiscountId.value = null
+  }
+}
+
 // Transfer accordion variables
 const showTransferAccordion = ref(false)
 const uploadedFile = ref(null)
@@ -3370,6 +3587,22 @@ const paymentAmount = ref('')
 const expandedPaymentId = ref(null)
 const togglePaymentDetail = (id) => { expandedPaymentId.value = expandedPaymentId.value === id ? null : id }
 const approvingPaymentId = ref(null)
+const deletingPaymentId = ref(null)
+
+async function deletePayment(paymentId) {
+  if (!confirm('¿Eliminar este pago? Esta acción no se puede deshacer.')) return
+  deletingPaymentId.value = paymentId
+  try {
+    await api.delete(`/api/store/payments/${paymentId}/`)
+    toast.success('Pago eliminado.')
+    await Promise.all([refetch(), refetchOrders(), refetchLogs()])
+  } catch (e) {
+    const msg = e?.response?.data?.detail || 'Error al eliminar el pago.'
+    toast.error(msg)
+  } finally {
+    deletingPaymentId.value = null
+  }
+}
 
 async function approvePayment(paymentId) {
   approvingPaymentId.value = paymentId
@@ -4107,6 +4340,7 @@ const getLogActionClass = (action) => {
     case 'payment_received': return 'bg-emerald-100 text-emerald-700'
     case 'admin_approved':   return 'bg-emerald-100 text-emerald-700'
     case 'admin_rejected':   return 'bg-red-100 text-red-700'
+    case 'payment_deleted':  return 'bg-red-100 text-red-700'
     case 'reminder_sent': return 'bg-purple-100 text-purple-700'
     case 'review_requested': return 'bg-indigo-100 text-indigo-700'
     default:             return 'bg-gray-100 text-gray-700'
@@ -4119,6 +4353,7 @@ const getLogActionText = (action) => {
     status_changed: 'Estado Cambiado', cancelled: 'Cancelada', rejected: 'Rechazada',
     deleted: 'Eliminada', payment_received: 'Pago Recibido',
     admin_approved: 'Pago Aprobado por Staff', admin_rejected: 'Pago Rechazado por Staff',
+    payment_deleted: 'Pago Eliminado por Staff',
     reminder_sent: 'Recordatorio Enviado', review_requested: 'Reseña Solicitada',
   }
   return labels[action] || action || 'Acción'
@@ -4153,6 +4388,7 @@ const getLogIcon = (action) => {
     payment_received: 'fa-solid fa-circle-dollar-to-slot text-emerald-600',
     admin_approved:   'fa-solid fa-user-check text-emerald-600',
     admin_rejected:   'fa-solid fa-user-xmark text-red-600',
+    payment_deleted:  'fa-solid fa-trash text-red-600',
     reminder_sent:    'fa-solid fa-bell text-purple-600',
     review_requested: 'fa-solid fa-star text-indigo-600',
   }
