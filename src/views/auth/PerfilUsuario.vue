@@ -1,324 +1,393 @@
 <template>
-  <div class="min-h-screen bg-gray-100 sm:py-8">
-    <div class="px-4 mx-auto max-w-5xl sm:px-6 lg:px-8">
+  <div class="min-h-screen bg-gray-50">
 
-      <!-- ─── PAGE TITLE (desktop) ─── -->
-      <h1 class="hidden mb-6 text-2xl font-bold text-gray-800 sm:block">Mi Perfil</h1>
-
-      <!-- ─── MOBILE HERO HEADER ─── -->
-      <div class="relative mb-0 sm:hidden">
-        <div class="h-28 bg-gradient-to-r from-blue-600 to-purple-600 rounded-t-xl"></div>
-        <div class="flex flex-col items-center px-4">
-          <div class="-mt-12 mb-2">
-            <div v-if="user?.profile?.image && user.profile.image.trim() !== ''" class="overflow-hidden w-24 h-24 rounded-full border-4 border-white shadow-md">
-              <img :src="user.profile.image" :alt="`${userName}`" class="object-cover w-full h-full"
-                @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'" />
-              <div class="hidden justify-center items-center w-full h-full bg-gradient-to-br from-blue-600 to-purple-600 rounded-full">
-                <span class="text-3xl font-bold text-white">{{ userInitials }}</span>
-              </div>
+    <!-- ─── PROFILE HEADER ─── -->
+    <div class="bg-gradient-to-br from-gray-900 to-black">
+      <div class="px-4 mx-auto max-w-3xl sm:px-6">
+        <div class="flex items-center gap-4 pt-8 pb-6">
+          <!-- Avatar -->
+          <div class="relative flex-shrink-0">
+            <div class="flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#22d3ee] border-4 border-white/10 overflow-hidden shadow-xl">
+              <img
+                v-if="user?.profile?.image && user.profile.image.trim() !== ''"
+                :src="user.profile.image"
+                :alt="userName"
+                class="object-cover w-full h-full"
+                @error="$event.target.style.display='none'"
+              />
+              <span v-else class="text-3xl font-bold text-white">{{ userInitials }}</span>
             </div>
-            <div v-else class="flex justify-center items-center w-24 h-24 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full border-4 border-white shadow-md">
-              <span class="text-3xl font-bold text-white">{{ userInitials }}</span>
-            </div>
-          </div>
-          <h2 class="text-xl font-bold text-gray-900">{{ userName }}</h2>
-          <p class="text-sm text-gray-500">{{ userRole }}</p>
-          <p class="mb-4 text-xs text-gray-400 break-all">{{ user?.email }}</p>
-        </div>
-      </div>
-
-      <!-- ─── DESKTOP PROFILE CARD ─── -->
-      <div class="hidden p-6 mb-6 bg-white rounded-xl border border-gray-200 shadow-sm sm:flex sm:items-center sm:gap-5">
-        <div class="flex-shrink-0">
-          <div v-if="user?.profile?.image && user.profile.image.trim() !== ''" class="overflow-hidden w-20 h-20 rounded-full">
-            <img :src="user.profile.image" :alt="`${userName}`" class="object-cover w-full h-full"
-              @error="$event.target.style.display='none'; $event.target.nextElementSibling.style.display='flex'" />
-            <div class="hidden justify-center items-center w-full h-full bg-gradient-to-br from-blue-600 to-purple-600 rounded-full">
-              <span class="text-2xl font-bold text-white">{{ userInitials }}</span>
+            <div v-if="unreadCount > 0" class="absolute -top-1 -right-1 flex items-center justify-center w-5 h-5 bg-red-500 rounded-full border-2 border-black">
+              <span class="text-xs font-bold text-white leading-none">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
             </div>
           </div>
-          <div v-else class="flex justify-center items-center w-20 h-20 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full">
-            <span class="text-2xl font-bold text-white">{{ userInitials }}</span>
-          </div>
-        </div>
-        <div>
-          <h2 class="text-xl font-bold text-gray-900">{{ userName }}</h2>
-          <p class="text-sm text-gray-500">{{ userRole }}</p>
-          <p class="text-sm text-gray-400 break-all">{{ user?.email }}</p>
-        </div>
-      </div>
 
-      <!-- ─── TABS ─── -->
-      <div class="bg-white rounded-none border-b border-gray-200 sm:rounded-t-xl sm:border sm:border-b-0">
-        <nav class="flex overflow-x-auto px-4 -mb-px space-x-1 sm:px-6 sm:space-x-6">
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <h1 class="text-xl font-bold text-white truncate">{{ userName }}</h1>
+            <p class="text-sm text-gray-400">{{ userRole }}</p>
+            <p class="text-xs text-gray-500 truncate">{{ user?.email }}</p>
+          </div>
+
+          <!-- Edit button -->
+          <button
+            v-if="!isEditing"
+            @click="toggleEdit"
+            class="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-white/10 rounded-xl hover:bg-white/20 transition-colors flex-shrink-0 border border-white/10"
+          >
+            <i class="fa-solid fa-pen text-xs"></i>
+            <span class="hidden sm:inline">Editar</span>
+          </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="flex border-b border-white/10">
           <button
             @click="activeTab = 'profile'"
-            :class="[
-              activeTab === 'profile' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-              'whitespace-nowrap py-3.5 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0'
-            ]"
+            class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px"
+            :class="activeTab === 'profile' ? 'text-white border-white' : 'text-gray-500 border-transparent hover:text-gray-300'"
           >
-            <i class="mr-1.5 fa-solid fa-user"></i>Perfil
+            <i class="fa-solid fa-user text-xs"></i>Perfil
           </button>
           <button
             @click="activeTab = 'notifications'"
-            :class="[
-              activeTab === 'notifications' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-              'whitespace-nowrap py-3.5 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0'
-            ]"
+            class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px"
+            :class="activeTab === 'notifications' ? 'text-white border-white' : 'text-gray-500 border-transparent hover:text-gray-300'"
           >
-            <i class="mr-1.5 fa-solid fa-bell"></i>Notificaciones
-            <span v-if="unreadCount > 0" class="inline-flex items-center px-1.5 py-0.5 ml-1 text-xs font-medium text-red-800 bg-red-100 rounded-full">{{ unreadCount }}</span>
+            <i class="fa-solid fa-bell text-xs"></i>
+            Notificaciones
+            <span v-if="unreadCount > 0" class="inline-flex items-center px-1.5 py-0.5 text-xs font-bold text-white bg-red-500 rounded-full leading-none">{{ unreadCount }}</span>
           </button>
           <button
             @click="activeTab = 'security'"
-            :class="[
-              activeTab === 'security' ? 'border-blue-500 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300',
-              'whitespace-nowrap py-3.5 px-1 border-b-2 font-medium text-xs sm:text-sm transition-colors flex-shrink-0'
-            ]"
+            class="flex items-center gap-1.5 px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px"
+            :class="activeTab === 'security' ? 'text-white border-white' : 'text-gray-500 border-transparent hover:text-gray-300'"
           >
-            <i class="mr-1.5 fa-solid fa-shield-alt"></i>Seguridad
+            <i class="fa-solid fa-shield-alt text-xs"></i>Seguridad
           </button>
-        </nav>
-      </div>
-
-      <!-- ─── TAB PANELS ─── -->
-      <div class="bg-white rounded-none border border-t-0 border-gray-200 shadow-sm sm:rounded-b-xl">
-
-        <!-- ══ PERFIL ══ -->
-        <div v-if="activeTab === 'profile'">
-
-          <!-- VIEW MODE -->
-          <template v-if="!isEditing">
-            <!-- Personal Information -->
-            <div class="p-4 sm:p-6">
-              <div class="flex justify-between items-center mb-5">
-                <h3 class="text-base font-semibold text-gray-800 sm:text-lg">Información Personal</h3>
-                <button
-                  @click="toggleEdit"
-                  class="inline-flex gap-1.5 items-center px-3.5 py-1.5 text-xs font-semibold text-white bg-orange-500 rounded-lg transition-colors hover:bg-orange-600 sm:px-4 sm:py-2 sm:text-sm"
-                >
-                  <i class="fa-solid fa-pen"></i> Editar
-                </button>
-              </div>
-              <!-- Grid 1-col mobile, 3-col desktop -->
-              <div class="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-3">
-                <div>
-                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Nombre</p>
-                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ user?.first_name || '—' }}</p>
-                </div>
-                <div>
-                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Apellido</p>
-                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ user?.last_name || '—' }}</p>
-                </div>
-                <div>
-                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Género</p>
-                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ getGenderLabel(user?.profile?.gender) || '—' }}</p>
-                </div>
-                <div>
-                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Email</p>
-                  <p class="text-sm font-semibold text-gray-800 break-all sm:text-base">{{ user?.email || '—' }}</p>
-                </div>
-                <div>
-                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Teléfono</p>
-                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ user?.phone || '—' }}</p>
-                </div>
-                <div>
-                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Rol</p>
-                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ userRole }}</p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Divider -->
-            <div class="mx-4 border-t border-gray-100 sm:mx-6"></div>
-
-            <!-- Address -->
-            <div class="p-4 sm:p-6">
-              <div class="flex justify-between items-center mb-5">
-                <h3 class="text-base font-semibold text-gray-800 sm:text-lg">Dirección</h3>
-              </div>
-              <div class="grid grid-cols-1 gap-x-8 gap-y-5 sm:grid-cols-3">
-                <div>
-                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">País</p>
-                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ user?.profile?.country || '—' }}</p>
-                </div>
-                <div>
-                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Estado / Ciudad</p>
-                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ user?.profile?.state || '—' }}</p>
-                </div>
-                <div>
-                  <p class="mb-1 text-xs font-medium text-gray-400 sm:text-sm">Dirección completa</p>
-                  <p class="text-sm font-semibold text-gray-800 sm:text-base">{{ user?.profile?.address || '—' }}</p>
-                </div>
-              </div>
-            </div>
-          </template>
-
-          <!-- EDIT MODE -->
-          <template v-else>
-            <div class="p-4 sm:p-6">
-              <h3 class="mb-5 text-base font-semibold text-gray-800 sm:text-lg">Editar Perfil</h3>
-
-              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <div>
-                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Nombre</label>
-                  <input v-model="formData.first_name" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Apellido</label>
-                  <input v-model="formData.last_name" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Teléfono</label>
-                  <input v-model="formData.phone" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Género</label>
-                  <select v-model="formData.profile.gender" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                    <option value="">Seleccionar</option>
-                    <option value="M">Masculino</option>
-                    <option value="F">Femenino</option>
-                    <option value="O">Otro</option>
-                  </select>
-                </div>
-                <div>
-                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">País</label>
-                  <input v-model="formData.profile.country" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div>
-                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Estado</label>
-                  <input v-model="formData.profile.state" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div class="sm:col-span-2 lg:col-span-3">
-                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Imagen de perfil (URL)</label>
-                  <input v-model="formData.profile.image" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500" />
-                </div>
-                <div class="sm:col-span-2 lg:col-span-3">
-                  <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Dirección</label>
-                  <textarea v-model="formData.profile.address" rows="3" class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"></textarea>
-                </div>
-              </div>
-
-              <div class="flex flex-col gap-2 justify-end mt-6 sm:flex-row">
-                <button @click="toggleEdit" class="order-2 px-5 py-2.5 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg transition-colors sm:order-1 hover:bg-gray-200">
-                  Cancelar
-                </button>
-                <button @click="saveProfile" :disabled="isSaving"
-                  class="order-1 px-5 py-2.5 text-sm font-medium text-white bg-blue-600 rounded-lg transition-colors sm:order-2 hover:bg-blue-700 disabled:opacity-50">
-                  <i v-if="isSaving" class="mr-1 fa-solid fa-spinner fa-spin"></i>
-                  {{ isSaving ? 'Guardando...' : 'Guardar cambios' }}
-                </button>
-              </div>
-            </div>
-          </template>
         </div>
+      </div>
+    </div>
 
-        <!-- ══ NOTIFICACIONES ══ -->
-        <div v-if="activeTab === 'notifications'" class="p-4 sm:p-6">
-          <div class="flex justify-between items-center mb-5">
-            <div>
-              <h3 class="text-base font-semibold text-gray-800 sm:text-lg">Notificaciones</h3>
-              <p class="text-xs text-gray-400">{{ notifications.length }} total · {{ unreadCount }} no leídas</p>
+    <!-- ─── CONTENT ─── -->
+    <div class="px-4 mx-auto max-w-3xl py-6 sm:px-6">
+
+      <!-- ══ PERFIL ══ -->
+      <div v-if="activeTab === 'profile'">
+
+        <!-- VIEW MODE -->
+        <template v-if="!isEditing">
+          <!-- Personal info card -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+            <div class="flex items-center justify-between px-5 py-3.5 border-b border-gray-50">
+              <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Información Personal</span>
             </div>
-            <button @click="markAllAsRead" :disabled="isMarkingAllRead"
-              class="inline-flex gap-1.5 items-center px-3 py-1.5 text-xs font-medium text-gray-600 bg-gray-100 rounded-lg transition-colors hover:bg-gray-200 disabled:opacity-50 sm:text-sm">
-              <i v-if="isMarkingAllRead" class="fa-solid fa-spinner fa-spin"></i>
-              <i v-else class="fa-solid fa-check-double"></i>
-              Leer todas
+            <div class="divide-y divide-gray-50">
+              <div class="flex items-center gap-4 px-5 py-3.5">
+                <i class="fa-solid fa-user text-gray-400 w-4 text-center flex-shrink-0"></i>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-gray-400">Nombre completo</p>
+                  <p class="text-sm font-semibold text-gray-900">{{ [user?.first_name, user?.last_name].filter(Boolean).join(' ') || '—' }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4 px-5 py-3.5">
+                <i class="fa-solid fa-envelope text-gray-400 w-4 text-center flex-shrink-0"></i>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-gray-400">Email</p>
+                  <p class="text-sm font-semibold text-gray-900 break-all">{{ user?.email || '—' }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4 px-5 py-3.5">
+                <i class="fa-solid fa-phone text-gray-400 w-4 text-center flex-shrink-0"></i>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-gray-400">Teléfono</p>
+                  <p class="text-sm font-semibold text-gray-900">{{ user?.phone || '—' }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4 px-5 py-3.5">
+                <i class="fa-solid fa-venus-mars text-gray-400 w-4 text-center flex-shrink-0"></i>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-gray-400">Género</p>
+                  <p class="text-sm font-semibold text-gray-900">{{ getGenderLabel(user?.profile?.gender) || '—' }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4 px-5 py-3.5">
+                <i class="fa-solid fa-id-badge text-gray-400 w-4 text-center flex-shrink-0"></i>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-gray-400">Rol</p>
+                  <p class="text-sm font-semibold text-gray-900">{{ userRole }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Address card -->
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+            <div class="px-5 py-3.5 border-b border-gray-50">
+              <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Dirección</span>
+            </div>
+            <div class="divide-y divide-gray-50">
+              <div class="flex items-center gap-4 px-5 py-3.5">
+                <i class="fa-solid fa-globe text-gray-400 w-4 text-center flex-shrink-0"></i>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-gray-400">País</p>
+                  <p class="text-sm font-semibold text-gray-900">{{ user?.profile?.country || '—' }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4 px-5 py-3.5">
+                <i class="fa-solid fa-city text-gray-400 w-4 text-center flex-shrink-0"></i>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-gray-400">Estado / Ciudad</p>
+                  <p class="text-sm font-semibold text-gray-900">{{ user?.profile?.state || '—' }}</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-4 px-5 py-3.5">
+                <i class="fa-solid fa-location-dot text-gray-400 w-4 text-center flex-shrink-0"></i>
+                <div class="flex-1 min-w-0">
+                  <p class="text-xs text-gray-400">Dirección completa</p>
+                  <p class="text-sm font-semibold text-gray-900">{{ user?.profile?.address || '—' }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit button (bottom) -->
+          <button
+            @click="toggleEdit"
+            class="flex items-center justify-center gap-2 w-full py-3 text-sm font-semibold text-gray-700 bg-white rounded-2xl border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
+          >
+            <i class="fa-solid fa-pen text-xs text-gray-400"></i>
+            Editar perfil
+          </button>
+        </template>
+
+        <!-- EDIT MODE -->
+        <template v-else>
+          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+            <div class="px-5 py-3.5 border-b border-gray-50">
+              <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Editar Perfil</span>
+            </div>
+            <div class="p-5 grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label class="block mb-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nombre</label>
+                <input v-model="formData.first_name" class="px-3 py-2.5 w-full text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50" />
+              </div>
+              <div>
+                <label class="block mb-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Apellido</label>
+                <input v-model="formData.last_name" class="px-3 py-2.5 w-full text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50" />
+              </div>
+              <div>
+                <label class="block mb-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Teléfono</label>
+                <input v-model="formData.phone" class="px-3 py-2.5 w-full text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50" />
+              </div>
+              <div>
+                <label class="block mb-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Género</label>
+                <select v-model="formData.profile.gender" class="px-3 py-2.5 w-full text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50">
+                  <option value="">Seleccionar</option>
+                  <option value="M">Masculino</option>
+                  <option value="F">Femenino</option>
+                  <option value="O">Otro</option>
+                </select>
+              </div>
+              <div>
+                <label class="block mb-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">País</label>
+                <input v-model="formData.profile.country" class="px-3 py-2.5 w-full text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50" />
+              </div>
+              <div>
+                <label class="block mb-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Estado / Ciudad</label>
+                <input v-model="formData.profile.state" class="px-3 py-2.5 w-full text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50" />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block mb-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Imagen de perfil (URL)</label>
+                <input v-model="formData.profile.image" class="px-3 py-2.5 w-full text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50" placeholder="https://..." />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="block mb-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Dirección</label>
+                <textarea v-model="formData.profile.address" rows="2" class="px-3 py-2.5 w-full text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 resize-none"></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button @click="toggleEdit" class="flex-1 py-3 text-sm font-semibold text-gray-700 bg-white rounded-2xl border border-gray-200 hover:bg-gray-50 transition-colors">
+              Cancelar
+            </button>
+            <button @click="saveProfile" :disabled="isSaving" class="flex-1 py-3 text-sm font-semibold text-white bg-blue-600 rounded-2xl hover:bg-blue-700 transition-colors disabled:opacity-50">
+              <i v-if="isSaving" class="mr-1.5 fa-solid fa-spinner fa-spin"></i>
+              {{ isSaving ? 'Guardando...' : 'Guardar cambios' }}
             </button>
           </div>
+        </template>
+      </div>
 
-          <div v-if="notificationsLoading" class="py-12 text-center">
-            <i class="text-2xl text-gray-300 fa-solid fa-spinner fa-spin"></i>
-            <p class="mt-2 text-sm text-gray-400">Cargando...</p>
+      <!-- ══ NOTIFICACIONES ══ -->
+      <div v-if="activeTab === 'notifications'">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-sm font-semibold text-gray-800">Notificaciones</h3>
+            <p class="text-xs text-gray-400">{{ unreadCount }} sin leer</p>
           </div>
+          <button @click="markAllAsRead" :disabled="isMarkingAllRead || unreadCount === 0"
+            class="p-2 text-gray-400 hover:text-gray-600 transition-colors disabled:opacity-30" title="Marcar todas como leídas">
+            <i v-if="isMarkingAllRead" class="fa-solid fa-spinner fa-spin"></i>
+            <i v-else class="fa-solid fa-rotate text-base"></i>
+          </button>
+        </div>
 
-          <div v-else-if="notifications.length === 0" class="py-12 text-center">
-            <i class="text-4xl text-gray-200 fa-solid fa-bell-slash"></i>
-            <p class="mt-3 text-sm text-gray-400">No tienes notificaciones</p>
-          </div>
+        <!-- Filter chips -->
+        <div class="flex gap-2 mb-4 overflow-x-auto pb-1">
+          <button
+            v-for="f in [
+              { key: 'all', label: 'Todas' },
+              { key: 'reservas', label: 'Reservas' },
+              { key: 'pagos', label: 'Pagos' },
+            ]"
+            :key="f.key"
+            @click="notifFilter = f.key"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors flex-shrink-0"
+            :class="notifFilter === f.key
+              ? 'bg-gray-900 text-white'
+              : 'bg-white text-gray-500 border border-gray-200 hover:border-gray-300'"
+          >
+            {{ f.label }}
+            <span
+              class="inline-flex items-center justify-center min-w-4 h-4 px-1 rounded-full text-xs leading-none"
+              :class="notifFilter === f.key ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'"
+            >{{ notifCountByFilter[f.key] }}</span>
+          </button>
+        </div>
 
-          <div v-else class="space-y-2">
-            <div
-              v-for="notification in notifications" :key="notification.id"
-              :class="['p-4 rounded-xl border transition-colors', notification.read ? 'bg-gray-50 border-gray-100' : 'bg-blue-50 border-blue-100']"
-            >
-              <div class="flex gap-3 items-start">
-                <span :class="['mt-1.5 flex-shrink-0 w-2 h-2 rounded-full', !notification.read ? 'bg-blue-500' : '']"></span>
-                <div class="flex-1 min-w-0">
-                  <p class="text-sm font-semibold text-gray-900">{{ getNotificationTitle(notification) }}</p>
-                  <p class="mt-0.5 text-xs leading-relaxed text-gray-500">{{ notification.message || 'Notificación' }}</p>
-                  <div class="flex flex-wrap gap-2 items-center mt-2.5">
-                    <button v-if="notification.booking" @click.stop="viewBooking(notification.booking)"
-                      class="inline-flex gap-1 items-center px-2.5 py-1 text-xs font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700">
-                      <i class="fa-solid fa-eye"></i> Ver Reserva
-                    </button>
-                    <button v-if="!notification.read" @click.stop="markAsRead(notification.id)"
-                      class="inline-flex gap-1 items-center px-2.5 py-1 text-xs font-medium text-blue-600 bg-white rounded-full border border-blue-200 hover:bg-blue-50">
-                      <i class="fa-solid fa-check"></i> Leída
-                    </button>
-                    <span class="ml-auto text-xs text-gray-400">{{ formatDate(notification.created_at) }}</span>
-                  </div>
-                </div>
+        <!-- Loading -->
+        <div v-if="notificationsLoading" class="py-16 text-center bg-white rounded-2xl border border-gray-100">
+          <i class="text-3xl text-gray-200 fa-solid fa-spinner fa-spin"></i>
+          <p class="mt-3 text-sm text-gray-400">Cargando...</p>
+        </div>
+
+        <!-- Empty -->
+        <div v-else-if="filteredNotifications.length === 0" class="py-16 text-center bg-white rounded-2xl border border-gray-100">
+          <i class="text-3xl text-gray-200 fa-solid fa-bell-slash mb-4 block"></i>
+          <p class="text-sm font-medium text-gray-500">Sin notificaciones</p>
+          <p class="text-xs text-gray-400 mt-1">Aquí aparecerán tus notificaciones</p>
+        </div>
+
+        <!-- List -->
+        <div v-else class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden divide-y divide-gray-50">
+          <div
+            v-for="notification in filteredNotifications"
+            :key="notification.id"
+            class="flex items-start gap-4 px-5 py-4 transition-colors hover:bg-gray-50/50"
+            :class="!notification.read ? 'bg-blue-50/30' : ''"
+          >
+            <!-- Type icon -->
+            <i :class="['fa-solid', notifIcon(notification.type).icon, 'text-gray-400 flex-shrink-0 mt-1 w-4 text-center']"></i>
+
+            <!-- Content -->
+            <div class="flex-1 min-w-0">
+              <div class="flex items-start justify-between gap-2">
+                <p class="text-sm font-semibold text-gray-900 leading-snug">{{ getNotificationTitle(notification) }}</p>
+                <div v-if="!notification.read" class="flex-shrink-0 w-2 h-2 mt-1.5 bg-blue-500 rounded-full"></div>
               </div>
-            </div>
+              <p class="mt-0.5 text-xs leading-relaxed text-gray-500 line-clamp-2">{{ notification.message }}</p>
 
-            <div v-if="notificationsPagination.count > notifications.length" class="pt-4 border-t border-gray-100">
-              <p class="mb-2 text-xs text-center text-gray-400">{{ notifications.length }} de {{ notificationsPagination.count }}</p>
-              <div class="flex gap-3 justify-center">
-                <button @click="loadNotifications(notificationsPagination.previous)"
-                  :disabled="!notificationsPagination.previous || notificationsLoading"
-                  class="px-5 py-2 text-sm font-medium text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 disabled:opacity-40 disabled:cursor-not-allowed">
-                  Anterior
-                </button>
-                <span class="px-3 py-2 text-sm font-medium text-gray-500">Pág. {{ getCurrentPage() }}</span>
-                <button @click="loadNotifications(notificationsPagination.next)"
-                  :disabled="!notificationsPagination.next || notificationsLoading"
-                  class="px-5 py-2 text-sm font-medium text-white bg-gray-800 rounded-lg hover:bg-gray-900 disabled:opacity-40 disabled:cursor-not-allowed">
-                  Siguiente
-                </button>
+              <!-- Tag + actions row -->
+              <div class="flex flex-wrap items-center gap-2 mt-2">
+                <!-- Context tag -->
+                <span
+                  v-if="notifTag(notification)"
+                  class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold"
+                  :class="notifTag(notification).bg"
+                >
+                  <i class="fa-solid fa-tag text-xs opacity-70"></i>
+                  {{ notifTag(notification).label }}
+                </span>
+
+                <!-- Timestamp -->
+                <span class="text-xs text-gray-400">{{ formatDate(notification.created_at) }}</span>
+
+                <!-- Actions -->
+                <div class="ml-auto flex items-center gap-2">
+                  <button v-if="notification.booking" @click.stop="viewBooking(notification.booking)"
+                    class="text-xs font-semibold text-blue-600 hover:text-blue-700 transition-colors">
+                    Ver reserva →
+                  </button>
+                  <button v-if="!notification.read" @click.stop="markAsRead(notification.id)"
+                    class="text-xs font-medium text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fa-solid fa-check"></i>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- ══ SEGURIDAD ══ -->
-        <div v-if="activeTab === 'security'" class="p-4 sm:p-6">
-          <h3 class="mb-5 text-base font-semibold text-gray-800 sm:text-lg">Cambiar Contraseña</h3>
-          <div class="grid grid-cols-1 gap-4 max-w-lg sm:grid-cols-1">
+        <!-- Pagination -->
+        <div v-if="!notificationsLoading && notificationsPagination.count > notifications.length" class="mt-4">
+          <p class="mb-3 text-xs text-center text-gray-400">{{ notifications.length }} de {{ notificationsPagination.count }}</p>
+          <div class="flex gap-3">
+            <button @click="loadNotifications(notificationsPagination.previous)"
+              :disabled="!notificationsPagination.previous || notificationsLoading"
+              class="flex-1 py-2.5 text-sm font-semibold text-gray-700 bg-white rounded-2xl border border-gray-200 hover:bg-gray-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+              <i class="fa-solid fa-chevron-left mr-1 text-xs"></i>Anterior
+            </button>
+            <span class="flex items-center px-4 text-xs font-medium text-gray-400">Pág. {{ getCurrentPage() }}</span>
+            <button @click="loadNotifications(notificationsPagination.next)"
+              :disabled="!notificationsPagination.next || notificationsLoading"
+              class="flex-1 py-2.5 text-sm font-semibold text-white bg-gray-900 rounded-2xl hover:bg-black transition-colors disabled:opacity-40 disabled:cursor-not-allowed">
+              Siguiente<i class="fa-solid fa-chevron-right ml-1 text-xs"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Bottom actions -->
+        <div class="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+          <button @click="markAllAsRead" :disabled="isMarkingAllRead || unreadCount === 0"
+            class="text-sm font-medium text-gray-600 underline underline-offset-2 hover:text-gray-900 transition-colors disabled:opacity-40">
+            Marcar todas como leídas
+          </button>
+        </div>
+      </div>
+
+      <!-- ══ SEGURIDAD ══ -->
+      <div v-if="activeTab === 'security'">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden mb-4">
+          <div class="px-5 py-3.5 border-b border-gray-50">
+            <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Cambiar Contraseña</span>
+          </div>
+          <div class="p-5 space-y-4 max-w-md">
             <div>
-              <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Contraseña Actual</label>
+              <label class="block mb-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Contraseña Actual</label>
               <input v-model="passwordData.current_password" type="password"
-                class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="px-3 py-2.5 w-full text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
                 placeholder="Tu contraseña actual" />
             </div>
             <div>
-              <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Nueva Contraseña</label>
+              <label class="block mb-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Nueva Contraseña</label>
               <input v-model="passwordData.new_password" type="password"
-                class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="px-3 py-2.5 w-full text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
                 placeholder="Mínimo 8 caracteres" />
             </div>
             <div>
-              <label class="block mb-1.5 text-xs font-medium text-gray-500 uppercase tracking-wide">Confirmar Nueva Contraseña</label>
+              <label class="block mb-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wide">Confirmar Nueva Contraseña</label>
               <input v-model="passwordData.re_new_password" type="password"
-                class="px-3 py-2.5 w-full text-sm rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                class="px-3 py-2.5 w-full text-sm rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
                 placeholder="Repite tu nueva contraseña" />
-            </div>
-            <div>
-              <button @click="changePassword" :disabled="isChangingPassword || !isPasswordFormValid"
-                class="py-2.5 w-full text-sm font-medium text-white bg-red-600 rounded-lg transition-colors hover:bg-red-700 disabled:opacity-50">
-                <i v-if="isChangingPassword" class="mr-2 fa-solid fa-spinner fa-spin"></i>
-                {{ isChangingPassword ? 'Cambiando...' : 'Cambiar Contraseña' }}
-              </button>
             </div>
           </div>
         </div>
 
+        <button @click="changePassword" :disabled="isChangingPassword || !isPasswordFormValid"
+          class="flex items-center justify-center gap-2 w-full py-3 text-sm font-semibold text-white bg-red-600 rounded-2xl hover:bg-red-700 transition-colors disabled:opacity-50">
+          <i v-if="isChangingPassword" class="fa-solid fa-spinner fa-spin"></i>
+          <i v-else class="fa-solid fa-lock text-xs"></i>
+          {{ isChangingPassword ? 'Cambiando...' : 'Cambiar Contraseña' }}
+        </button>
       </div>
 
-      <div class="pb-6 sm:pb-0"></div>
     </div>
+
+    <div class="pb-8"></div>
   </div>
 </template>
 
@@ -373,6 +442,37 @@ const notificationsPagination = ref({
 
 // Password change
 const isChangingPassword = ref(false)
+
+// Notification filter
+const notifFilter = ref('all')
+
+const filteredNotifications = computed(() => {
+  if (notifFilter.value === 'reservas') {
+    return notifications.value.filter(n => ['booking_confirmed','booking_cancelled','booking_reminder','status_change'].includes(n.type))
+  }
+  if (notifFilter.value === 'pagos') {
+    return notifications.value.filter(n => ['payment_received','payment_failed'].includes(n.type))
+  }
+  return notifications.value
+})
+
+const notifCountByFilter = computed(() => ({
+  all: notifications.value.length,
+  reservas: notifications.value.filter(n => ['booking_confirmed','booking_cancelled','booking_reminder','status_change'].includes(n.type)).length,
+  pagos: notifications.value.filter(n => ['payment_received','payment_failed'].includes(n.type)).length,
+}))
+
+function notifIcon(type) {
+  if (['booking_confirmed','booking_cancelled','booking_reminder','status_change'].includes(type)) return { icon: 'fa-calendar-check', bg: 'bg-blue-100', text: 'text-blue-600' }
+  if (['payment_received','payment_failed'].includes(type)) return { icon: 'fa-dollar-sign', bg: 'bg-green-100', text: 'text-green-600' }
+  return { icon: 'fa-bell', bg: 'bg-gray-100', text: 'text-gray-500' }
+}
+
+function notifTag(notification) {
+  if (notification.booking) return { label: `Reserva #${String(notification.booking).slice(0,6).toUpperCase()}`, bg: 'bg-blue-50 text-blue-600' }
+  if (['payment_received','payment_failed'].includes(notification.type)) return { label: 'Pago', bg: 'bg-green-50 text-green-600' }
+  return null
+}
 
 const formData = reactive({
   first_name: '',
@@ -515,7 +615,7 @@ const loadNotifications = async (url = null) => {
     }
     
     unreadCount.value = notifications.value.filter(n => n && !n.read).length
-    console.log('Unread count:', unreadCount.value)
+    authStore.setUnreadCount(unreadCount.value)
   } catch (error) {
     console.error('Error loading notifications:', error)
     toast.error('Error al cargar las notificaciones')
@@ -527,15 +627,15 @@ const loadNotifications = async (url = null) => {
 
 const markAsRead = async (notificationId) => {
   if (!notificationId) return
-  
+
   try {
     await markNotificationRead(notificationId)
     const notification = notifications.value.find(n => n && n.id === notificationId)
-    if (notification) {
+    if (notification && !notification.read) {
       notification.read = true
       unreadCount.value = notifications.value.filter(n => n && !n.read).length
+      authStore.decrementUnreadCount()
     }
-    toast.success('Notificación marcada como leída')
   } catch (error) {
     console.error('Error marking notification as read:', error)
     toast.error('Error al marcar la notificación')
@@ -576,10 +676,9 @@ const markAllAsRead = async () => {
   try {
     const unreadNotifications = notifications.value.filter(n => n && !n.read)
     await Promise.all(unreadNotifications.map(n => markNotificationRead(n.id)))
-    notifications.value.forEach(n => {
-      if (n) n.read = true
-    })
+    notifications.value.forEach(n => { if (n) n.read = true })
     unreadCount.value = 0
+    authStore.setUnreadCount(0)
     toast.success('Todas las notificaciones marcadas como leídas')
   } catch (error) {
     console.error('Error marking all notifications as read:', error)

@@ -136,110 +136,104 @@
               </button>
               
               <!-- User Dropdown Menu -->
-              <div 
-                v-if="showUserMenuDesktop" 
-                ref="userMenuRef"
-                @mouseenter="cancelCloseDesktop"
-                @mouseleave="closeUserMenuDesktop"
-                class="absolute right-0 z-50 mt-1 w-64 bg-white rounded-lg border border-gray-200 shadow-lg"
-              >
-                <div class="p-4 border-b border-gray-200">
-                  <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-gray-900 truncate">{{ userName }}</div>
-                    <div class="text-xs text-gray-500 truncate">{{ user && user.email ? user.email : '' }}</div>
-                  </div>
-                </div>
-                
-                <div class="py-2">
-                  <router-link
-                    to="/perfil"
-                    class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
-                  >
-                    <i class="mr-3 text-gray-400 fa-solid fa-user"></i>
-                    Perfil
-                  </router-link>
-                  
-                  <router-link
-                    to="/mis-reservas"
-                    class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
-                  >
-                    <i class="mr-3 text-gray-400 fa-solid fa-calendar-check"></i>
-                    Reservas
-                  </router-link>
-                  
-                  <template v-if="authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')">
-                    <div class="my-1 mx-4 border-t border-gray-100"></div>
-                    <div class="px-4 pt-1 pb-0.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</div>
-                    <router-link to="/dashboard" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
-                      <i class="mr-3 text-gray-400 fa-solid fa-tachometer-alt"></i>Dashboard
-                    </router-link>
-                    <router-link to="/reservas" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
-                      <i class="mr-3 text-gray-400 fa-solid fa-calendar-alt"></i>Reservas
-                    </router-link>
-                    <router-link to="/actividad" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
-                      <i class="mr-3 text-gray-400 fa-solid fa-list-alt"></i>Actividad
-                    </router-link>
-                    <router-link to="/configuracion" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
-                      <i class="mr-3 text-gray-400 fa-solid fa-sliders"></i>Configuración
-                    </router-link>
-                    <div class="my-1 mx-4 border-t border-gray-100"></div>
-                  </template>
-
-                  <!-- Notifications Section -->
-                  <div class="px-4 py-2">
-                    <div class="flex justify-between items-center mb-2">
-                      <span class="text-xs font-semibold text-gray-500 uppercase">Notificaciones</span>
-                      <span v-if="unreadCount > 0" class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-red-500 rounded-full">
-                        {{ unreadCount }}
-                      </span>
-                    </div>
-                    
-                    <!-- Last 5 Notifications -->
-                    <div v-if="lastFiveNotifications.length > 0" class="overflow-y-auto space-y-1 max-h-64">
-                      <div
-                        v-for="notification in lastFiveNotifications"
-                        :key="notification.id"
-                        @click="router.push('/perfil?notifications=true')"
-                        class="p-2 rounded-md transition-colors cursor-pointer"
-                        :class="notification.read ? 'bg-gray-50 hover:bg-gray-100' : 'bg-blue-50 hover:bg-blue-100'"
-                      >
-                        <div class="flex items-start space-x-2">
-                          <i class="mt-0.5 text-sm fa-solid fa-bell" :class="notification.read ? 'text-gray-400' : 'text-blue-500'"></i>
-                          <div class="flex-1 min-w-0">
-                            <p class="text-xs font-medium text-gray-900 line-clamp-2">{{ notification.message }}</p>
-                            <p class="mt-0.5 text-xs text-gray-400">{{ formatNotificationDate(notification.created_at) }}</p>
-                          </div>
-                          <div v-if="!notification.read" class="flex-shrink-0 mt-1 w-2 h-2 bg-blue-500 rounded-full"></div>
-                        </div>
+              <Transition name="dropdown">
+                <div
+                  v-if="showUserMenuDesktop"
+                  ref="userMenuRef"
+                  @mouseenter="cancelCloseDesktop"
+                  @mouseleave="closeUserMenuDesktop"
+                  class="absolute right-0 z-50 mt-2 w-72 bg-white rounded-2xl border border-gray-100 shadow-2xl overflow-hidden"
+                >
+                  <!-- Header -->
+                  <div class="flex items-center gap-3 px-5 py-4 bg-gradient-to-br from-gray-900 to-black">
+                    <div class="relative flex-shrink-0">
+                      <div class="flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#22d3ee] overflow-hidden">
+                        <img
+                          v-if="authStore.user?.profile?.image && !String(authStore.user.profile.image).includes('default_user')"
+                          :src="authStore.user.profile.image"
+                          class="w-full h-full object-cover"
+                        />
+                        <span v-else class="text-sm font-bold text-white">{{ userInitials }}</span>
                       </div>
                     </div>
-                    
-                    <!-- No notifications message -->
-                    <div v-else class="py-3 text-center">
-                      <i class="text-2xl text-gray-300 fa-solid fa-bell-slash"></i>
-                      <p class="mt-1 text-xs text-gray-400">Sin notificaciones</p>
+                    <div class="flex-1 min-w-0">
+                      <div class="text-sm font-bold text-white truncate">{{ userName }}</div>
+                      <div class="text-xs text-gray-400 truncate">{{ user?.email }}</div>
                     </div>
-                    
-                    <!-- View all link -->
-                  <button
-                      @click="router.push('/perfil?notifications=true')"
-                      class="px-3 py-1.5 mt-2 w-full text-xs font-medium text-blue-600 bg-blue-50 rounded-md transition-colors hover:bg-blue-100"
-                  >
-                      Ver todas →
-                  </button>
                   </div>
-                  
-                  <div class="my-1 border-t border-gray-200"></div>
-                  
-                  <button
-                    @click="handleLogout"
-                    class="flex items-center px-4 py-2 w-full text-sm text-red-600 transition-colors hover:bg-red-50"
-                  >
-                    <i class="mr-3 fa-solid fa-sign-out-alt"></i>
-                    Cerrar Sesión
-                  </button>
+
+                  <div class="py-2">
+                    <!-- Perfil -->
+                    <router-link to="/perfil" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50">
+                      <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0">
+                        <i class="fa-solid fa-user text-gray-500 text-xs"></i>
+                      </div>
+                      <span class="font-medium">Perfil</span>
+                    </router-link>
+
+                    <!-- Mis Reservas (non-staff only) -->
+                    <router-link
+                      v-if="!(authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin'))"
+                      to="/mis-reservas"
+                      class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                      <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0">
+                        <i class="fa-solid fa-calendar-check text-gray-500 text-xs"></i>
+                      </div>
+                      <span class="font-medium">Mis Reservas</span>
+                    </router-link>
+
+                    <!-- Admin section -->
+                    <template v-if="authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')">
+                      <div class="mx-4 my-1.5 border-t border-gray-100"></div>
+                      <div class="px-4 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</div>
+                      <router-link to="/dashboard" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0"><i class="fa-solid fa-tachometer-alt text-gray-500 text-xs"></i></div>
+                        <span class="font-medium">Dashboard</span>
+                      </router-link>
+                      <router-link to="/reservas" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0"><i class="fa-solid fa-calendar-alt text-gray-500 text-xs"></i></div>
+                        <span class="font-medium">Reservas</span>
+                      </router-link>
+                      <router-link to="/actividad" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0"><i class="fa-solid fa-list-alt text-gray-500 text-xs"></i></div>
+                        <span class="font-medium">Actividad</span>
+                      </router-link>
+                      <router-link to="/configuracion" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0"><i class="fa-solid fa-sliders text-gray-500 text-xs"></i></div>
+                        <span class="font-medium">Configuración</span>
+                      </router-link>
+                    </template>
+
+                    <!-- Notifications row -->
+                    <div class="mx-4 my-1.5 border-t border-gray-100"></div>
+                    <button
+                      @click="router.push('/perfil?notifications=true')"
+                      class="flex items-center gap-3 px-4 py-2.5 w-full text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                      <div class="relative flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0">
+                        <i class="fa-solid fa-bell text-gray-500 text-xs"></i>
+                        <div v-if="unreadCount > 0" class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                      </div>
+                      <span class="font-medium">Notificaciones</span>
+                      <span v-if="unreadCount > 0" class="ml-auto inline-flex items-center px-2 py-0.5 text-xs font-semibold text-white bg-red-500 rounded-full">{{ unreadCount }}</span>
+                    </button>
+                  </div>
+
+                  <!-- Logout -->
+                  <div class="border-t border-gray-100 p-3">
+                    <button
+                      @click="handleLogout"
+                      class="flex items-center gap-3 px-3 py-2.5 w-full text-sm font-medium text-red-600 rounded-xl transition-colors hover:bg-red-50"
+                    >
+                      <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 flex-shrink-0">
+                        <i class="fa-solid fa-sign-out-alt text-red-500 text-xs"></i>
+                      </div>
+                      Cerrar Sesión
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </Transition>
             </div>
           </template>
           <template v-else>
@@ -284,103 +278,105 @@
               </button>
               
               <!-- Mobile User Dropdown Menu -->
-              <div 
-                v-if="showUserMenuMobile" 
-                ref="userMenuMobileRef"
-                @mouseenter="cancelCloseMobile"
-                @mouseleave="closeUserMenuMobile"
-                class="absolute right-0 z-50 mt-1 w-64 bg-white rounded-lg border border-gray-200 shadow-lg"
-              >
-                <div class="p-4 border-b border-gray-200">
-                  <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-gray-900 truncate">{{ userName }}</div>
-                    <div class="text-xs text-gray-500 truncate">{{ user && user.email ? user.email : '' }}</div>
-                  </div>
-                </div>
-                
-                <div class="py-2">
-                  <router-link
-                    to="/mis-reservas"
-                    @click="closeUserMenuMobile"
-                    class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
-                  >
-                    <i class="mr-3 text-gray-400 fa-solid fa-calendar-check"></i>
-                    Mis Reservas
-                  </router-link>
-                  
-                  <template v-if="authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')">
-                    <div class="my-1 mx-4 border-t border-gray-100"></div>
-                    <div class="px-4 pt-1 pb-0.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</div>
-                    <router-link to="/dashboard" @click="closeUserMenuMobile" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
-                      <i class="mr-3 text-gray-400 fa-solid fa-tachometer-alt"></i>Dashboard
-                    </router-link>
-                    <router-link to="/reservas" @click="closeUserMenuMobile" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
-                      <i class="mr-3 text-gray-400 fa-solid fa-calendar-alt"></i>Reservas
-                    </router-link>
-                    <router-link to="/actividad" @click="closeUserMenuMobile" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
-                      <i class="mr-3 text-gray-400 fa-solid fa-list-alt"></i>Actividad
-                    </router-link>
-                    <router-link to="/configuracion" @click="closeUserMenuMobile" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
-                      <i class="mr-3 text-gray-400 fa-solid fa-sliders"></i>Configuración
-                    </router-link>
-                    <div class="my-1 mx-4 border-t border-gray-100"></div>
-                  </template>
-
-                  <!-- Notifications Section -->
-                  <div class="px-4 py-2">
-                    <div class="flex justify-between items-center mb-2">
-                      <span class="text-xs font-semibold text-gray-500 uppercase">Notificaciones</span>
-                      <span v-if="unreadCount > 0" class="inline-flex items-center px-2 py-0.5 text-xs font-medium text-white bg-red-500 rounded-full">
-                        {{ unreadCount }}
-                      </span>
-                    </div>
-                    
-                    <!-- Last 5 Notifications -->
-                    <div v-if="lastFiveNotifications.length > 0" class="overflow-y-auto space-y-1 max-h-64">
-                      <div
-                        v-for="notification in lastFiveNotifications"
-                        :key="notification.id"
-                        @click="router.push('/perfil?notifications=true'); closeUserMenuMobile()"
-                        class="p-2 rounded-md transition-colors cursor-pointer"
-                        :class="notification.read ? 'bg-gray-50 hover:bg-gray-100' : 'bg-blue-50 hover:bg-blue-100'"
-                      >
-                        <div class="flex items-start space-x-2">
-                          <i class="mt-0.5 text-sm fa-solid fa-bell" :class="notification.read ? 'text-gray-400' : 'text-blue-500'"></i>
-                          <div class="flex-1 min-w-0">
-                            <p class="text-xs font-medium text-gray-900 line-clamp-2">{{ notification.message }}</p>
-                            <p class="mt-0.5 text-xs text-gray-400">{{ formatNotificationDate(notification.created_at) }}</p>
-                          </div>
-                          <div v-if="!notification.read" class="flex-shrink-0 mt-1 w-2 h-2 bg-blue-500 rounded-full"></div>
-                        </div>
+              <Transition name="dropdown">
+                <div
+                  v-if="showUserMenuMobile"
+                  ref="userMenuMobileRef"
+                  @mouseenter="cancelCloseMobile"
+                  @mouseleave="closeUserMenuMobile"
+                  class="absolute right-0 z-50 mt-2 w-72 bg-white rounded-2xl border border-gray-100 shadow-2xl overflow-hidden"
+                >
+                  <!-- Header -->
+                  <div class="flex items-center gap-3 px-5 py-4 bg-gradient-to-br from-gray-900 to-black">
+                    <div class="relative flex-shrink-0">
+                      <div class="flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#22d3ee] overflow-hidden">
+                        <img
+                          v-if="authStore.user?.profile?.image && !String(authStore.user.profile.image).includes('default_user')"
+                          :src="authStore.user.profile.image"
+                          class="w-full h-full object-cover"
+                        />
+                        <span v-else class="text-sm font-bold text-white">{{ userInitials }}</span>
                       </div>
                     </div>
-                    
-                    <!-- No notifications message -->
-                    <div v-else class="py-3 text-center">
-                      <i class="text-2xl text-gray-300 fa-solid fa-bell-slash"></i>
-                      <p class="mt-1 text-xs text-gray-400">Sin notificaciones</p>
+                    <div class="flex-1 min-w-0">
+                      <div class="text-sm font-bold text-white truncate">{{ userName }}</div>
+                      <div class="text-xs text-gray-400 truncate">{{ user?.email }}</div>
                     </div>
-                    
-                    <!-- View all link -->
-                  <button
-                      @click="router.push('/perfil?notifications=true'); closeUserMenuMobile()"
-                      class="px-3 py-1.5 mt-2 w-full text-xs font-medium text-blue-600 bg-blue-50 rounded-md transition-colors hover:bg-blue-100"
-                  >
-                      Ver todas →
-                  </button>
                   </div>
-                  
-                  <div class="my-1 border-t border-gray-200"></div>
-                  
-                  <button
-                    @click="handleLogout; closeUserMenuMobile()"
-                    class="flex items-center px-4 py-2 w-full text-sm text-red-600 transition-colors hover:bg-red-50"
-                  >
-                    <i class="mr-3 fa-solid fa-sign-out-alt"></i>
-                    Cerrar Sesión
-                  </button>
+
+                  <div class="py-2">
+                    <!-- Perfil -->
+                    <router-link to="/perfil" @click="closeUserMenuMobile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50">
+                      <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0">
+                        <i class="fa-solid fa-user text-gray-500 text-xs"></i>
+                      </div>
+                      <span class="font-medium">Perfil</span>
+                    </router-link>
+
+                    <!-- Mis Reservas (non-staff only) -->
+                    <router-link
+                      v-if="!(authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin'))"
+                      to="/mis-reservas"
+                      @click="closeUserMenuMobile"
+                      class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                      <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0">
+                        <i class="fa-solid fa-calendar-check text-gray-500 text-xs"></i>
+                      </div>
+                      <span class="font-medium">Mis Reservas</span>
+                    </router-link>
+
+                    <!-- Admin section -->
+                    <template v-if="authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')">
+                      <div class="mx-4 my-1.5 border-t border-gray-100"></div>
+                      <div class="px-4 pb-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</div>
+                      <router-link to="/dashboard" @click="closeUserMenuMobile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0"><i class="fa-solid fa-tachometer-alt text-gray-500 text-xs"></i></div>
+                        <span class="font-medium">Dashboard</span>
+                      </router-link>
+                      <router-link to="/reservas" @click="closeUserMenuMobile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0"><i class="fa-solid fa-calendar-alt text-gray-500 text-xs"></i></div>
+                        <span class="font-medium">Reservas</span>
+                      </router-link>
+                      <router-link to="/actividad" @click="closeUserMenuMobile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0"><i class="fa-solid fa-list-alt text-gray-500 text-xs"></i></div>
+                        <span class="font-medium">Actividad</span>
+                      </router-link>
+                      <router-link to="/configuracion" @click="closeUserMenuMobile" class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 transition-colors hover:bg-gray-50">
+                        <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0"><i class="fa-solid fa-sliders text-gray-500 text-xs"></i></div>
+                        <span class="font-medium">Configuración</span>
+                      </router-link>
+                    </template>
+
+                    <!-- Notifications row -->
+                    <div class="mx-4 my-1.5 border-t border-gray-100"></div>
+                    <button
+                      @click="router.push('/perfil?notifications=true'); closeUserMenuMobile()"
+                      class="flex items-center gap-3 px-4 py-2.5 w-full text-sm text-gray-700 transition-colors hover:bg-gray-50"
+                    >
+                      <div class="relative flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0">
+                        <i class="fa-solid fa-bell text-gray-500 text-xs"></i>
+                        <div v-if="unreadCount > 0" class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                      </div>
+                      <span class="font-medium">Notificaciones</span>
+                      <span v-if="unreadCount > 0" class="ml-auto inline-flex items-center px-2 py-0.5 text-xs font-semibold text-white bg-red-500 rounded-full">{{ unreadCount }}</span>
+                    </button>
+                  </div>
+
+                  <!-- Logout -->
+                  <div class="border-t border-gray-100 p-3">
+                    <button
+                      @click="handleLogout; closeUserMenuMobile()"
+                      class="flex items-center gap-3 px-3 py-2.5 w-full text-sm font-medium text-red-600 rounded-xl transition-colors hover:bg-red-50"
+                    >
+                      <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 flex-shrink-0">
+                        <i class="fa-solid fa-sign-out-alt text-red-500 text-xs"></i>
+                      </div>
+                      Cerrar Sesión
+                    </button>
+                  </div>
                 </div>
-              </div>
+              </Transition>
             </div>
           </template>
           <button
@@ -619,8 +615,8 @@ let mobileCloseTimeout = null
 // User profile state
 const user = ref(null)
 
-// Notifications state
-const unreadCount = ref(0)
+// Notifications state — count is shared via store
+const unreadCount = computed(() => authStore.unreadNotificationsCount)
 const notifications = ref([])
 const lastFiveNotifications = computed(() => {
   return notifications.value.slice(0, 5)
@@ -629,16 +625,14 @@ const lastFiveNotifications = computed(() => {
 // Fetch notifications
 const fetchNotifications = async () => {
   if (!authStore.isAuthenticated) return
-  
+
   try {
     const { getNotifications } = await import('@/services/api')
     const response = await getNotifications()
     const data = response.data
-    // Handle both array and paginated response
     const notificationsList = Array.isArray(data) ? data : (data.results || [])
     notifications.value = notificationsList
-    unreadCount.value = notificationsList.filter(n => !n.read).length
-    console.log('[Navbar] Notifications loaded:', notificationsList.length, 'Unread:', unreadCount.value)
+    authStore.setUnreadCount(notificationsList.filter(n => !n.read).length)
   } catch (error) {
     console.error('[Navbar] Error fetching notifications:', error)
   }
@@ -682,10 +676,11 @@ const publicNavigationItems = [
 // Authenticated navigation items (only for logged in users)
 const authenticatedNavigationItems = [
   { name: 'Reservar', path: '/reservar' },
-  { name: 'Reservas', path: '/mis-reservas' },
+  { name: 'Mis Reservas', path: '/mis-reservas', condition: 'non-staff' },
   { name: 'Dashboard', path: '/dashboard', condition: 'staff' },
   { name: 'Reservas', path: '/reservas', condition: 'staff' },
   { name: 'Actividad', path: '/actividad', condition: 'staff' },
+  { name: 'Configuración', path: '/configuracion', condition: 'staff' },
 ]
 
 // Get user from auth store and localStorage
@@ -716,7 +711,7 @@ watch(() => authStore.isAuthenticated, (isAuth) => {
     fetchNotifications()
   } else {
     notifications.value = []
-    unreadCount.value = 0
+    authStore.setUnreadCount(0)
   }
 })
 
@@ -776,10 +771,10 @@ const userInitials = computed(() => {
 const filteredAuthenticatedItems = computed(() => {
   if (!authStore.isAuthenticated) return []
   
+  const isStaff = authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')
   return authenticatedNavigationItems.filter(item => {
-    if (item.condition === 'staff') {
-      return authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')
-    }
+    if (item.condition === 'staff') return isStaff
+    if (item.condition === 'non-staff') return !isStaff
     return true
   })
 })
@@ -860,8 +855,10 @@ const getNavigationIcon = (name) => {
     'Reglamento': 'fa-solid fa-file-contract',
     'Preguntas': 'fa-solid fa-question-circle',
     'Mis Reservas': 'fa-solid fa-calendar-check',
-    'Reservas': 'fa-solid fa-calendar-check',
-    'Dashboard': 'fa-solid fa-tachometer-alt'
+    'Reservas': 'fa-solid fa-calendar-alt',
+    'Dashboard': 'fa-solid fa-tachometer-alt',
+    'Actividad': 'fa-solid fa-list-alt',
+    'Configuración': 'fa-solid fa-sliders'
   }
   return iconMap[name] || 'fa-solid fa-link'
 }
@@ -913,4 +910,10 @@ onMounted(() => {
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', handleClickOutside)
 })
-</script> 
+</script>
+
+<style scoped>
+.dropdown-enter-active, .dropdown-leave-active { transition: opacity 0.15s ease, transform 0.15s ease; }
+.dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-6px) scale(0.97); }
+</style>
+

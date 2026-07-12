@@ -6,8 +6,12 @@ export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref(localStorage.getItem('accessToken') || null)
   const refreshToken = ref(localStorage.getItem('refreshToken') || null)
   const user = ref(JSON.parse(localStorage.getItem('user')) || null)
+  const unreadNotificationsCount = ref(0)
 
   const isAuthenticated = computed(() => !!accessToken.value)
+
+  function setUnreadCount(n) { unreadNotificationsCount.value = n }
+  function decrementUnreadCount(by = 1) { unreadNotificationsCount.value = Math.max(0, unreadNotificationsCount.value - by) }
 
   function setToken(newAccess, newRefresh) {
     accessToken.value = newAccess
@@ -313,6 +317,7 @@ export const useAuthStore = defineStore('auth', () => {
     refreshToken,
     user,
     isAuthenticated,
+    unreadNotificationsCount,
     setToken,
     logout,
     setUser,
@@ -327,5 +332,7 @@ export const useAuthStore = defineStore('auth', () => {
     requestPasswordReset,
     resetPassword,
     changeEmail,
+    setUnreadCount,
+    decrementUnreadCount,
   }
 }) 

@@ -68,13 +68,91 @@
     <span class="text-sm font-bold text-white">Terraza Pineda</span>
     <span class="ml-1.5 text-xs text-gray-500 font-medium">Admin</span>
     <div class="ml-auto flex items-center gap-2">
-      <button
-        @click="router.push('/perfil?notifications=true')"
-        class="relative p-2 text-gray-400 hover:text-white transition-colors"
-      >
-        <i class="fa-solid fa-bell text-sm"></i>
-        <div v-if="unreadCount > 0" class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></div>
-      </button>
+      <!-- Profile circle + dropdown -->
+      <div class="relative">
+        <button
+          @click="showProfileMenu = !showProfileMenu"
+          data-profile-btn
+          class="relative flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 border-2 border-white shadow overflow-hidden flex-shrink-0"
+        >
+          <span class="text-sm font-bold text-white">{{ userInitials }}</span>
+          <span v-if="unreadCount > 0" class="flex absolute -top-1 -right-1 justify-center items-center px-1 h-5 text-xs font-bold text-white bg-red-500 rounded-full border-2 border-black min-w-5">
+            {{ unreadCount > 99 ? '99+' : unreadCount }}
+          </span>
+        </button>
+
+        <!-- Profile dropdown -->
+        <Transition name="dropdown">
+          <div
+            v-if="showProfileMenu"
+            ref="profileMenuRef"
+            class="absolute right-0 z-50 mt-2 w-72 bg-white rounded-2xl border border-gray-100 shadow-2xl overflow-hidden"
+          >
+            <!-- Header -->
+            <div class="flex items-center gap-3 px-5 py-4 bg-gradient-to-br from-gray-900 to-black">
+              <div class="flex items-center justify-center w-11 h-11 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex-shrink-0">
+                <span class="text-base font-bold text-white">{{ userInitials }}</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <div class="text-sm font-bold text-white truncate">{{ userName }}</div>
+                <div class="text-xs text-gray-400">{{ userRole }}</div>
+              </div>
+              <router-link to="/perfil" @click="showProfileMenu = false" class="text-xs text-blue-400 hover:text-blue-300 transition-colors whitespace-nowrap">
+                Ver perfil →
+              </router-link>
+            </div>
+
+            <!-- Nav items -->
+            <div class="py-2">
+              <div class="px-3 py-1 text-xs font-semibold text-gray-400 uppercase tracking-wider">Panel Admin</div>
+              <div
+                v-for="item in adminItems"
+                :key="item.path"
+                @click="router.push(item.path); showProfileMenu = false"
+                class="flex items-center gap-3 px-4 py-2.5 text-sm cursor-pointer transition-colors"
+                :class="isActive(item.path) ? 'bg-blue-50 text-blue-600' : 'text-gray-700 hover:bg-gray-50'"
+              >
+                <div class="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0" :class="isActive(item.path) ? 'bg-blue-100' : 'bg-gray-100'">
+                  <i :class="item.icon + ' text-xs'" :style="isActive(item.path) ? 'color:#2563eb' : 'color:#6b7280'"></i>
+                </div>
+                <span class="font-medium">{{ item.label }}</span>
+                <i v-if="isActive(item.path)" class="ml-auto fa-solid fa-circle-check text-blue-500 text-xs"></i>
+              </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="border-t border-gray-100">
+              <div
+                @click="router.push('/perfil?notifications=true'); showProfileMenu = false"
+                class="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 cursor-pointer transition-colors hover:bg-gray-50"
+              >
+                <div class="relative flex items-center justify-center w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0">
+                  <i class="fa-solid fa-bell text-xs text-gray-500"></i>
+                  <div v-if="unreadCount > 0" class="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                </div>
+                <span class="font-medium">Notificaciones</span>
+                <span v-if="unreadCount > 0" class="ml-auto inline-flex items-center px-2 py-0.5 text-xs font-semibold text-white bg-red-500 rounded-full">{{ unreadCount }}</span>
+                <i v-else class="ml-auto fa-solid fa-chevron-right text-gray-300 text-xs"></i>
+              </div>
+            </div>
+
+            <!-- Logout -->
+            <div class="border-t border-gray-100 p-3">
+              <button
+                @click="handleLogout"
+                class="flex items-center gap-3 px-3 py-2.5 w-full text-sm font-medium text-red-600 rounded-xl transition-colors hover:bg-red-50"
+              >
+                <div class="flex items-center justify-center w-8 h-8 rounded-lg bg-red-50 flex-shrink-0">
+                  <i class="fa-solid fa-sign-out-alt text-red-500 text-xs"></i>
+                </div>
+                Cerrar Sesión
+              </button>
+            </div>
+          </div>
+        </Transition>
+      </div>
+
+      <!-- Hamburger for sidebar drawer -->
       <button
         @click="showDrawer = !showDrawer"
         class="p-2 text-gray-400 hover:text-white transition-colors"
@@ -155,7 +233,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
@@ -163,8 +241,23 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-const unreadCount = ref(0)
+const unreadCount = computed(() => authStore.unreadNotificationsCount)
 const showDrawer = ref(false)
+const showProfileMenu = ref(false)
+const profileMenuRef = ref(null)
+
+function handleClickOutside(e) {
+  if (
+    showProfileMenu.value &&
+    profileMenuRef.value &&
+    !profileMenuRef.value.contains(e.target) &&
+    !e.target.closest('[data-profile-btn]')
+  ) {
+    showProfileMenu.value = false
+  }
+}
+
+onBeforeUnmount(() => document.removeEventListener('mousedown', handleClickOutside))
 
 const adminItems = [
   { label: 'Dashboard',     path: '/dashboard',     icon: 'fa-solid fa-tachometer-alt' },
@@ -207,13 +300,14 @@ const handleLogout = () => {
 }
 
 onMounted(async () => {
-  if (!authStore.isAuthenticated) return
+  document.addEventListener('mousedown', handleClickOutside)
+  if (!authStore.isAuthenticated || authStore.unreadNotificationsCount > 0) return
   try {
     const { getNotifications } = await import('@/services/api')
     const response = await getNotifications()
     const data = response.data
     const list = Array.isArray(data) ? data : (data.results || [])
-    unreadCount.value = list.filter(n => !n.read).length
+    authStore.setUnreadCount(list.filter(n => !n.read).length)
   } catch {}
 })
 </script>
@@ -221,4 +315,6 @@ onMounted(async () => {
 <style scoped>
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; }
 .fade-enter-from, .fade-leave-to { opacity: 0; }
+.dropdown-enter-active, .dropdown-leave-active { transition: opacity 0.15s ease, transform 0.15s ease; }
+.dropdown-enter-from, .dropdown-leave-to { opacity: 0; transform: translateY(-6px) scale(0.97); }
 </style>
