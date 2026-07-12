@@ -1,4 +1,10 @@
 <template>
+  <div class="min-h-screen bg-gray-50">
+    <!-- Desktop sidebar -->
+    <div class="hidden md:block">
+      <AdminSidebar />
+    </div>
+    <div class="md:ml-64">
   <div class="py-8 px-4 mx-auto max-w-lg">
     <div class="mb-6">
       <h1 class="text-2xl font-bold text-gray-900">Configuración</h1>
@@ -55,11 +61,14 @@
       </button>
     </div>
   </div>
+    </div><!-- end md:ml-64 -->
+  </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import api from '@/services/api'
+import AdminSidebar from '@/components/AdminSidebar.vue'
 
 const loading = ref(true)
 const saving = ref(false)

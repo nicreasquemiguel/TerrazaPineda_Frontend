@@ -1,6 +1,12 @@
 <template>
   <div class="min-h-screen bg-gray-50">
+    <!-- Desktop sidebar -->
+    <div class="hidden md:block">
+      <AdminSidebar />
+    </div>
 
+    <!-- Main content with sidebar offset on desktop -->
+    <div class="md:ml-64">
     <!-- Header -->
     <div class="sticky top-0 z-20 bg-white border-b border-gray-200 shadow-sm">
       <div class="flex items-center gap-3 px-4 py-3">
@@ -158,12 +164,14 @@
         </router-link>
       </div>
     </div>
+    </div><!-- end md:ml-64 -->
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import api from '@/services/api'
+import AdminSidebar from '@/components/AdminSidebar.vue'
 
 // ── state ──────────────────────────────────────────────────────────────────
 const bookings    = ref([])

@@ -1,41 +1,11 @@
 <template>
-  <div class="min-h-screen bg-white" style="padding-top: 4rem !important;">
+  <div class="min-h-screen bg-white">
     <!-- Desktop Sidebar -->
     <div class="hidden md:block">
-      <div class="fixed top-16 left-0 bottom-0 z-30 flex flex-col w-64 bg-black border-r border-gray-800">
-        <!-- User Profile -->
-        <div class="p-5 border-b border-gray-800">
-          <div class="flex items-center space-x-3">
-            <div class="flex justify-center items-center w-11 h-11 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex-shrink-0">
-              <span class="text-base font-bold text-white">{{ userInitials }}</span>
-            </div>
-            <div class="flex-1 min-w-0">
-              <span class="block text-sm font-bold text-white truncate">{{ userName }}</span>
-              <div class="text-xs text-gray-400">{{ userRole }}</div>
-            </div>
-            <button @click="handleLogout" class="p-1.5 text-gray-400 hover:text-red-400 transition-colors flex-shrink-0" title="Cerrar Sesión">
-              <i class="fa-solid fa-sign-out-alt"></i>
-            </button>
-          </div>
-        </div>
-
-        <!-- Nav -->
-        <div class="overflow-y-auto flex-1 py-3">
-          <nav class="px-3 space-y-0.5">
-            <div v-for="item in sidebarItems" :key="item.path"
-              @click="router.push(item.path)"
-              class="flex items-center px-3 py-2.5 rounded-lg transition-colors cursor-pointer"
-              :class="isActive(item.path) ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'"
-            >
-              <i :class="item.icon + ' w-5 text-center mr-3 text-sm'"></i>
-              <span class="text-sm font-medium">{{ item.label }}</span>
-            </div>
-          </nav>
-        </div>
-      </div>
+      <AdminSidebar />
 
       <!-- Desktop Main Content -->
-      <div class="p-6 min-h-[calc(100vh-4rem)]" style="margin-left: 16rem;">
+      <div class="p-6 min-h-screen" style="margin-left: 16rem;">
         <div class="max-w-6xl mx-auto">
           <h1 class="text-3xl font-bold text-gray-800 mb-6">Registro de Actividad</h1>
           <template v-if="logsStore.activitySummary">
@@ -74,38 +44,11 @@ import { ref, computed, onMounted, defineComponent, h, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useLogsStore } from '@/stores/logs'
+import AdminSidebar from '@/components/AdminSidebar.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 const logsStore = useLogsStore()
-
-const isActive = (path) => router.currentRoute.value.path === path
-
-const sidebarItems = [
-  { label: 'Dashboard', path: '/dashboard', icon: 'fa-solid fa-tachometer-alt' },
-  { label: 'Actividad', path: '/actividad', icon: 'fa-solid fa-list-alt' },
-  { label: 'Configuración', path: '/configuracion', icon: 'fa-solid fa-sliders' },
-]
-
-const user = computed(() => authStore.user)
-const userName = computed(() => {
-  const u = user.value
-  if (!u) return 'Admin'
-  return u.first_name && u.last_name ? `${u.first_name} ${u.last_name}` : u.email?.split('@')[0] || 'Admin'
-})
-const userRole = computed(() => {
-  const u = user.value
-  if (!u) return 'Admin'
-  return u.role ? u.role.charAt(0).toUpperCase() + u.role.slice(1) : u.is_staff ? 'Staff' : 'User'
-})
-const userInitials = computed(() => {
-  const u = user.value
-  if (!u) return 'A'
-  if (u.first_name && u.last_name) return `${u.first_name[0]}${u.last_name[0]}`.toUpperCase()
-  return (u.first_name?.[0] || u.email?.[0] || 'A').toUpperCase()
-})
-
-const handleLogout = () => authStore.logout(router)
 
 const summaryCards = computed(() => {
   const s = logsStore.activitySummary

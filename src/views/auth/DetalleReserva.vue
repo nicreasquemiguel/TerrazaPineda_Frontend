@@ -209,8 +209,8 @@
             <i class="fa-solid fa-tag text-green-600 text-base"></i>
           </div>
           <div class="flex-1">
-            <div class="text-base font-bold text-gray-900">Aplicar descuento</div>
-            <div class="text-xs text-gray-400">Cupón o descuento manual</div>
+            <div class="text-base font-bold text-gray-900">{{ isStaff ? 'Aplicar descuento' : 'Aplicar cupón' }}</div>
+            <div class="text-xs text-gray-400">{{ isStaff ? 'Cupón o descuento manual' : 'Ingresa tu código de cupón' }}</div>
           </div>
           <button @click="closeDiscountModal" class="flex justify-center items-center w-8 h-8 bg-gray-100 rounded-full text-gray-400 hover:bg-gray-200 transition">
             <i class="fa-solid fa-xmark text-sm"></i>
@@ -3315,15 +3315,15 @@ async function addCustomCharge() {
   if (!customChargeDescription.value.trim() || !customChargePrice.value) return
   isAddingCustomCharge.value = true
   try {
-    const res = await api.post(`/api/bookings/bookings/${event.value.id}/add_custom_charge/`, {
+    await api.post(`/api/bookings/bookings/${event.value.id}/add_custom_charge/`, {
       description: customChargeDescription.value.trim(),
       price: parseFloat(customChargePrice.value),
     })
-    event.value = res.data
     showCustomChargeModal.value = false
     customChargeDescription.value = ''
     customChargePrice.value = ''
     toast.success('Cargo agregado.')
+    await refetch()
   } catch (e) {
     toast.error(e?.response?.data?.detail || 'Error al agregar cargo.')
   } finally {
@@ -3334,9 +3334,9 @@ async function addCustomCharge() {
 async function removeCustomCharge(lineItemId) {
   removingChargeId.value = lineItemId
   try {
-    const res = await api.delete(`/api/bookings/bookings/${event.value.id}/remove_custom_charge/${lineItemId}/`)
-    event.value = res.data
+    await api.delete(`/api/bookings/bookings/${event.value.id}/remove_custom_charge/${lineItemId}/`)
     toast.success('Cargo eliminado.')
+    await refetch()
   } catch (e) {
     toast.error(e?.response?.data?.detail || 'Error al eliminar cargo.')
   } finally {
@@ -3388,11 +3388,12 @@ async function validateCoupon() {
 async function applyCoupon() {
   if (!couponPreview.value) return
   applyingDiscount.value = true
+  const code = couponPreview.value.code
   try {
-    const res = await api.post(`/api/bookings/bookings/${event.value.id}/apply_coupon/`, { code: discountCode.value.trim() })
-    event.value = res.data
-    toast.success(`Cupón ${couponPreview.value.code} aplicado.`)
+    await api.post(`/api/bookings/bookings/${event.value.id}/apply_coupon/`, { code: discountCode.value.trim() })
     closeDiscountModal()
+    toast.success(`Cupón ${code} aplicado.`)
+    await refetch()
   } catch (e) {
     toast.error(e?.response?.data?.detail || 'Error al aplicar cupón.')
   } finally {
@@ -3404,13 +3405,13 @@ async function applyManualDiscount() {
   if (!discountDescription.value.trim() || !discountAmount.value) return
   applyingDiscount.value = true
   try {
-    const res = await api.post(`/api/bookings/bookings/${event.value.id}/add_discount/`, {
+    await api.post(`/api/bookings/bookings/${event.value.id}/add_discount/`, {
       description: discountDescription.value.trim(),
       amount: parseFloat(discountAmount.value),
     })
-    event.value = res.data
-    toast.success('Descuento aplicado.')
     closeDiscountModal()
+    toast.success('Descuento aplicado.')
+    await refetch()
   } catch (e) {
     toast.error(e?.response?.data?.detail || 'Error al aplicar descuento.')
   } finally {
@@ -3421,9 +3422,9 @@ async function applyManualDiscount() {
 async function removeDiscount(lineItemId) {
   removingDiscountId.value = lineItemId
   try {
-    const res = await api.delete(`/api/bookings/bookings/${event.value.id}/remove_discount/${lineItemId}/`)
-    event.value = res.data
+    await api.delete(`/api/bookings/bookings/${event.value.id}/remove_discount/${lineItemId}/`)
     toast.success('Descuento eliminado.')
+    await refetch()
   } catch (e) {
     toast.error(e?.response?.data?.detail || 'Error al eliminar descuento.')
   } finally {

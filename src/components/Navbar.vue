@@ -167,15 +167,24 @@
                     Reservas
                   </router-link>
                   
-                  <router-link
-                    v-if="authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')"
-                    to="/dashboard"
-                    class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
-                  >
-                    <i class="mr-3 text-gray-400 fa-solid fa-tachometer-alt"></i>
-                    Dashboard
-                  </router-link>
-                  
+                  <template v-if="authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')">
+                    <div class="my-1 mx-4 border-t border-gray-100"></div>
+                    <div class="px-4 pt-1 pb-0.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</div>
+                    <router-link to="/dashboard" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
+                      <i class="mr-3 text-gray-400 fa-solid fa-tachometer-alt"></i>Dashboard
+                    </router-link>
+                    <router-link to="/reservas" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
+                      <i class="mr-3 text-gray-400 fa-solid fa-calendar-alt"></i>Reservas
+                    </router-link>
+                    <router-link to="/actividad" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
+                      <i class="mr-3 text-gray-400 fa-solid fa-list-alt"></i>Actividad
+                    </router-link>
+                    <router-link to="/configuracion" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
+                      <i class="mr-3 text-gray-400 fa-solid fa-sliders"></i>Configuración
+                    </router-link>
+                    <div class="my-1 mx-4 border-t border-gray-100"></div>
+                  </template>
+
                   <!-- Notifications Section -->
                   <div class="px-4 py-2">
                     <div class="flex justify-between items-center mb-2">
@@ -299,16 +308,24 @@
                     Mis Reservas
                   </router-link>
                   
-                  <router-link
-                    v-if="authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')"
-                    to="/dashboard"
-                    @click="closeUserMenuMobile"
-                    class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100"
-                  >
-                    <i class="mr-3 text-gray-400 fa-solid fa-tachometer-alt"></i>
-                    Dashboard
-                  </router-link>
-                  
+                  <template v-if="authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')">
+                    <div class="my-1 mx-4 border-t border-gray-100"></div>
+                    <div class="px-4 pt-1 pb-0.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">Admin</div>
+                    <router-link to="/dashboard" @click="closeUserMenuMobile" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
+                      <i class="mr-3 text-gray-400 fa-solid fa-tachometer-alt"></i>Dashboard
+                    </router-link>
+                    <router-link to="/reservas" @click="closeUserMenuMobile" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
+                      <i class="mr-3 text-gray-400 fa-solid fa-calendar-alt"></i>Reservas
+                    </router-link>
+                    <router-link to="/actividad" @click="closeUserMenuMobile" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
+                      <i class="mr-3 text-gray-400 fa-solid fa-list-alt"></i>Actividad
+                    </router-link>
+                    <router-link to="/configuracion" @click="closeUserMenuMobile" class="flex items-center px-4 py-2 text-sm text-gray-700 transition-colors hover:bg-gray-100">
+                      <i class="mr-3 text-gray-400 fa-solid fa-sliders"></i>Configuración
+                    </router-link>
+                    <div class="my-1 mx-4 border-t border-gray-100"></div>
+                  </template>
+
                   <!-- Notifications Section -->
                   <div class="px-4 py-2">
                     <div class="flex justify-between items-center mb-2">

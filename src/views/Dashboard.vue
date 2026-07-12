@@ -1,83 +1,11 @@
 <template>
-  <div class="min-h-screen bg-white" style="padding-top: 4rem !important;">
+  <div class="min-h-screen bg-white">
     <!-- Desktop Layout (md and larger) -->
     <div class="hidden md:block">
-      <!-- Fixed Desktop Sidebar -->
-      <div class="fixed top-16 left-0 bottom-0 z-30 flex flex-col w-64 bg-black border-r border-gray-800">
-        <!-- User Profile -->
-        <div class="p-5 border-b border-gray-800">
-          <div class="flex items-center space-x-3">
-            <div class="relative flex-shrink-0">
-              <div class="flex justify-center items-center w-11 h-11 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full">
-                <span class="text-base font-bold text-white">{{ userInitials }}</span>
-              </div>
-              <div v-if="unreadCount > 0" class="flex absolute -top-1 -right-1 justify-center items-center w-4 h-4 bg-red-500 rounded-full">
-                <span class="text-xs font-bold text-white">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
-              </div>
-            </div>
-            <div class="flex-1 min-w-0">
-              <router-link to="/perfil" class="block text-sm font-bold text-white truncate transition-colors hover:text-blue-400">
-                {{ userName }}
-              </router-link>
-              <div class="text-xs text-gray-400">{{ userRole }}</div>
-            </div>
-            <div class="flex flex-col flex-shrink-0 space-y-1">
-              <button
-                @click="router.push('/perfil?notifications=true')"
-                class="relative p-1.5 text-gray-400 transition-colors hover:text-white"
-                title="Ver Notificaciones"
-              >
-                <i class="fa-solid fa-bell"></i>
-                <div v-if="unreadCount > 0" class="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full"></div>
-              </button>
-              <button
-                @click="handleLogout"
-                class="p-1.5 text-gray-400 transition-colors hover:text-red-400"
-                title="Cerrar Sesión"
-              >
-                <i class="fa-solid fa-sign-out-alt"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <!-- Navigation Menu -->
-        <div class="overflow-y-auto flex-1 py-3">
-          <nav class="px-3 space-y-0.5">
-            <!-- Public Navigation -->
-            <div
-              v-for="item in publicNavigationItems"
-              :key="item.name"
-              @click="goToPage(item.path)"
-              class="flex items-center px-3 py-2.5 rounded-lg transition-colors cursor-pointer"
-              :class="isActivePath(item.path) ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'"
-            >
-              <i :class="getNavigationIcon(item.name) + ' w-5 text-center mr-3 text-sm'"></i>
-              <span class="text-sm font-medium">{{ item.name }}</span>
-            </div>
-
-            <!-- Section divider -->
-            <div class="pt-3 pb-1.5">
-              <div class="px-3 text-xs font-semibold tracking-wider text-gray-600 uppercase">Mi cuenta</div>
-            </div>
-
-            <!-- Authenticated Navigation -->
-            <div
-              v-for="item in filteredAuthenticatedItems"
-              :key="item.name"
-              @click="goToPage(item.path)"
-              class="flex items-center px-3 py-2.5 rounded-lg transition-colors cursor-pointer"
-              :class="isActivePath(item.path) ? 'bg-blue-600 text-white' : 'text-gray-400 hover:bg-gray-800 hover:text-white'"
-            >
-              <i :class="getNavigationIcon(item.name) + ' w-5 text-center mr-3 text-sm'"></i>
-              <span class="text-sm font-medium">{{ item.name }}</span>
-            </div>
-          </nav>
-        </div>
-      </div>
+      <AdminSidebar />
 
       <!-- Desktop Main Content -->
-      <div class="p-6 bg-white min-h-[calc(100vh-4rem)]" style="margin-left: 16rem;">
+      <div class="p-6 bg-white min-h-screen" style="margin-left: 16rem;">
         <div class="max-w-6xl" style="margin-left: max(0px, calc((100vw - 72rem) / 2 - 16rem)); margin-right: auto;">
           <!-- Header -->
           <div class="flex justify-between items-center mb-6">
@@ -1046,11 +974,11 @@ import { ref, onMounted, computed, onUnmounted, inject, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
+import AdminSidebar from '@/components/AdminSidebar.vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
-const isActivePath = (path) => router.currentRoute.value.path === path
 const toast = inject('$toast')
 
 // Dashboard data state
@@ -1093,75 +1021,6 @@ const initializeCurrentWeekStart = () => {
 // Auto-rotation for balance card
 const currentCardIndex = ref(0)
 let rotationInterval = null
-
-// User profile state
-const user = ref(null)
-
-// Navigation items (same as navbar)
-const navigationItems = [
-  { name: 'Home', path: '/' },
-  { name: 'Precios', path: '/precios' },
-  { name: 'Reservar', path: '/reservar' },
-  { name: 'Fotos', path: '/fotos' },
-  { name: 'Reglamento', path: '/reglamento' },
-  { name: 'Preguntas', path: '/preguntas-frecuentes' },
-]
-
-// Public navigation items (same as Navbar)
-const publicNavigationItems = [
-  { name: 'Home', path: '/' },
-  { name: 'Precios', path: '/precios' },
-  { name: 'Fotos', path: '/fotos' },
-  { name: 'Reglamento', path: '/reglamento' },
-  { name: 'Preguntas', path: '/preguntas-frecuentes' },
-]
-
-// Authenticated navigation items
-const authenticatedNavigationItems = [
-  { name: 'Reservar', path: '/reservar' },
-  { name: 'Mis Reservas', path: '/mis-reservas' },
-  { name: 'Dashboard', path: '/dashboard', condition: 'staff' },
-  { name: 'Reservas', path: '/reservas', condition: 'staff' },
-  { name: 'Actividad', path: '/actividad', condition: 'staff' },
-  { name: 'Configuración', path: '/configuracion', condition: 'staff' },
-]
-
-// Filtered authenticated items based on user role
-const filteredAuthenticatedItems = computed(() => {
-  if (!authStore.isAuthenticated) return []
-  
-  return authenticatedNavigationItems.filter(item => {
-    if (item.condition === 'staff') {
-      return authStore.user && (authStore.user.is_staff || authStore.user.role === 'admin')
-    }
-    return true
-  })
-})
-
-// Navigation icon mapping
-const getNavigationIcon = (name) => {
-  const iconMap = {
-    'Home': 'fa-solid fa-home',
-    'Precios': 'fa-solid fa-tags',
-    'Reservar': 'fa-solid fa-calendar-plus',
-    'Fotos': 'fa-solid fa-images',
-    'Reglamento': 'fa-solid fa-file-contract',
-    'Preguntas': 'fa-solid fa-question-circle',
-    'Mis Reservas': 'fa-solid fa-calendar-check',
-    'Dashboard': 'fa-solid fa-tachometer-alt',
-    'Actividad': 'fa-solid fa-list-alt',
-    'Configuración': 'fa-solid fa-sliders'
-  }
-  return iconMap[name] || 'fa-solid fa-link'
-}
-
-// Navigation function
-const goToPage = (path) => {
-  router.push(path)
-}
-
-// Notification count
-const unreadCount = ref(0)
 
 // Fetch dashboard data
 const fetchDashboardData = async () => {
@@ -1294,9 +1153,6 @@ const stopCardRotation = () => {
 
 // Get user from auth store
 onMounted(async () => {
-  if (authStore.user) {
-    user.value = authStore.user
-  }
   
   // Initialize week calendar
   initializeCurrentWeekStart()
@@ -1320,47 +1176,6 @@ onUnmounted(() => {
 })
 
 // Computed properties for user display
-const userName = computed(() => {
-  if (!user.value) return 'Admin User'
-  
-  if (user.value.first_name && user.value.last_name) {
-    return `${user.value.first_name} ${user.value.last_name}`
-  } else if (user.value.first_name) {
-    return user.value.first_name
-  } else if (user.value.username) {
-    return user.value.username
-  } else if (user.value.email) {
-    return user.value.email.split('@')[0]
-  }
-  
-  return 'Admin User'
-})
-
-const userRole = computed(() => {
-  if (!user.value) return 'Admin'
-  
-  if (user.value.role) {
-    return user.value.role.charAt(0).toUpperCase() + user.value.role.slice(1)
-  } else if (user.value.is_staff) {
-    return 'Staff'
-  }
-  
-  return 'User'
-})
-
-const userInitials = computed(() => {
-  if (!user.value) return 'AU'
-  
-  if (user.value.first_name && user.value.last_name) {
-    return `${user.value.first_name.charAt(0)}${user.value.last_name.charAt(0)}`.toUpperCase()
-  } else if (user.value.first_name) {
-    return user.value.first_name.charAt(0).toUpperCase()
-  } else if (user.value.username) {
-    return user.value.username.charAt(0).toUpperCase()
-  }
-  
-  return 'AU'
-})
 
 // Dashboard stats cards
 const statsCards = computed(() => {
@@ -1467,10 +1282,6 @@ const statsCards = computed(() => {
   return baseCards
 })
 
-// handleLogout function
-const handleLogout = () => {
-  authStore.logout(router)
-}
 
 // Helper function to get status color
 const getStatusColor = (status) => {

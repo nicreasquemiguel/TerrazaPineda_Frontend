@@ -1,10 +1,10 @@
 <template>
   <div class="flex flex-col min-h-screen bg-gray-50">
-    <Navbar />
-    <main class="flex-1 pt-16">
+    <Navbar v-if="!isAdminPage" />
+    <main class="flex-1" :class="isAdminPage ? '' : 'pt-16'">
       <router-view />
     </main>
-    <Footer v-if="!isDashboard" />
+    <Footer v-if="!isAdminPage" />
   </div>
 </template>
 
@@ -18,8 +18,8 @@ import { useAuthStore } from '@/stores/auth'
 const route = useRoute()
 const authStore = useAuthStore()
 
-// Hide navbar and footer on dashboard page
-const isDashboard = computed(() => route.path === '/dashboard')
+const ADMIN_ROUTES = ['/dashboard', '/reservas', '/actividad', '/configuracion']
+const isAdminPage = computed(() => ADMIN_ROUTES.some(r => route.path === r || route.path.startsWith(r + '/')))
 
 // Check token validity on app mount
 onMounted(async () => {
