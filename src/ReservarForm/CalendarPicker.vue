@@ -358,6 +358,19 @@ onMounted(fetchOccupiedEvents)
 /* ── Focus ring off ── */
 :deep(.my-calendar .vc-day-content:focus) { box-shadow: none !important; outline: none !important; }
 
+/* ── Prevent iOS double-tap zoom on calendar cells ── */
+:deep(.my-calendar .vc-day-content),
+:deep(.my-calendar .vc-arrow) {
+  touch-action: manipulation !important;
+}
+
+/* ── Prevent iOS input-zoom: keep font-size ≥ 16px on focusable elements ── */
+:deep(.my-calendar input),
+:deep(.my-calendar select),
+:deep(.my-calendar button) {
+  font-size: 16px !important;
+}
+
 /* ── Staff mode: occupied dates are clickable ── */
 .staff-calendar :deep(.my-calendar .vc-day-content.vc-occupied) {
   cursor: pointer !important;

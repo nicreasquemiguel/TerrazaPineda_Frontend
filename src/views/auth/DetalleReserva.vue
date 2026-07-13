@@ -619,44 +619,60 @@
     </div>
 
     <!-- Reschedule Modal -->
-    <div v-if="showDateChangeModal" class="flex fixed inset-0 z-50 justify-center items-center bg-black/40">
-      <div class="relative p-6 w-full max-w-md bg-white rounded-2xl shadow-xl">
-        <button @click="showDateChangeModal = false" class="absolute top-3 right-3 text-2xl text-gray-400 hover:text-gray-700">&times;</button>
-        <div class="flex gap-3 items-center mb-4">
-          <div class="flex justify-center items-center w-10 h-10 bg-blue-100 rounded-full">
-            <i class="text-blue-600 fa-solid fa-calendar-days"></i>
+    <div v-if="showDateChangeModal" class="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm" @click.self="showDateChangeModal = false">
+      <div class="relative w-full sm:max-w-md bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl max-h-[92vh] overflow-y-auto">
+        <!-- Handle bar (mobile) -->
+        <div class="flex justify-center pt-3 pb-1 sm:hidden">
+          <div class="w-10 h-1 bg-gray-300 rounded-full"></div>
+        </div>
+
+        <!-- Header -->
+        <div class="flex items-center justify-between px-6 pt-4 pb-4 border-b border-gray-100">
+          <div class="flex gap-3 items-center">
+            <div class="flex justify-center items-center w-9 h-9 bg-blue-100 rounded-full">
+              <i class="text-blue-600 fa-solid fa-calendar-days text-sm"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-900">Cambiar Fecha</h3>
           </div>
-          <h3 class="text-lg font-bold text-gray-900">Cambiar Fecha</h3>
+          <button @click="showDateChangeModal = false" class="flex items-center justify-center w-8 h-8 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
         </div>
 
-        <!-- Rules reminder -->
-        <div class="p-3 mb-4 text-xs text-blue-700 bg-blue-50 rounded-lg border border-blue-200">
-          <i class="mr-1 fa-solid fa-circle-info"></i>
-          Solo se permite <strong>un cambio de fecha</strong> por evento. Debe solicitarse con al menos <strong>3 semanas de anticipación</strong> a la fecha actual del evento.
+        <div class="px-6 py-5 space-y-4">
+          <!-- Rules reminder -->
+          <div class="p-3 text-xs text-blue-700 bg-blue-50 rounded-xl border border-blue-200">
+            <i class="mr-1 fa-solid fa-circle-info"></i>
+            Solo se permite <strong>un cambio de fecha</strong> por evento. Debe solicitarse con al menos <strong>3 semanas de anticipación</strong> a la fecha actual del evento.
+          </div>
+
+          <!-- Too close warning (non-staff only) -->
+          <div v-if="!isStaff && daysUntilEvent <= 21" class="p-3 text-xs text-red-700 bg-red-50 rounded-xl border border-red-200">
+            <i class="mr-1 fa-solid fa-triangle-exclamation"></i>
+            Tu evento está a <strong>{{ daysUntilEvent }} días</strong>. No cumples el mínimo de 21 días de anticipación.
+          </div>
+
+          <!-- Calendar -->
+          <div>
+            <p class="mb-2 text-sm font-semibold text-gray-700">Selecciona la nueva fecha:</p>
+            <CalendarPicker v-model="newEventDate" :is-staff="!!isStaff" />
+          </div>
+
+          <!-- API error -->
+          <div v-if="dateChangeError" class="p-3 text-xs text-red-700 bg-red-50 rounded-xl border border-red-200">
+            <i class="mr-1 fa-solid fa-circle-xmark"></i>
+            {{ dateChangeError }}
+          </div>
         </div>
 
-        <!-- Too close warning (non-staff only) -->
-        <div v-if="!isStaff && daysUntilEvent <= 21" class="p-3 mb-4 text-xs text-red-700 bg-red-50 rounded-lg border border-red-200">
-          <i class="mr-1 fa-solid fa-triangle-exclamation"></i>
-          Tu evento está a <strong>{{ daysUntilEvent }} días</strong>. El cambio de fecha será rechazado por la API ya que no cumples el mínimo de 21 días de anticipación.
-        </div>
-
-        <div class="mb-4">
-          <label class="block mb-2 text-sm font-semibold text-gray-700">Nueva fecha:</label>
-          <CalendarPicker v-model="newEventDate" :is-staff="!!isStaff" />
-        </div>
-
-        <!-- API error -->
-        <div v-if="dateChangeError" class="p-3 mb-4 text-xs text-red-700 bg-red-50 rounded-lg border border-red-200">
-          <i class="mr-1 fa-solid fa-circle-xmark"></i>
-          {{ dateChangeError }}
-        </div>
-
-        <div class="flex gap-2 justify-end">
-          <button @click="showDateChangeModal = false" class="px-4 py-2 font-semibold text-gray-600 bg-gray-100 rounded hover:bg-gray-200">Cancelar</button>
+        <!-- Footer actions -->
+        <div class="flex gap-3 px-6 pb-6 pt-2">
+          <button @click="showDateChangeModal = false" class="flex-1 px-4 py-2.5 font-semibold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
+            Cancelar
+          </button>
           <button @click="submitDateChange" :disabled="isRescheduling || !newEventDate || (!isStaff && daysUntilEvent <= 21)"
-            class="px-4 py-2 font-semibold text-white bg-blue-600 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
-            <span v-if="isRescheduling" class="flex gap-2 items-center">
+            class="flex-1 px-4 py-2.5 font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <span v-if="isRescheduling" class="flex gap-2 items-center justify-center">
               <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
               Guardando...
             </span>
