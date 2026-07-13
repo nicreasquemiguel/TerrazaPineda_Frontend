@@ -621,6 +621,7 @@ const notifications = ref([])
 const lastFiveNotifications = computed(() => {
   return notifications.value.slice(0, 5)
 })
+let notificationPollInterval = null
 
 // Fetch notifications
 const fetchNotifications = async () => {
@@ -705,13 +706,16 @@ onMounted(async () => {
   }
 })
 
-// Watch auth state to fetch notifications when user logs in
+// Watch auth state to fetch notifications when user logs in/out
 watch(() => authStore.isAuthenticated, (isAuth) => {
   if (isAuth) {
     fetchNotifications()
+    clearInterval(notificationPollInterval)
+    notificationPollInterval = setInterval(fetchNotifications, 60_000)
   } else {
     notifications.value = []
     authStore.setUnreadCount(0)
+    clearInterval(notificationPollInterval)
   }
 })
 
@@ -905,10 +909,14 @@ function handleClickOutside(event) {
 
 onMounted(() => {
   document.addEventListener('mousedown', handleClickOutside)
+  if (authStore.isAuthenticated) {
+    notificationPollInterval = setInterval(fetchNotifications, 60_000)
+  }
 })
 
 onBeforeUnmount(() => {
   document.removeEventListener('mousedown', handleClickOutside)
+  clearInterval(notificationPollInterval)
 })
 </script>
 

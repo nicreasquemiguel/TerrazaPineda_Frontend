@@ -394,7 +394,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useAuthStore } from '@/stores/auth'
-import { getNotifications, markNotificationRead } from '@/services/api'
+import { getNotifications, markNotificationRead, markAllNotificationsRead } from '@/services/api'
 import api from '@/services/api'
 import { useToast } from 'vue-toastification'
 import { useRouter, useRoute } from 'vue-router'
@@ -674,8 +674,7 @@ const getCurrentPage = () => {
 const markAllAsRead = async () => {
   isMarkingAllRead.value = true
   try {
-    const unreadNotifications = notifications.value.filter(n => n && !n.read)
-    await Promise.all(unreadNotifications.map(n => markNotificationRead(n.id)))
+    await markAllNotificationsRead()
     notifications.value.forEach(n => { if (n) n.read = true })
     unreadCount.value = 0
     authStore.setUnreadCount(0)

@@ -211,6 +211,7 @@ export const deleteWish = (id) => bookingsApi.delete(`wishes/${id}/`);
 // Notifications API
 export const getNotifications = () => bookingsApi.get('notifications/');
 export const markNotificationRead = (id) => bookingsApi.patch(`notifications/${id}/`, { read: true });
+export const markAllNotificationsRead = () => bookingsApi.post('notifications/mark_all_read/');
 
 // Profile API
 export const updateUserProfile = (profileData) => userApi.patch('profile/', profileData);
