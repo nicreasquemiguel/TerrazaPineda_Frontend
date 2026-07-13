@@ -35,4 +35,13 @@ if (authStore.accessToken && !authStore.user) {
 
 // Check token validity on app mount - moved to App.vue
 
-app.mount('#app') 
+// Only autofocus on non-touch devices to prevent keyboard pop-up on mobile
+app.directive('focus-desktop', {
+  mounted(el) {
+    if (!window.matchMedia('(hover: none)').matches) {
+      el.focus()
+    }
+  }
+})
+
+app.mount('#app')

@@ -1314,8 +1314,10 @@
             <div class="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-xl border border-gray-200 focus-within:border-indigo-300 focus-within:ring-2 focus-within:ring-indigo-100 transition-all">
               <i class="fa-solid fa-magnifying-glass text-gray-300 text-sm flex-shrink-0"></i>
               <input v-model="userPickerQuery" type="text" placeholder="Nombre o email..."
-                class="flex-1 text-sm bg-transparent outline-none text-gray-900 placeholder-gray-400"
-                @input="searchUsers" autofocus />
+                class="flex-1 bg-transparent outline-none text-gray-900 placeholder-gray-400"
+                style="font-size: 16px;"
+                @input="searchUsers"
+                v-focus-desktop />
               <button v-if="userPickerQuery" @click="userPickerQuery = ''; searchUsers()"
                 class="text-gray-300 hover:text-gray-500">
                 <i class="fa-solid fa-xmark text-xs"></i>
