@@ -44,17 +44,21 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useVenueConfigStore } from '@/stores/venueConfig'
 
+const venueConfigStore = useVenueConfigStore()
+venueConfigStore.fetchConfig()
+const minimumDeposit = computed(() => venueConfigStore.minimumDeposit)
 
-const faqs = [
+const faqs = computed(() => [
   {
     q: '¿Con cuánto tiempo de anticipación debemos apartar?',
     a: 'Nosotros en cuestión de horas se les puede tener preparado, sin embargo, por tema de disponibilidad de las fechas, en especial en fin de semana, les recomendamos que con un tiempo de 5 a 6 meses para que alcancen su fecha deseada.'
   },
   {
     q: '¿Con cuánto dinero se aparta alguna fecha?',
-    a: 'Para cualquier paquete, se aparta fecha únicamente con $1000 MXN. Damos 3 días para que se haga el apartado, en caso contrario queda libre para renta nuevamente.\n\nAceptamos transferencias, depósitos y en efectivo.'
+    a: `Para cualquier paquete, se aparta fecha únicamente con $${minimumDeposit.value.toLocaleString()} MXN. Damos 3 días para que se haga el apartado, en caso contrario queda libre para renta nuevamente.\n\nAceptamos transferencias, depósitos y en efectivo.`
   },
   {
     q: '¿Para qué sirve el apartado, y cómo procede con cancelaciones o cambio de fechas?',
@@ -76,7 +80,7 @@ const faqs = [
     q: '¿Qué pasa si se va la electricidad en la colonia?',
     a: 'Se han presentado algunos casos que por problemas de parte de la CFE, la zona se ha quedado sin electricidad, CFE atendió la zona y ya no se han tenido problemas pero aún así nos hemos preparado con una planta de electricidad, por cualquier inconveniencia. Les recordamos que les queremos brindar el mejor servicio.'
   }
-]
+])
 
 const openIndex = ref(null)
 const copied = ref(false)

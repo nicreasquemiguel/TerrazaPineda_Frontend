@@ -159,6 +159,11 @@
 import SplitText from '@/components/SplitText.vue'
 import { ref, onMounted, computed, onBeforeUnmount } from 'vue'
 import { Icon } from '@iconify/vue'
+import { useVenueConfigStore, formatTimeWords } from '@/stores/venueConfig'
+
+const venueConfigStore = useVenueConfigStore()
+venueConfigStore.fetchConfig()
+const minimumDeposit = computed(() => venueConfigStore.minimumDeposit)
 
 const typingTexts = [
   'albercadas!',
@@ -192,7 +197,7 @@ function typeEffect() {
   setTimeout(typeEffect, isDeleting ? 60 : 120)
 }
 
-const features = [
+const features = computed(() => [
   {
     title: 'Solicitud de Reserva',
     description: 'Para apartados en línea, se requiere de una solicitud la cual nos ayudará a comprender su tipo de evento, en caso de aceptarse se les notificará para seguir con el apartado',
@@ -200,7 +205,7 @@ const features = [
   },
   {
     title: 'Apartado',
-    description: 'Se aparta fecha solamente con $1000, los cuales pueden ser depositados, o en la sección de <a href="/reservar" class="text-purple-600 underline">Reservar</a> de esta página o entregados en la terraza.',
+    description: `Se aparta fecha solamente con $${minimumDeposit.value.toLocaleString()}, los cuales pueden ser depositados, o en la sección de <a href="/reservar" class="text-purple-600 underline">Reservar</a> de esta página o entregados en la terraza.`,
     icon: 'fluent:money-hand-20-regular'
   },
   {
@@ -215,7 +220,7 @@ const features = [
   },
   {
     title: 'Horario de Renta',
-    description: 'Por el momento, el Ayuntamiento nos ha limitado, al horario de 10 de la mañana hasta 10 de la noche. Estamos en proceso de recuperarlo, sin embargo, hasta nuevo aviso estaremos manejando este horario.',
+    description: `Por el momento, el Ayuntamiento nos ha limitado, al horario de ${formatTimeWords(venueConfigStore.openTime)} hasta ${formatTimeWords(venueConfigStore.closeTime)}. Estamos en proceso de recuperarlo, sin embargo, hasta nuevo aviso estaremos manejando este horario.`,
     icon: 'mdi:clock-time-four-outline'
   },
   {
@@ -228,7 +233,7 @@ const features = [
     description: 'Se tendrá que hacer la limpieza del lugar, se tiene que entregar con la basura y objetos ajenos a la terraza recogidos.',
     icon: 'mdi:broom'
   }
-]
+])
 
 const cardGradients = [
   'linear-gradient(90deg, #7c3aed, #22d3ee)',

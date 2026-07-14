@@ -44,11 +44,18 @@
 </template>
 
 <script setup>
-const reglas = [
+import { computed } from 'vue'
+import { useVenueConfigStore, formatTimeAmPm } from '@/stores/venueConfig'
+
+const venueConfigStore = useVenueConfigStore()
+venueConfigStore.fetchConfig()
+const minimumDeposit = computed(() => venueConfigStore.minimumDeposit)
+
+const reglas = computed(() => [
   {
     icono: "fa-solid fa-lock",
     titulo: "Apartado y pagos",
-    texto: `La fecha solo se aparta con un anticipo de $1,000 MXN, el cual no es reembolsable, salvo la excepción descrita en el punto 3.
+    texto: `La fecha solo se aparta con un anticipo de $${minimumDeposit.value.toLocaleString()} MXN, el cual no es reembolsable, salvo la excepción descrita en el punto 3.
 
 Al realizar el anticipo, el cliente acepta este reglamento en su totalidad y se considera como contrato de prestación de servicio.
 
@@ -91,7 +98,7 @@ Superar este número será causa de suspensión inmediata del evento sin derecho
   {
     icono: "fa-solid fa-clock",
     titulo: "Horarios",
-    texto: `El horario incluido en el paquete es de 10:00 a.m. a 12:00 a.m. (medianoche).
+    texto: `El horario incluido en el paquete es de ${formatTimeAmPm(venueConfigStore.openTime)} a ${formatTimeAmPm(venueConfigStore.closeTime)}.
 
 Las horas extra tienen un costo adicional; pregunta por disponibilidad y tarifas.`
   },
@@ -146,7 +153,7 @@ Cualquier daño o pérdida en el mobiliario deberá ser cubierto o reemplazado p
     titulo: "Contacto de emergencia",
     texto: `Para cualquier duda o consulta, no dude en comunicarse con nosotros.`
   }
-]
+])
 </script>
 
 <style scoped>

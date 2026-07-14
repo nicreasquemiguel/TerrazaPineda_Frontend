@@ -329,7 +329,7 @@
               type="number"
               inputmode="decimal"
               step="0.01"
-              :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
+              :min="(parseFloat(event?.advance_paid) || 0) === 0 ? minimumDeposit : 0.01"
               :max="remainingAmount"
               :disabled="remainingAmount <= 0 || parseFloat(paymentAmount) >= remainingAmount"
               class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -337,7 +337,7 @@
             />
           </div>
           <div class="mt-2 text-xs text-gray-500">
-            Mínimo: ${{ (parseFloat(event?.advance_paid) || 0) === 0 ? '1,000' : '0.01' }} | Máximo: ${{ remainingAmount.toLocaleString() }}
+            Mínimo: ${{ (parseFloat(event?.advance_paid) || 0) === 0 ? minimumDeposit.toLocaleString() : '0.01' }} | Máximo: ${{ remainingAmount.toLocaleString() }}
           </div>
           <div v-if="remainingAmount <= 0" class="mt-2 text-xs font-bold text-green-600">
             ¡Reserva pagada por completo!
@@ -358,11 +358,11 @@
               Pagar todo
             </button>
             <button 
-              @click="paymentAmount = Math.min(1000, remainingAmount)"
-              :disabled="remainingAmount < 1000"
+              @click="paymentAmount = Math.min(minimumDeposit, remainingAmount)"
+              :disabled="remainingAmount < minimumDeposit"
               class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              $1,000
+              ${{ minimumDeposit.toLocaleString() }}
             </button>
             <button 
               @click="paymentAmount = Math.min(500, remainingAmount)"
@@ -433,7 +433,7 @@
               type="number"
               inputmode="decimal"
               step="50"
-              :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
+              :min="(parseFloat(event?.advance_paid) || 0) === 0 ? minimumDeposit : 0.01"
               :max="remainingAmount"
               :disabled="remainingAmount <= 0 || parseFloat(transferAmount) >= remainingAmount"
               class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -441,7 +441,7 @@
             />
           </div>
           <div class="mt-2 text-xs text-gray-500">
-            Mínimo: ${{ (parseFloat(event?.advance_paid) || 0) === 0 ? '1,000' : '0.01' }} | Máximo: ${{ remainingAmount.toLocaleString() }}
+            Mínimo: ${{ (parseFloat(event?.advance_paid) || 0) === 0 ? minimumDeposit.toLocaleString() : '0.01' }} | Máximo: ${{ remainingAmount.toLocaleString() }}
           </div>
         </div>
 
@@ -1442,7 +1442,7 @@
                         type="number"
                         inputmode="decimal"
                         step="0.01"
-                        :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
+                        :min="(parseFloat(event?.advance_paid) || 0) === 0 ? minimumDeposit : 0.01"
                         :max="remainingAmount"
                         :disabled="remainingAmount <= 0 || parseFloat(paymentAmount) >= remainingAmount"
                         class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1451,7 +1451,7 @@
                     </div>
                     <div class="mt-2 text-xs text-gray-500">
                       <span v-if="(parseFloat(event?.advance_paid) || 0) === 0">
-                        Mínimo: $1,000 | Máximo: ${{ remainingAmount.toLocaleString() }}
+                        Mínimo: ${{ minimumDeposit.toLocaleString() }} | Máximo: ${{ remainingAmount.toLocaleString() }}
                       </span>
                       <span v-else>
                         Máximo: ${{ remainingAmount.toLocaleString() }}
@@ -1467,10 +1467,10 @@
                         Pagar todo
                       </button>
                       <button 
-                        @click="paymentAmount = Math.min(1000, remainingAmount)"
+                        @click="paymentAmount = Math.min(minimumDeposit, remainingAmount)"
                         class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
                       >
-                        $1,000
+                        ${{ minimumDeposit.toLocaleString() }}
                       </button>
                       <button 
                         @click="paymentAmount = Math.min(500, remainingAmount)"
@@ -1501,7 +1501,7 @@
                   <div class="flex gap-3">
                     <button
                       @click="pagar()"
-                      :disabled="!paymentAmount || paymentAmount <= 0 || isPaying || ((parseFloat(event?.advance_paid) || 0) === 0 && paymentAmount < 1000)"
+                      :disabled="!paymentAmount || paymentAmount <= 0 || isPaying || ((parseFloat(event?.advance_paid) || 0) === 0 && paymentAmount < minimumDeposit)"
                       class="flex-1 px-6 py-3 text-sm font-semibold text-white bg-blue-600 rounded-lg transition-colors hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <i class="mr-2 fa-solid fa-credit-card"></i>
@@ -1565,7 +1565,7 @@
                           type="number"
                           inputmode="decimal"
                           step="0.01"
-                          :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
+                          :min="(parseFloat(event?.advance_paid) || 0) === 0 ? minimumDeposit : 0.01"
                           :max="remainingAmount"
                           :disabled="remainingAmount <= 0 || parseFloat(paymentAmount) >= remainingAmount"
                           class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-yellow-400 focus:border-yellow-400 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1574,7 +1574,7 @@
                       </div>
                       <div class="mt-2 text-xs text-gray-500">
                         <span v-if="(parseFloat(event?.advance_paid) || 0) === 0">
-                          Mínimo: $1,000 | Máximo: ${{ remainingAmount.toLocaleString() }}
+                          Mínimo: ${{ minimumDeposit.toLocaleString() }} | Máximo: ${{ remainingAmount.toLocaleString() }}
                         </span>
                         <span v-else>
                           Máximo: ${{ remainingAmount.toLocaleString() }}
@@ -1590,10 +1590,10 @@
                           Pagar todo
                         </button>
                         <button
-                          @click="paymentAmount = Math.min(1000, remainingAmount)"
+                          @click="paymentAmount = Math.min(minimumDeposit, remainingAmount)"
                           class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100"
                         >
-                          $1,000
+                          ${{ minimumDeposit.toLocaleString() }}
                         </button>
                         <button
                           @click="paymentAmount = Math.min(500, remainingAmount)"
@@ -1636,7 +1636,7 @@
                     <div class="flex gap-3">
                       <button
                         @click="pagarMercadoPago()"
-                        :disabled="!paymentAmount || paymentAmount <= 0 || isPaying || ((parseFloat(event?.advance_paid) || 0) === 0 && paymentAmount < 1000)"
+                        :disabled="!paymentAmount || paymentAmount <= 0 || isPaying || ((parseFloat(event?.advance_paid) || 0) === 0 && paymentAmount < minimumDeposit)"
                         class="flex-1 px-6 py-3 text-sm font-semibold text-gray-900 bg-yellow-400 rounded-lg transition-colors hover:bg-yellow-500 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <i class="mr-2 fa-brands fa-mercadopago"></i>
@@ -1714,7 +1714,7 @@
                         type="number"
                         inputmode="decimal"
                         step="50"
-                        :min="(parseFloat(event?.advance_paid) || 0) === 0 ? 1000 : 0.01"
+                        :min="(parseFloat(event?.advance_paid) || 0) === 0 ? minimumDeposit : 0.01"
                         :max="remainingAmount"
                         :disabled="remainingAmount <= 0 || parseFloat(transferAmount) >= remainingAmount"
                         class="py-3 pr-4 pl-8 w-full rounded-lg border border-gray-300 focus:ring-2 focus:ring-green-500 focus:border-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -1722,7 +1722,7 @@
                       />
                     </div>
                     <div class="mt-2 text-xs text-gray-500">
-                      Mínimo: ${{ (parseFloat(event?.advance_paid) || 0) === 0 ? '1,000' : '0.01' }} | Máximo: ${{ remainingAmount.toLocaleString() }}
+                      Mínimo: ${{ (parseFloat(event?.advance_paid) || 0) === 0 ? minimumDeposit.toLocaleString() : '0.01' }} | Máximo: ${{ remainingAmount.toLocaleString() }}
                     </div>
                     
                     <!-- Quick Amount Buttons -->
@@ -1734,11 +1734,11 @@
                         Pagar todo
                       </button>
                       <button 
-                        @click="transferAmount = Math.min(1000, remainingAmount)"
-                        :disabled="remainingAmount < 1000"
+                        @click="transferAmount = Math.min(minimumDeposit, remainingAmount)"
+                        :disabled="remainingAmount < minimumDeposit"
                         class="px-3 py-1 text-xs font-semibold text-green-700 bg-green-50 rounded border border-green-200 hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
-                        $1,000
+                        ${{ minimumDeposit.toLocaleString() }}
                       </button>
                       <button 
                         @click="transferAmount = Math.min(500, remainingAmount)"
@@ -2405,7 +2405,7 @@
             <div class="space-y-2.5 text-xs text-gray-600">
               <div class="flex gap-2 items-start">
                 <i class="mt-0.5 flex-shrink-0 text-gray-400 fa-solid fa-coins"></i>
-                <p><span class="font-semibold text-gray-700">Anticipo de reserva:</span> se requiere un anticipo de <span class="font-semibold text-gray-900">$1,000 MXN</span> para apartar la fecha. Este monto no es reembolsable salvo las excepciones descritas a continuación.</p>
+                <p><span class="font-semibold text-gray-700">Anticipo de reserva:</span> se requiere un anticipo de <span class="font-semibold text-gray-900">${{ minimumDeposit.toLocaleString() }} MXN</span> para apartar la fecha. Este monto no es reembolsable salvo las excepciones descritas a continuación.</p>
               </div>
               <div class="flex gap-2 items-start">
                 <i class="mt-0.5 flex-shrink-0 text-gray-400 fa-solid fa-triangle-exclamation"></i>
@@ -2599,10 +2599,20 @@ import { useQuery } from '@tanstack/vue-query'
 import { Icon } from '@iconify/vue'
 import { useToast } from 'vue-toastification'
 import { useAuthStore } from '@/stores/auth'
+import { useVenueConfigStore } from '@/stores/venueConfig'
 
 const route = useRoute()
 const toast = useToast()
 const authStore = useAuthStore()
+const venueConfigStore = useVenueConfigStore()
+venueConfigStore.fetchConfig()
+// Bookings freeze the deposit minimum that applied when they were created — use that,
+// not the live (possibly since-changed) venue config. Fall back to the live value only
+// for legacy bookings that predate the frozen field.
+const minimumDeposit = computed(() => {
+  const frozen = parseFloat(event.value?.minimum_deposit)
+  return frozen > 0 ? frozen : venueConfigStore.minimumDeposit
+})
 
 // Determine if the user is a staff member
 const isStaff = computed(() => {
@@ -3637,11 +3647,11 @@ async function approvePayment(paymentId) {
   }
 }
 
-// Auto-fill $1,000 when booking loads with no advance paid yet
+// Auto-fill the minimum deposit when booking loads with no advance paid yet
 watch(event, (val) => {
   if (!val || paymentAmount.value) return
   const paid = parseFloat(val.advance_paid) || 0
-  if (paid === 0) paymentAmount.value = '1000'
+  if (paid === 0) paymentAmount.value = String(minimumDeposit.value)
 }, { immediate: true })
 
 const mpPreferenceId = ref(null)
@@ -3715,9 +3725,9 @@ const remainingAmount = computed(() => {
   const paid = parseFloat(event.value?.advance_paid) || 0
   const remaining = Math.max(0, total - paid)
   
-  // If no advance payment has been made, minimum payment is $1,000
+  // If no advance payment has been made, minimum payment is the configured deposit
   if (paid === 0 && remaining > 0) {
-    return Math.max(1000, remaining)
+    return Math.max(minimumDeposit.value, remaining)
   }
   
   return remaining

@@ -273,7 +273,7 @@
             </div>
             <!-- Nota -->
             <div class="p-3 mx-auto mt-4 w-full max-w-md text-xs text-yellow-800 bg-yellow-50 rounded border-l-4 border-yellow-400 md:p-4 md:text-sm">
-              <strong>Nota:</strong> Esta es solo una solicitud de reservación. La fecha y servicios seleccionados están sujetos a disponibilidad y aprobación. Serás notificado si tu solicitud es aceptada. Después de la aceptación, tendrás 3 días para realizar el pago de anticipo de $1000 MXN y asegurar tu evento.
+              <strong>Nota:</strong> Esta es solo una solicitud de reservación. La fecha y servicios seleccionados están sujetos a disponibilidad y aprobación. Serás notificado si tu solicitud es aceptada. Después de la aceptación, tendrás 3 días para realizar el pago de anticipo de ${{ minimumDeposit.toLocaleString() }} MXN y asegurar tu evento.
             </div>
             <button @click="onSubmitClick" :disabled="!isOver18 || !acceptTerms || isSending" class="w-full mt-4 py-3 rounded-xl font-bold text-lg text-white bg-gradient-to-r from-[#22d3ee] to-[#06b6d4] shadow-lg hover:opacity-90 transition disabled:opacity-50">
   {{ isSending ? 'Enviando...' : 'Mandar solicitud' }}
@@ -411,9 +411,13 @@ import 'v-calendar/style.css'
 import { Icon } from '@iconify/vue';
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useVenueConfigStore, formatTimeWords } from '@/stores/venueConfig'
 import api from '@/services/api'
 import { useToast } from 'vue-toastification'
 
+const venueConfigStore = useVenueConfigStore()
+venueConfigStore.fetchConfig()
+const minimumDeposit = computed(() => venueConfigStore.minimumDeposit)
 
 const date = ref(null);
 const splitTextKey = ref(0);
@@ -592,11 +596,11 @@ const isSending = ref(false);
 
 const allExtras = ref([]);
 
-const rules = [
+const rules = computed(() => [
   { text: 'Cambios de fecha se tendrán que hacer con 3 semanas de anticipación, cancelaciones se pierde el apartado, SIN EXCEPCIÓN.', icon: 'mdi:calendar-alert' },
-  { text: 'Se aparta fecha únicamente con su apartado $1000, tiene que quedar liquidado a más tardar en la entrega del lugar. Al dar el apartado se acepta este reglamento como obligaciones de quién contrata.', icon: 'mdi:calendar-alert' },
+  { text: `Se aparta fecha únicamente con su apartado $${minimumDeposit.value.toLocaleString()}, tiene que quedar liquidado a más tardar en la entrega del lugar. Al dar el apartado se acepta este reglamento como obligaciones de quién contrata.`, icon: 'mdi:calendar-alert' },
   { text: 'Se debe entregar una identificación vigente y domicilio para que se les entregue el lugar, quien se vaya a hacer responsable.', icon: 'mdi:card-account-details-outline' },
-  { text: 'Nuestro horario incluidos en los paquetes son de 10 de la mañana hasta 12 de la noche. Horas extras son adicionales, pregunta sin compromiso.', icon: 'mdi:clock-time-four-outline' },
+  { text: `Nuestro horario incluidos en los paquetes son de ${formatTimeWords(venueConfigStore.openTime)} hasta ${formatTimeWords(venueConfigStore.closeTime)}. Horas extras son adicionales, pregunta sin compromiso.`, icon: 'mdi:clock-time-four-outline' },
   { text: 'Cualquier mal uso de las instalaciones y mobiliario, y actos de violencia son causa para la suspensión del evento.', icon: 'mdi:alert-octagon-outline' },
   { text: 'Si el lugar está sobre el número de personas acordadas es causa para la suspensión del evento.', icon: 'mdi:account-group-outline' },
   { text: 'Queda estrictamente prohibido ingresar automóviles o motos, a las áreas verdes.', icon: 'mdi:car-off' },
@@ -606,7 +610,7 @@ const rules = [
   { text: 'La música en vivo como norteños, bandas etc, están bienvenidas de nuevo!', icon: 'mdi:music-circle-outline' },
   { text: 'La música está permitida sin problema, sin embargo, tenemos un limitante de 65 decibeles por el Municipio, cualquier falta/descumplimiento la multa será otorgada a el responsable. Más info en este link https://www.zapopan.gob.mx/aprueba-zapopan-armonizacion-de-la-normatividad-municipal-a-la-ley-antirruido/', icon: 'mdi:volume-high' },
   { text: 'Al incumplir este reglamento, se podrá retener la credencial hasta que se resuelva el hecho.', icon: 'mdi:alert-circle-outline' }
-];
+]);
 
 function linkify(text) {
   const antiRuidoUrl = 'https://www.zapopan.gob.mx/aprueba-zapopan-armonizacion-de-la-normatividad-municipal-a-la-ley-antirruido/';
@@ -617,10 +621,10 @@ function linkify(text) {
   return text.replace(urlRegex, url => `<a href="${url}" target="_blank" rel="noopener" class="underline text-[#7c3aed] hover:text-[#22d3ee]">${url}</a>`)
 }
 
-const rulesWithLinks = rules.map(rule => ({
+const rulesWithLinks = computed(() => rules.value.map(rule => ({
   ...rule,
   text: linkify(rule.text)
-}));
+})));
 
 onMounted(async () => {
   try {
