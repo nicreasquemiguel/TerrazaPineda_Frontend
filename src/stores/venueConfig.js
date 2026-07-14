@@ -30,6 +30,9 @@ export const useVenueConfigStore = defineStore('venueConfig', () => {
   const openTime = ref('10:00')
   const closeTime = ref('22:00')
   const minimumDeposit = ref(1000)
+  const dateChangeNoticeDays = ref(21)
+  const cancellationRefundThresholdDays = ref(45)
+  const cancellationRefundPercent = ref(50)
   const loaded = ref(false)
   let loadingPromise = null
 
@@ -44,6 +47,15 @@ export const useVenueConfigStore = defineStore('venueConfig', () => {
         if (data.minimum_deposit !== undefined && data.minimum_deposit !== null) {
           minimumDeposit.value = parseFloat(data.minimum_deposit)
         }
+        if (data.date_change_notice_days !== undefined && data.date_change_notice_days !== null) {
+          dateChangeNoticeDays.value = parseInt(data.date_change_notice_days, 10)
+        }
+        if (data.cancellation_refund_threshold_days !== undefined && data.cancellation_refund_threshold_days !== null) {
+          cancellationRefundThresholdDays.value = parseInt(data.cancellation_refund_threshold_days, 10)
+        }
+        if (data.cancellation_refund_percent !== undefined && data.cancellation_refund_percent !== null) {
+          cancellationRefundPercent.value = parseFloat(data.cancellation_refund_percent)
+        }
         loaded.value = true
       })
       .catch((err) => {
@@ -56,5 +68,9 @@ export const useVenueConfigStore = defineStore('venueConfig', () => {
     return loadingPromise
   }
 
-  return { openTime, closeTime, minimumDeposit, loaded, fetchConfig }
+  return {
+    openTime, closeTime, minimumDeposit,
+    dateChangeNoticeDays, cancellationRefundThresholdDays, cancellationRefundPercent,
+    loaded, fetchConfig,
+  }
 })

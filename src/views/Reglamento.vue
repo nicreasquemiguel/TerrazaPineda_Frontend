@@ -50,6 +50,9 @@ import { useVenueConfigStore, formatTimeAmPm } from '@/stores/venueConfig'
 const venueConfigStore = useVenueConfigStore()
 venueConfigStore.fetchConfig()
 const minimumDeposit = computed(() => venueConfigStore.minimumDeposit)
+const dateChangeNoticeDays = computed(() => venueConfigStore.dateChangeNoticeDays)
+const cancellationRefundThresholdDays = computed(() => venueConfigStore.cancellationRefundThresholdDays)
+const cancellationRefundPercent = computed(() => venueConfigStore.cancellationRefundPercent)
 
 const reglas = computed(() => [
   {
@@ -73,11 +76,11 @@ Cualquier servicio adicional (decoración, carpas, limpieza, audio, etc.) deber�
   {
     icono: "fa-solid fa-arrows-rotate",
     titulo: "Cambios de fecha y cancelaciones",
-    texto: `Cancelaciones con más de 45 días de anticipación: se devolverá el 50% del anticipo. El resto se retiene por gastos administrativos.
+    texto: `Cancelaciones con más de ${cancellationRefundThresholdDays.value} días de anticipación: se devolverá el ${cancellationRefundPercent.value}% del anticipo. El resto se retiene por gastos administrativos.
 
-Cancelaciones con 45 días o menos de anticipación: el anticipo no es reembolsable bajo ninguna circunstancia.
+Cancelaciones con ${cancellationRefundThresholdDays.value} días o menos de anticipación: el anticipo no es reembolsable bajo ninguna circunstancia.
 
-Cambios de fecha deben solicitarse con al menos 3 semanas de anticipación y están sujetos a disponibilidad.
+Cambios de fecha deben solicitarse con al menos ${dateChangeNoticeDays.value} días de anticipación y están sujetos a disponibilidad.
 
 Solo se permite un cambio de fecha por evento.`
   },

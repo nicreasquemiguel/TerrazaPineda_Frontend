@@ -103,6 +103,97 @@
               <span v-else>Guardar cambios</span>
             </button>
           </div>
+
+          <!-- Cambios de Fecha -->
+          <div class="p-6 bg-white rounded-2xl border border-gray-200 shadow-sm">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-purple-50 flex-shrink-0">
+                <i class="text-purple-500 fa-solid fa-calendar-days"></i>
+              </div>
+              <div>
+                <h2 class="text-base font-bold text-gray-800">Cambios de Fecha</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Aviso mínimo requerido para solicitar un cambio de fecha</p>
+              </div>
+            </div>
+
+            <div class="space-y-4 mb-5">
+              <div>
+                <label class="block mb-1.5 text-sm font-semibold text-gray-700">Días de anticipación</label>
+                <input
+                  v-model.number="form.date_change_notice_days"
+                  type="number"
+                  min="0"
+                  step="1"
+                  class="p-3 w-full text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            <button
+              @click="save"
+              :disabled="saving"
+              class="w-full px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg transition hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span v-if="saving" class="flex gap-2 items-center justify-center">
+                <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
+                Guardando...
+              </span>
+              <span v-else>Guardar cambios</span>
+            </button>
+          </div>
+
+          <!-- Política de Cancelación -->
+          <div class="p-6 bg-white rounded-2xl border border-gray-200 shadow-sm">
+            <div class="flex items-center gap-3 mb-4">
+              <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-red-50 flex-shrink-0">
+                <i class="text-red-500 fa-solid fa-rotate-left"></i>
+              </div>
+              <div>
+                <h2 class="text-base font-bold text-gray-800">Política de Cancelación</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Reembolso del anticipo al cancelar una reserva</p>
+              </div>
+            </div>
+
+            <div class="space-y-4 mb-5">
+              <div>
+                <label class="block mb-1.5 text-sm font-semibold text-gray-700">Umbral de días</label>
+                <input
+                  v-model.number="form.cancellation_refund_threshold_days"
+                  type="number"
+                  min="0"
+                  step="1"
+                  class="p-3 w-full text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                />
+                <p class="mt-1 text-xs text-gray-500">Si se cancela con más días de anticipación que este umbral, aplica el % de reembolso.</p>
+              </div>
+              <div>
+                <label class="block mb-1.5 text-sm font-semibold text-gray-700">Porcentaje de reembolso</label>
+                <div class="relative">
+                  <input
+                    v-model.number="form.cancellation_refund_percent"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="1"
+                    class="p-3 pr-8 w-full text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  />
+                  <span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-500">%</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              @click="save"
+              :disabled="saving"
+              class="w-full px-5 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg transition hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span v-if="saving" class="flex gap-2 items-center justify-center">
+                <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
+                Guardando...
+              </span>
+              <span v-else>Guardar cambios</span>
+            </button>
+          </div>
         </div>
       </div>
     </div><!-- end md:ml-64 -->
@@ -121,7 +212,12 @@ const loading = ref(true)
 const saving = ref(false)
 const saved = ref(false)
 const error = ref('')
-const form = ref({ open_time: '', close_time: '', minimum_deposit: 0 })
+const form = ref({
+  open_time: '', close_time: '', minimum_deposit: 0,
+  date_change_notice_days: 21,
+  cancellation_refund_threshold_days: 45,
+  cancellation_refund_percent: 50,
+})
 
 onMounted(async () => {
   try {
@@ -129,6 +225,9 @@ onMounted(async () => {
     form.value.open_time = res.data.open_time?.slice(0, 5) ?? ''
     form.value.close_time = res.data.close_time?.slice(0, 5) ?? ''
     form.value.minimum_deposit = parseFloat(res.data.minimum_deposit ?? 0)
+    form.value.date_change_notice_days = parseInt(res.data.date_change_notice_days ?? 21, 10)
+    form.value.cancellation_refund_threshold_days = parseInt(res.data.cancellation_refund_threshold_days ?? 45, 10)
+    form.value.cancellation_refund_percent = parseFloat(res.data.cancellation_refund_percent ?? 50)
   } catch (e) {
     error.value = 'No se pudo cargar la configuración.'
   } finally {
@@ -145,6 +244,9 @@ const save = async () => {
       open_time: form.value.open_time,
       close_time: form.value.close_time,
       minimum_deposit: form.value.minimum_deposit,
+      date_change_notice_days: form.value.date_change_notice_days,
+      cancellation_refund_threshold_days: form.value.cancellation_refund_threshold_days,
+      cancellation_refund_percent: form.value.cancellation_refund_percent,
     })
     saved.value = true
     setTimeout(() => { saved.value = false }, 3000)

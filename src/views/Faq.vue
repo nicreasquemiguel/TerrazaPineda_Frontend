@@ -50,6 +50,7 @@ import { useVenueConfigStore } from '@/stores/venueConfig'
 const venueConfigStore = useVenueConfigStore()
 venueConfigStore.fetchConfig()
 const minimumDeposit = computed(() => venueConfigStore.minimumDeposit)
+const dateChangeNoticeDays = computed(() => venueConfigStore.dateChangeNoticeDays)
 
 const faqs = computed(() => [
   {
@@ -62,7 +63,7 @@ const faqs = computed(() => [
   },
   {
     q: '¿Para qué sirve el apartado, y cómo procede con cancelaciones o cambio de fechas?',
-    a: 'El apartado protege a ambos, ustedes como arrendatarios y nosotros como arrendadores, ustedes aseguran su fecha la cual no se vuelve a ofrecer y nosotros para asegurar la renta.\n\nEn caso de cambio de fechas, pedimos que sean con 3 semanas de anticipación.\n\nEn caso de cancelaciones se pierde el apartado, sin excepción.\n\nSe toman estas medidas, debido a que estando apartada se pierden potenciales clientes, y una vez cambio de fecha o cancelación, corremos con un gran riesgo de que se pierda el día.'
+    a: `El apartado protege a ambos, ustedes como arrendatarios y nosotros como arrendadores, ustedes aseguran su fecha la cual no se vuelve a ofrecer y nosotros para asegurar la renta.\n\nEn caso de cambio de fechas, pedimos que sean con al menos ${dateChangeNoticeDays.value} días de anticipación.\n\nEn caso de cancelaciones se pierde el apartado, sin excepción.\n\nSe toman estas medidas, debido a que estando apartada se pierden potenciales clientes, y una vez cambio de fecha o cancelación, corremos con un gran riesgo de que se pierda el día.`
   },
   {
     q: '¿Se generá algún contrato?',

@@ -164,6 +164,7 @@ import { useVenueConfigStore, formatTimeWords } from '@/stores/venueConfig'
 const venueConfigStore = useVenueConfigStore()
 venueConfigStore.fetchConfig()
 const minimumDeposit = computed(() => venueConfigStore.minimumDeposit)
+const dateChangeNoticeDays = computed(() => venueConfigStore.dateChangeNoticeDays)
 
 const typingTexts = [
   'albercadas!',
@@ -225,7 +226,7 @@ const features = computed(() => [
   },
   {
     title: 'Cambios o cancelaciones',
-    description: 'Cambios de fechas se necesitan hacer con 3 semanas de anticipación. Cancelaciones se pierde apartado, sin excepción.',
+    description: `Cambios de fechas se necesitan hacer con al menos ${dateChangeNoticeDays.value} días de anticipación. Cancelaciones se pierde apartado, sin excepción.`,
     icon: 'mdi:calendar-remove-outline'
   },
   {

@@ -418,6 +418,7 @@ import { useToast } from 'vue-toastification'
 const venueConfigStore = useVenueConfigStore()
 venueConfigStore.fetchConfig()
 const minimumDeposit = computed(() => venueConfigStore.minimumDeposit)
+const dateChangeNoticeDays = computed(() => venueConfigStore.dateChangeNoticeDays)
 
 const date = ref(null);
 const splitTextKey = ref(0);
@@ -597,7 +598,7 @@ const isSending = ref(false);
 const allExtras = ref([]);
 
 const rules = computed(() => [
-  { text: 'Cambios de fecha se tendrán que hacer con 3 semanas de anticipación, cancelaciones se pierde el apartado, SIN EXCEPCIÓN.', icon: 'mdi:calendar-alert' },
+  { text: `Cambios de fecha se tendrán que hacer con al menos ${dateChangeNoticeDays.value} días de anticipación, cancelaciones se pierde el apartado, SIN EXCEPCIÓN.`, icon: 'mdi:calendar-alert' },
   { text: `Se aparta fecha únicamente con su apartado $${minimumDeposit.value.toLocaleString()}, tiene que quedar liquidado a más tardar en la entrega del lugar. Al dar el apartado se acepta este reglamento como obligaciones de quién contrata.`, icon: 'mdi:calendar-alert' },
   { text: 'Se debe entregar una identificación vigente y domicilio para que se les entregue el lugar, quien se vaya a hacer responsable.', icon: 'mdi:card-account-details-outline' },
   { text: `Nuestro horario incluidos en los paquetes son de ${formatTimeWords(venueConfigStore.openTime)} hasta ${formatTimeWords(venueConfigStore.closeTime)}. Horas extras son adicionales, pregunta sin compromiso.`, icon: 'mdi:clock-time-four-outline' },

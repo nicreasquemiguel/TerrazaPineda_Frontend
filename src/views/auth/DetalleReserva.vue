@@ -579,15 +579,15 @@
 
         <!-- Applicable policy based on days until event -->
         <div class="p-4 mb-4 rounded-xl border"
-          :class="daysUntilEvent > 45 ? 'bg-yellow-50 border-yellow-300' : 'bg-red-50 border-red-300'">
+          :class="daysUntilEvent > cancellationRefundThresholdDays ? 'bg-yellow-50 border-yellow-300' : 'bg-red-50 border-red-300'">
           <div class="mb-1 text-sm font-semibold"
-            :class="daysUntilEvent > 45 ? 'text-yellow-800' : 'text-red-800'">
+            :class="daysUntilEvent > cancellationRefundThresholdDays ? 'text-yellow-800' : 'text-red-800'">
             <i class="mr-1 fa-solid fa-scale-balanced"></i>
-            {{ daysUntilEvent > 45 ? `Más de 45 días de anticipación (${daysUntilEvent} días)` : `45 días o menos de anticipación (${daysUntilEvent} días)` }}
+            {{ daysUntilEvent > cancellationRefundThresholdDays ? `Más de ${cancellationRefundThresholdDays} días de anticipación (${daysUntilEvent} días)` : `${cancellationRefundThresholdDays} días o menos de anticipación (${daysUntilEvent} días)` }}
           </div>
-          <p class="text-xs" :class="daysUntilEvent > 45 ? 'text-yellow-700' : 'text-red-700'">
-            {{ daysUntilEvent > 45
-              ? 'Se devolverá el 50% del anticipo. El resto se retiene por gastos administrativos.'
+          <p class="text-xs" :class="daysUntilEvent > cancellationRefundThresholdDays ? 'text-yellow-700' : 'text-red-700'">
+            {{ daysUntilEvent > cancellationRefundThresholdDays
+              ? `Se devolverá el ${cancellationRefundPercent}% del anticipo. El resto se retiene por gastos administrativos.`
               : 'El anticipo no es reembolsable bajo ninguna circunstancia.' }}
           </p>
         </div>
@@ -643,13 +643,13 @@
           <!-- Rules reminder -->
           <div class="p-3 text-xs text-blue-700 bg-blue-50 rounded-xl border border-blue-200">
             <i class="mr-1 fa-solid fa-circle-info"></i>
-            Solo se permite <strong>un cambio de fecha</strong> por evento. Debe solicitarse con al menos <strong>3 semanas de anticipación</strong> a la fecha actual del evento.
+            Solo se permite <strong>un cambio de fecha</strong> por evento. Debe solicitarse con al menos <strong>{{ dateChangeNoticeDays }} días de anticipación</strong> a la fecha actual del evento.
           </div>
 
           <!-- Too close warning (non-staff only) -->
-          <div v-if="!isStaff && daysUntilEvent <= 21" class="p-3 text-xs text-red-700 bg-red-50 rounded-xl border border-red-200">
+          <div v-if="!isStaff && daysUntilEvent <= dateChangeNoticeDays" class="p-3 text-xs text-red-700 bg-red-50 rounded-xl border border-red-200">
             <i class="mr-1 fa-solid fa-triangle-exclamation"></i>
-            Tu evento está a <strong>{{ daysUntilEvent }} días</strong>. No cumples el mínimo de 21 días de anticipación.
+            Tu evento está a <strong>{{ daysUntilEvent }} días</strong>. No cumples el mínimo de {{ dateChangeNoticeDays }} días de anticipación.
           </div>
 
           <!-- Calendar -->
@@ -670,7 +670,7 @@
           <button @click="showDateChangeModal = false" class="flex-1 px-4 py-2.5 font-semibold text-gray-600 bg-gray-100 rounded-xl hover:bg-gray-200 transition-colors">
             Cancelar
           </button>
-          <button @click="submitDateChange" :disabled="isRescheduling || !newEventDate || (!isStaff && daysUntilEvent <= 21)"
+          <button @click="submitDateChange" :disabled="isRescheduling || !newEventDate || (!isStaff && daysUntilEvent <= dateChangeNoticeDays)"
             class="flex-1 px-4 py-2.5 font-semibold text-white bg-blue-600 rounded-xl hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
             <span v-if="isRescheduling" class="flex gap-2 items-center justify-center">
               <div class="w-4 h-4 rounded-full border-2 border-white animate-spin border-t-transparent"></div>
@@ -1489,7 +1489,7 @@
                       <span class="font-mono">${{ parseFloat(paymentAmount).toLocaleString('es-MX', { minimumFractionDigits: 2 }) }}</span>
                     </div>
                     <div class="flex justify-between text-gray-500">
-                      <span>Comisión Stripe <span class="text-xs">(3.6% + $3.00)</span></span>
+                      <span>Comisión Stripe <span class="text-xs">(4.1% + $3.00)</span></span>
                       <span class="font-mono">${{ stripeCommission.toLocaleString('es-MX', { minimumFractionDigits: 2 }) }}</span>
                     </div>
                     <div class="flex justify-between font-semibold text-gray-900 pt-1.5 border-t border-gray-200">
@@ -2041,6 +2041,10 @@
                       <div class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Estado</div>
                       <div class="font-semibold text-gray-700">{{ getPaymentStatusText(payment.status) }}</div>
                     </div>
+                    <div v-if="parseFloat(payment.commission || 0) > 0" class="col-span-2">
+                      <div class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Comisión de {{ getGatewayText(payment.gateway) }}</div>
+                      <div class="font-semibold text-gray-700">${{ parseFloat(payment.commission).toLocaleString('es-MX', { minimumFractionDigits: 2 }) }}</div>
+                    </div>
                     <div v-if="payment.created_at" class="col-span-2">
                       <div class="text-[9px] font-bold uppercase tracking-wider text-gray-400">Creado</div>
                       <div class="font-semibold text-gray-700">{{ formatDate(payment.created_at) }} · {{ formatTime(payment.created_at) }}</div>
@@ -2413,15 +2417,15 @@
               </div>
               <div class="flex gap-2 items-start">
                 <i class="mt-0.5 flex-shrink-0 text-gray-400 fa-solid fa-circle-check"></i>
-                <p><span class="font-semibold text-gray-700">Más de 45 días de anticipación:</span> se devuelve el 50% del anticipo. El resto se retiene por gastos administrativos.</p>
+                <p><span class="font-semibold text-gray-700">Más de {{ cancellationRefundThresholdDays }} días de anticipación:</span> se devuelve el {{ cancellationRefundPercent }}% del anticipo. El resto se retiene por gastos administrativos.</p>
               </div>
               <div class="flex gap-2 items-start">
                 <i class="mt-0.5 flex-shrink-0 text-gray-400 fa-solid fa-circle-xmark"></i>
-                <p><span class="font-semibold text-gray-700">45 días o menos:</span> el anticipo no es reembolsable bajo ninguna circunstancia.</p>
+                <p><span class="font-semibold text-gray-700">{{ cancellationRefundThresholdDays }} días o menos:</span> el anticipo no es reembolsable bajo ninguna circunstancia.</p>
               </div>
               <div class="flex gap-2 items-start">
                 <i class="mt-0.5 flex-shrink-0 text-gray-400 fa-solid fa-calendar-days"></i>
-                <p><span class="font-semibold text-gray-700">Cambios de fecha:</span> con al menos 3 semanas de anticipación, sujeto a disponibilidad. Solo se permite un cambio por evento.</p>
+                <p><span class="font-semibold text-gray-700">Cambios de fecha:</span> con al menos {{ dateChangeNoticeDays }} días de anticipación, sujeto a disponibilidad. Solo se permite un cambio por evento.</p>
               </div>
               <div class="flex gap-2 items-start">
                 <i class="mt-0.5 flex-shrink-0 text-gray-400 fa-solid fa-credit-card"></i>
@@ -2613,6 +2617,11 @@ const minimumDeposit = computed(() => {
   const frozen = parseFloat(event.value?.minimum_deposit)
   return frozen > 0 ? frozen : venueConfigStore.minimumDeposit
 })
+// Date-change and cancellation rules are about what's allowed right now, so these
+// always read the live policy rather than a per-booking snapshot.
+const dateChangeNoticeDays = computed(() => venueConfigStore.dateChangeNoticeDays)
+const cancellationRefundThresholdDays = computed(() => venueConfigStore.cancellationRefundThresholdDays)
+const cancellationRefundPercent = computed(() => venueConfigStore.cancellationRefundPercent)
 
 // Determine if the user is a staff member
 const isStaff = computed(() => {
