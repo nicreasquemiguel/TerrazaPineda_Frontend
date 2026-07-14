@@ -528,7 +528,7 @@
 
         <!-- Calendar Event Inline Panel -->
         <div v-if="showCalendarEventCard && selectedCalendarEvent" class="mt-2">
-          <div class="p-4 rounded-xl text-white" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%)">
+          <div class="p-4 rounded-xl text-white" :style="{ background: getStatusGradient(selectedCalendarEvent.bookings?.[0]?.status) }">
             <div class="flex justify-between items-center mb-2">
               <div class="flex items-center gap-2">
                 <span class="text-sm font-semibold">{{ selectedCalendarEvent.dayData?.day_name }} {{ selectedCalendarEvent.dayData?.day_number }}</span>
@@ -1259,7 +1259,7 @@ const statsCards = computed(() => {
       value: `${selectedCalendarEvent.value.bookings.length} reserva${selectedCalendarEvent.value.bookings.length > 1 ? 's' : ''}`,
       percentage: `$${totalAmount.toLocaleString()}`,
       icon: 'fa-solid fa-calendar-day',
-      gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+      gradient: getStatusGradient(selectedCalendarEvent.value.bookings[0]?.status),
       color: 'from-orange-500 to-orange-600',
       type: 'calendar-event',
       eventData: selectedCalendarEvent.value
@@ -1277,7 +1277,7 @@ const statsCards = computed(() => {
       value: `$${parseFloat(selectedEventDay.value.amount_due || 0).toLocaleString()}`,
       percentage: 'Total a Deber',
       icon: 'fa-solid fa-calendar-day',
-      gradient: 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)',
+      gradient: getStatusGradient(selectedEventDay.value.bookings[0]?.status),
       color: 'from-orange-500 to-orange-600',
       type: 'event',
       eventData: selectedEventDay.value
@@ -1290,15 +1290,27 @@ const statsCards = computed(() => {
 
 
 // Helper function to get status color
-const getStatusColor = (status) => {
-  const statusColors = {
-    'aceptacion': 'bg-green-100 text-green-800',
-    'pendiente': 'bg-yellow-100 text-yellow-800',
-    'rechazado': 'bg-red-100 text-red-800',
-    'cancelado': 'bg-gray-100 text-gray-800',
-    'solicitud': 'bg-blue-100 text-blue-800 '
-  }
-  return statusColors[status] || 'bg-gray-100 text-gray-800'
+// Single source of truth for status colors — shared by the Reservas list badges,
+// the calendar day dots, and the "daily" booking card gradient, so a status always
+// looks the same everywhere in the dashboard.
+const STATUS_COLOR_MAP = {
+  solicitud:            { badge: 'bg-gray-200 text-gray-800',   dot: 'bg-gray-200 text-gray-800 border-2 border-gray-400',     from: '#9ca3af', to: '#6b7280' },
+  aceptacion:           { badge: 'bg-blue-100 text-blue-800',   dot: 'bg-blue-100 text-blue-800 border-2 border-blue-400',     from: '#60a5fa', to: '#2563eb' },
+  apartado:             { badge: 'bg-orange-100 text-orange-800', dot: 'bg-orange-100 text-orange-800 border-2 border-orange-400', from: '#fb923c', to: '#ea580c' },
+  liquidado:            { badge: 'bg-green-100 text-green-800', dot: 'bg-green-100 text-green-800 border-2 border-green-400', from: '#4ade80', to: '#16a34a' },
+  liquidado_entregado:  { badge: 'bg-green-100 text-green-800', dot: 'bg-green-100 text-green-800 border-2 border-green-400', from: '#4ade80', to: '#16a34a' },
+  entregado:            { badge: 'bg-teal-100 text-teal-800',   dot: 'bg-teal-100 text-teal-800 border-2 border-teal-400',     from: '#2dd4bf', to: '#0d9488' },
+  finalizado:           { badge: 'bg-purple-100 text-purple-800', dot: 'bg-purple-100 text-purple-800 border-2 border-purple-400', from: '#c084fc', to: '#9333ea' },
+  rechazado:            { badge: 'bg-red-100 text-red-800',     dot: 'bg-red-100 text-red-800 border-2 border-red-300',        from: '#f87171', to: '#dc2626' },
+  cancelado:            { badge: 'bg-gray-100 text-gray-500',   dot: 'bg-gray-100 text-gray-500 border-2 border-gray-300',     from: '#9ca3af', to: '#6b7280' },
+}
+const DEFAULT_STATUS_COLOR = { badge: 'bg-gray-100 text-gray-800', dot: 'bg-gray-100 text-gray-700', from: '#9ca3af', to: '#6b7280' }
+
+const getStatusColor = (status) => (STATUS_COLOR_MAP[status] || DEFAULT_STATUS_COLOR).badge
+
+const getStatusGradient = (status) => {
+  const c = STATUS_COLOR_MAP[status] || DEFAULT_STATUS_COLOR
+  return `linear-gradient(135deg, ${c.from} 0%, ${c.to} 100%)`
 }
 
 // Helper function to get status text
@@ -2104,28 +2116,10 @@ const getDayStatusClasses = (date) => {
   if (isTodayDate && !status) {
     return 'bg-blue-600 text-white'
   }
-
-  switch (status) {
-    case 'solicitud':
-      return 'bg-gray-200 text-gray-800 border-2 border-gray-400'
-    case 'aceptacion':
-      return 'bg-blue-100 text-blue-800 border-2 border-blue-400'
-    case 'apartado':
-      return 'bg-orange-100 text-orange-800 border-2 border-orange-400'
-    case 'liquidado':
-    case 'liquidado_entregado':
-      return 'bg-green-100 text-green-800 border-2 border-green-400'
-    case 'entregado':
-      return 'bg-teal-100 text-teal-800 border-2 border-teal-400'
-    case 'finalizado':
-      return 'bg-purple-100 text-purple-800 border-2 border-purple-400'
-    case 'rechazado':
-      return 'bg-red-100 text-red-800 border-2 border-red-300'
-    case 'cancelado':
-      return 'bg-gray-100 text-gray-500 border-2 border-gray-300'
-    default:
-      return isTodayDate ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
+  if (!status) {
+    return isTodayDate ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'
   }
+  return (STATUS_COLOR_MAP[status] || DEFAULT_STATUS_COLOR).dot
 }
 
 const navigateToBookingDetail = (bookingId) => {
