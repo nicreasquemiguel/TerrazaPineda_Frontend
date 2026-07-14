@@ -81,6 +81,7 @@
                 <input
                   v-model.number="form.minimum_deposit"
                   type="number"
+                  inputmode="decimal"
                   min="0"
                   step="1"
                   class="p-3 pl-6 w-full text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -109,6 +110,7 @@
               <input
                 v-model.number="form.date_change_notice_days"
                 type="number"
+                inputmode="numeric"
                 min="0"
                 step="1"
                 class="p-3 w-full text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -137,6 +139,7 @@
                 <input
                   v-model.number="form.cancellation_refund_threshold_days"
                   type="number"
+                  inputmode="numeric"
                   min="0"
                   step="1"
                   class="p-3 w-full text-sm rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
@@ -148,6 +151,7 @@
                   <input
                     v-model.number="form.cancellation_refund_percent"
                     type="number"
+                    inputmode="decimal"
                     min="0"
                     max="100"
                     step="1"

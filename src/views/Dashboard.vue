@@ -260,7 +260,7 @@
                     >
                       <div class="mb-2 text-center">
                         <div class="text-sm font-medium text-gray-500" :class="isToday(date) ? 'text-blue-600' : ''">
-                          {{ formatWeekDate(date).charAt(0).toUpperCase() }}
+                          {{ formatDayInitial(date) }}
                         </div>
                         <div class="text-[10px] text-gray-400 leading-none" :class="isToday(date) ? 'text-blue-400' : ''">
                           {{ date.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '') }}
@@ -505,7 +505,7 @@
             <div v-for="date in getWeekDates" :key="date.toISOString()" class="text-center calendar-day" :data-date="date.toISOString()">
               <div class="mb-1 text-center">
                 <div class="text-xs font-medium text-gray-500" :class="isToday(date) ? 'text-blue-600' : ''">
-                  {{ formatWeekDate(date).charAt(0).toUpperCase() }}
+                  {{ formatDayInitial(date) }}
                 </div>
                 <div class="text-[9px] text-gray-400 leading-none" :class="isToday(date) ? 'text-blue-400' : ''">
                   {{ date.toLocaleDateString('es-ES', { month: 'short' }).replace('.', '') }}
@@ -632,13 +632,13 @@
                 </span>
               </div>
               <div class="flex gap-2 mt-3 pt-3 border-t border-gray-50">
-                <button @click.stop="openAcceptModal(event)" class="flex-1 py-2 text-xs font-semibold text-white bg-green-500 rounded-lg active:bg-green-600">
+                <button @click.stop="openAcceptModal(event)" class="flex-1 py-2.5 text-sm font-semibold text-white bg-green-500 rounded-lg active:bg-green-600">
                   <i class="fa-solid fa-check mr-1"></i>Aceptar
                 </button>
-                <button @click.stop="openRejectModal(event)" class="flex-1 py-2 text-xs font-semibold text-white bg-red-500 rounded-lg active:bg-red-600">
+                <button @click.stop="openRejectModal(event)" class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-lg active:bg-red-600">
                   <i class="fa-solid fa-times mr-1"></i>Rechazar
                 </button>
-                <button @click.stop="navigateToBookingDetail(event?.booking_id)" class="px-4 py-2 text-xs font-semibold text-white bg-blue-500 rounded-lg active:bg-blue-600">
+                <button @click.stop="navigateToBookingDetail(event?.booking_id)" class="px-4 py-2.5 text-sm font-semibold text-white bg-blue-500 rounded-lg active:bg-blue-600">
                   <i class="fa-solid fa-eye"></i>
                 </button>
               </div>
@@ -670,13 +670,13 @@
                 <span class="flex-shrink-0 px-2 py-1 text-xs font-medium text-yellow-800 bg-yellow-100 rounded-full">Pendiente</span>
               </div>
               <div class="flex gap-2 mt-3 pt-3 border-t border-gray-50">
-                <button @click.stop="approvePayment(payment?.payment_id)" class="flex-1 py-2 text-xs font-semibold text-white bg-green-500 rounded-lg active:bg-green-600">
+                <button @click.stop="approvePayment(payment?.payment_id)" class="flex-1 py-2.5 text-sm font-semibold text-white bg-green-500 rounded-lg active:bg-green-600">
                   <i class="fa-solid fa-check mr-1"></i>Aprobar
                 </button>
-                <button @click.stop="openPaymentRejectModal(payment)" class="flex-1 py-2 text-xs font-semibold text-white bg-red-500 rounded-lg active:bg-red-600">
+                <button @click.stop="openPaymentRejectModal(payment)" class="flex-1 py-2.5 text-sm font-semibold text-white bg-red-500 rounded-lg active:bg-red-600">
                   <i class="fa-solid fa-times mr-1"></i>Rechazar
                 </button>
-                <button v-if="payment?.payment_photo_base64" @click.stop="openPaymentPhotoModal(payment.payment_photo_base64)" class="px-4 py-2 text-xs font-semibold text-white bg-blue-500 rounded-lg active:bg-blue-600">
+                <button v-if="payment?.payment_photo_base64" @click.stop="openPaymentPhotoModal(payment.payment_photo_base64)" class="px-4 py-2.5 text-sm font-semibold text-white bg-blue-500 rounded-lg active:bg-blue-600">
                   <i class="fa-solid fa-image"></i>
                 </button>
               </div>
@@ -699,14 +699,14 @@
           <div class="flex relative">
             <button
               @click="activeTab = 'bookings'"
-              class="relative z-10 flex-1 py-3 text-base font-bold rounded-xl transition-colors duration-300"
+              class="relative z-10 flex-1 py-3 text-base font-bold whitespace-nowrap rounded-xl transition-colors duration-300"
               :class="activeTab === 'bookings' ? 'text-white' : 'text-black'"
             >
-              Solicitudes de Reservas
+              Solicitudes
             </button>
             <button
               @click="activeTab = 'payments'"
-              class="relative z-10 flex-1 py-3 text-base font-bold rounded-xl transition-colors duration-300"
+              class="relative z-10 flex-1 py-3 text-base font-bold whitespace-nowrap rounded-xl transition-colors duration-300"
               :class="activeTab === 'payments' ? 'text-white' : 'text-black'"
             >
               Pagos
@@ -2051,12 +2051,16 @@ const getWeekDates = computed(() => {
 // Format date for display
 const formatWeekDate = (date) => {
   if (!date) return ''
-  return date.toLocaleDateString('es-ES', { 
-    weekday: 'short', 
+  return date.toLocaleDateString('es-ES', {
+    weekday: 'short',
     day: 'numeric',
     month: 'short'
   })
 }
+
+// Two-letter initials avoid the Martes/Miércoles "M"/"M" ambiguity a single-letter initial has.
+const WEEKDAY_INITIALS = ['Do', 'Lu', 'Ma', 'Mi', 'Ju', 'Vi', 'Sá']
+const formatDayInitial = (date) => WEEKDAY_INITIALS[date.getDay()]
 
 // Check if date is today
 const isToday = (date) => {
