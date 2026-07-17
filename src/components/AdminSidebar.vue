@@ -261,6 +261,7 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', handleClickOutsi
 
 const adminItems = [
   { label: 'Dashboard',     path: '/dashboard',     icon: 'fa-solid fa-tachometer-alt' },
+  { label: 'Métricas',      path: '/metricas',      icon: 'fa-solid fa-chart-line' },
   { label: 'Reservas',      path: '/reservas',      icon: 'fa-solid fa-calendar-alt' },
   { label: 'Actividad',     path: '/actividad',     icon: 'fa-solid fa-list-alt' },
   { label: 'Configuración', path: '/configuracion', icon: 'fa-solid fa-sliders' },

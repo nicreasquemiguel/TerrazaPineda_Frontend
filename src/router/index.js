@@ -132,6 +132,12 @@ const routes = [
     meta: { title: 'Configuración', requiresStaff: true }
   },
   {
+    path: '/metricas',
+    name: 'Metricas',
+    component: () => import('@/views/admin/Metricas.vue'),
+    meta: { title: 'Métricas', requiresStaff: true }
+  },
+  {
     path: '/actividad',
     name: 'RegistroActividad',
     component: () => import('@/views/admin/RegistroActividad.vue'),
