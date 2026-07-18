@@ -1983,6 +1983,22 @@
           </div>
         </div>
 
+        <!-- Smart Home Lighting Controls (shown only on the day of the booking) -->
+        <div v-if="showSmartHomeControls && smartDevices.length" class="mt-6 p-4 bg-white rounded-2xl border border-gray-200 shadow-sm">
+          <div class="flex justify-between items-center mb-4">
+            <h2 class="text-sm font-bold text-gray-700">Control de Luces</h2>
+            <div class="flex items-center space-x-2">
+              <i class="text-yellow-400 fa-solid fa-lightbulb"></i>
+              <span class="text-sm font-medium text-gray-600">Hoy</span>
+            </div>
+          </div>
+          <SmartHomeControls
+            :devices="smartDevices"
+            :control-fn="controlMyDevice"
+            :status-fn="getMyDeviceStatus"
+          />
+        </div>
+
         <!-- Payment History -->
         <div v-if="ordersLoading" class="mt-6 p-4 text-sm text-center text-gray-400 bg-white rounded-2xl border border-gray-200 shadow-sm">
           <div class="inline-block mr-2 w-4 h-4 rounded-full border-2 border-gray-400 animate-spin border-t-transparent"></div>
@@ -2597,7 +2613,8 @@ import { ref, onMounted, computed, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import Footer from '@/components/Footer.vue'
 import { TrashIcon } from '@heroicons/vue/24/solid'
-import api from '@/services/api'
+import api, { getMyDevices, controlMyDevice, getMyDeviceStatus } from '@/services/api'
+import SmartHomeControls from '@/components/SmartHomeControls.vue'
 import CalendarPicker from '@/ReservarForm/CalendarPicker.vue'
 import { useQuery } from '@tanstack/vue-query'
 import { Icon } from '@iconify/vue'
@@ -3661,6 +3678,34 @@ watch(event, (val) => {
   if (!val || paymentAmount.value) return
   const paid = parseFloat(val.advance_paid) || 0
   if (paid === 0) paymentAmount.value = String(minimumDeposit.value)
+}, { immediate: true })
+
+// Smart home lighting controls — only available to the client on the day of their booking
+function isToday(dateStr) {
+  if (!dateStr) return false
+  return new Date(dateStr).toDateString() === new Date().toDateString()
+}
+
+const smartDevices = ref([])
+const showSmartHomeControls = computed(() => {
+  return !!event.value &&
+    isToday(event.value.start_datetime) &&
+    ['aceptacion', 'apartado', 'liquidado', 'liquidado_entregado', 'entregado'].includes(event.value.status)
+})
+
+async function fetchSmartDevices() {
+  if (!event.value?.venue?.id) return
+  try {
+    const res = await getMyDevices()
+    const devices = Array.isArray(res.data) ? res.data : (res.data.results || [])
+    smartDevices.value = devices.filter((d) => d.venue === event.value.venue.id)
+  } catch (e) {
+    smartDevices.value = []
+  }
+}
+
+watch(showSmartHomeControls, (shouldShow) => {
+  if (shouldShow) fetchSmartDevices()
 }, { immediate: true })
 
 const mpPreferenceId = ref(null)

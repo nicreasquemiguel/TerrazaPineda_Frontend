@@ -148,6 +148,12 @@ const routes = [
     name: 'Reservas',
     component: () => import('@/views/admin/Reservas.vue'),
     meta: { title: 'Reservas', requiresStaff: true }
+  },
+  {
+    path: '/luces',
+    name: 'SmartHome',
+    component: () => import('@/views/admin/SmartHome.vue'),
+    meta: { title: 'Control de Luces', requiresStaff: true }
   }
 ]
 

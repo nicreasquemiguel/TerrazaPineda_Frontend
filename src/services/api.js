@@ -22,6 +22,7 @@ export const API_ENDPOINTS = {
   bookings: `${API_BASE}/api/bookings/`,
   user: `${API_BASE}/api/auth/user/`,
   terraza: `${API_BASE}/terraza/api/`,
+  smarthome: `${API_BASE}/api/smarthome/`,
 }
 
 // Helper function to create API instances for specific endpoints
@@ -37,6 +38,7 @@ export const authApi = createApiInstance(API_ENDPOINTS.auth)
 export const bookingsApi = createApiInstance(API_ENDPOINTS.bookings)
 export const userApi = createApiInstance(API_ENDPOINTS.user)
 export const terrazaApi = createApiInstance(API_ENDPOINTS.terraza)
+export const smarthomeApi = createApiInstance(API_ENDPOINTS.smarthome)
 
 // Bare instance used only for token refresh — no interceptors to avoid recursive loops
 const refreshApi = axios.create({
@@ -197,12 +199,17 @@ addAuthInterceptor(userApi)
 addResponseInterceptor(userApi)
 addAuthInterceptor(terrazaApi)
 addResponseInterceptor(terrazaApi)
+addAuthInterceptor(smarthomeApi)
+addResponseInterceptor(smarthomeApi)
 
 // Authentication API
 export const loginUser = (credentials) => authApi.post('jwt/create/', credentials);
 export const registerUser = (userData) => authApi.post('users/', userData);
 export const refreshToken = (refresh) => authApi.post('jwt/refresh/', { refresh });
 export const verifyToken = (token) => authApi.post('jwt/verify/', { token });
+
+// Venues API
+export const getVenues = () => bookingsApi.get('venues/');
 
 // Wish List API
 export const getWishes = () => bookingsApi.get('wishes/');
@@ -221,4 +228,14 @@ export const changeUserPassword = (passwordData) => userApi.post('change-passwor
 export const getTerrazaData = () => terrazaApi.get('');
 export const getTerrazaBookings = () => terrazaApi.get('bookings/');
 
-export default api; 
+// Smart Home API (client — devices scoped to the user's same-day active bookings)
+export const getMyDevices = () => smarthomeApi.get('my-devices/');
+export const controlMyDevice = (id, payload) => smarthomeApi.post(`my-devices/${id}/control/`, payload);
+export const getMyDeviceStatus = (id) => smarthomeApi.get(`my-devices/${id}/status/`);
+
+// Smart Home API (admin — all venues, no date restriction)
+export const getAdminDevices = (venueId) => smarthomeApi.get('devices/', { params: venueId ? { venue: venueId } : {} });
+export const controlAdminDevice = (id, payload) => smarthomeApi.post(`devices/${id}/control/`, payload);
+export const getAdminDeviceStatus = (id) => smarthomeApi.get(`devices/${id}/status/`);
+
+export default api;
