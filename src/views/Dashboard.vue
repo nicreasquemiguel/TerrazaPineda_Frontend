@@ -697,27 +697,35 @@
 
       <!-- Bottom Tab Toggle (sticky) -->
       <div class="fixed bottom-0 left-0 right-0 px-4 pb-4 pt-2 bg-white border-t border-gray-100 z-20">
-        <div class="relative p-1 bg-gray-200 rounded-2xl">
-          <div
-            class="absolute top-1 left-1 w-1/2 h-[calc(100%-8px)] bg-blue-600 rounded-xl transition-transform duration-300 ease-in-out"
-            :class="activeTab === 'bookings' ? 'translate-x-0' : 'translate-x-full'"
-          ></div>
-          <div class="flex relative">
-            <button
-              @click="activeTab = 'bookings'"
-              class="relative z-10 flex-1 py-3 text-base font-bold whitespace-nowrap rounded-xl transition-colors duration-300"
-              :class="activeTab === 'bookings' ? 'text-white' : 'text-black'"
-            >
-              Solicitudes
-            </button>
-            <button
-              @click="activeTab = 'payments'"
-              class="relative z-10 flex-1 py-3 text-base font-bold whitespace-nowrap rounded-xl transition-colors duration-300"
-              :class="activeTab === 'payments' ? 'text-white' : 'text-black'"
-            >
-              Pagos
-            </button>
+        <div class="flex items-center gap-2">
+          <!-- Solicitudes / Pagos toggle -->
+          <div class="relative flex-1 p-1 bg-gray-200 rounded-2xl">
+            <div
+              class="absolute top-1 left-1 w-1/2 h-[calc(100%-8px)] bg-blue-600 rounded-xl transition-transform duration-300 ease-in-out"
+              :class="activeTab === 'bookings' ? 'translate-x-0' : 'translate-x-full'"
+            ></div>
+            <div class="flex relative">
+              <button
+                @click="activeTab = 'bookings'"
+                class="relative z-10 flex-1 py-3 text-base font-bold whitespace-nowrap rounded-xl transition-colors duration-300"
+                :class="activeTab === 'bookings' ? 'text-white' : 'text-black'"
+              >
+                Solicitudes
+              </button>
+              <button
+                @click="activeTab = 'payments'"
+                class="relative z-10 flex-1 py-3 text-base font-bold whitespace-nowrap rounded-xl transition-colors duration-300"
+                :class="activeTab === 'payments' ? 'text-white' : 'text-black'"
+              >
+                Pagos
+              </button>
+            </div>
           </div>
+          <!-- Nueva Reserva -->
+          <button @click="$router.push('/reservas/nueva')"
+            class="flex-shrink-0 flex items-center justify-center w-14 self-stretch rounded-2xl bg-indigo-600 text-white active:scale-95 transition-transform">
+            <i class="fa-solid fa-plus text-lg"></i>
+          </button>
         </div>
       </div>
     </div>

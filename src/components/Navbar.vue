@@ -129,11 +129,10 @@
                   {{ authStore.user.first_name.charAt(0).toUpperCase() + authStore.user.last_name.charAt(0).toUpperCase() }}
                 </span>
                 <span v-else class="text-base font-bold text-white"><i class="fa-regular fa-user"></i></span>
-                <!-- Notification count badge -->
-                <span v-if="unreadCount > 0" class="flex absolute -top-1 -right-1 justify-center items-center px-1 h-5 text-xs font-bold text-white bg-red-500 rounded-full border-2 border-white min-w-5">
-                  {{ unreadCount > 99 ? '99+' : unreadCount }}
-                </span>
               </button>
+              <span v-if="unreadCount > 0" class="pointer-events-none flex absolute -top-1 -right-1 justify-center items-center px-1 h-5 text-xs font-bold text-white bg-red-500 rounded-full border-2 border-black min-w-5">
+                {{ unreadCount > 99 ? '99+' : unreadCount }}
+              </span>
               
               <!-- User Dropdown Menu -->
               <Transition name="dropdown">
@@ -271,11 +270,10 @@
                   {{ authStore.user.first_name.charAt(0).toUpperCase() + authStore.user.last_name.charAt(0).toUpperCase() }}
                 </span>
                 <span v-else class="text-base font-bold text-white"><i class="fa-regular fa-user"></i></span>
-                <!-- Notification count badge -->
-                <span v-if="unreadCount > 0" class="flex absolute -top-1 -right-1 justify-center items-center px-1 h-5 text-xs font-bold text-white bg-red-500 rounded-full border-2 border-white min-w-5">
-                  {{ unreadCount > 99 ? '99+' : unreadCount }}
-                </span>
               </button>
+              <span v-if="unreadCount > 0" class="pointer-events-none flex absolute -top-1 -right-1 justify-center items-center px-1 h-5 text-xs font-bold text-white bg-red-500 rounded-full border-2 border-black min-w-5">
+                {{ unreadCount > 99 ? '99+' : unreadCount }}
+              </span>
               
               <!-- Mobile User Dropdown Menu -->
               <Transition name="dropdown">

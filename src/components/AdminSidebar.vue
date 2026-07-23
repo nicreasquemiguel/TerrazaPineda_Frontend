@@ -3,7 +3,7 @@
   <div class="hidden md:flex fixed top-0 left-0 bottom-0 z-30 flex-col w-64 bg-black border-r border-gray-800">
     <!-- Brand -->
     <div class="flex items-center gap-2 px-5 py-4 border-b border-gray-800">
-      <img src="/tp.svg" alt="Logo" class="w-8 h-8" />
+      <img src="/tp-white.svg" alt="Logo" class="w-8 h-8" />
       <span class="text-sm font-bold text-white">Terraza Pineda</span>
       <span class="ml-auto text-xs text-gray-600 font-medium">Admin</span>
     </div>
@@ -64,7 +64,7 @@
 
   <!-- Mobile top bar -->
   <div class="fixed top-0 left-0 right-0 z-40 flex items-center h-14 px-4 bg-black border-b border-gray-800 md:hidden">
-    <img src="/tp.svg" alt="Logo" class="w-7 h-7 mr-2 flex-shrink-0" />
+    <img src="/tp-white.svg" alt="Logo" class="w-7 h-7 mr-2 flex-shrink-0" />
     <span class="text-sm font-bold text-white">Terraza Pineda</span>
     <span class="ml-1.5 text-xs text-gray-500 font-medium">Admin</span>
     <div class="ml-auto flex items-center gap-2">
@@ -73,13 +73,13 @@
         <button
           @click="showProfileMenu = !showProfileMenu"
           data-profile-btn
-          class="relative flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 border-2 border-white shadow overflow-hidden flex-shrink-0"
+          class="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-blue-600 to-purple-600 border-2 border-white shadow overflow-hidden flex-shrink-0"
         >
           <span class="text-sm font-bold text-white">{{ userInitials }}</span>
-          <span v-if="unreadCount > 0" class="flex absolute -top-1 -right-1 justify-center items-center px-1 h-5 text-xs font-bold text-white bg-red-500 rounded-full border-2 border-black min-w-5">
-            {{ unreadCount > 99 ? '99+' : unreadCount }}
-          </span>
         </button>
+        <span v-if="unreadCount > 0" class="pointer-events-none flex absolute -top-1 -right-1 justify-center items-center px-1 h-5 text-xs font-bold text-white bg-red-500 rounded-full border-2 border-black min-w-5">
+          {{ unreadCount > 99 ? '99+' : unreadCount }}
+        </span>
 
         <!-- Profile dropdown -->
         <Transition name="dropdown">
@@ -172,7 +172,7 @@
         <!-- Drawer header -->
         <div class="flex items-center justify-between px-5 py-4 border-b border-gray-800">
           <div class="flex items-center gap-2">
-            <img src="/tp.svg" alt="Logo" class="w-7 h-7" />
+            <img src="/tp-white.svg" alt="Logo" class="w-7 h-7" />
             <span class="text-sm font-bold text-white">Terraza Pineda</span>
           </div>
           <button @click="showDrawer = false" class="p-1.5 text-gray-400 hover:text-white transition-colors">
