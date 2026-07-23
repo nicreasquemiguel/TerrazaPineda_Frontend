@@ -16,6 +16,11 @@
             {{ loading ? 'Cargando...' : `${filteredBookings.length} evento${filteredBookings.length !== 1 ? 's' : ''}` }}
           </div>
         </div>
+        <!-- New booking -->
+        <button @click="$router.push('/reservas/nueva')"
+          class="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 active:scale-95 transition-all flex-shrink-0">
+          <i class="fa-solid fa-plus text-[10px]"></i> Nueva
+        </button>
         <!-- View toggle -->
         <div class="flex bg-gray-100 rounded-xl p-1 gap-1">
           <button @click="view = 'calendar'"

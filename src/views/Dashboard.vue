@@ -8,7 +8,13 @@
         <div>
           <!-- Header -->
           <div class="flex justify-between items-center mb-6">
-            <h1 class="text-3xl font-bold text-gray-800">Panel de Administración de Reservas</h1>
+            <div class="flex items-center gap-4">
+              <h1 class="text-3xl font-bold text-gray-800">Panel de Administración de Reservas</h1>
+              <button @click="$router.push('/reservas/nueva')"
+                class="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 text-white text-sm font-bold hover:bg-indigo-700 active:scale-95 transition-all flex-shrink-0">
+                <i class="fa-solid fa-plus text-xs"></i> Nueva Reserva
+              </button>
+            </div>
             <div class="relative">
               <input 
                 type="text" 

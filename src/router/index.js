@@ -150,6 +150,12 @@ const routes = [
     meta: { title: 'Reservas', requiresStaff: true }
   },
   {
+    path: '/reservas/nueva',
+    name: 'NuevaReserva',
+    component: () => import('@/views/admin/NuevaReserva.vue'),
+    meta: { title: 'Nueva Reserva', requiresStaff: true }
+  },
+  {
     path: '/luces',
     name: 'SmartHome',
     component: () => import('@/views/admin/SmartHome.vue'),
